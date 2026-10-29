@@ -1,0 +1,60 @@
+#!/bin/bash
+if [ -z "${NF_LC_WAS:-}" ]; then
+  for _nf_lcv in "${LC_ALL:-}" "${LC_MESSAGES:-}" "${LANG:-}"; do
+    case "$_nf_lcv" in C|POSIX|C.*|"") : ;; *) NF_LC_WAS="$_nf_lcv"; break ;; esac
+  done
+  unset _nf_lcv
+fi
+export NF_LC_WAS
+LC_ALL=C; export LC_ALL
+set -u
+case "${1:-}" in
+  ""|프로젝트들|프로젝트|앱들) ;;
+  http://*|https://*) set -- 530 "$1" ;;
+  *) if ! printf '%s' "$1" | grep -qE '^[0-9]{3,4}$' || [ "$1" -lt 300 ] || [ "$1" -gt 2000 ]; then
+       echo "쓰는 법: 조종석열기 [너비 300~2000] [주소]  ·  조종석열기 <주소>  ·  조종석열기 프로젝트들" >&2; exit 2
+     fi ;;
+esac
+W="${1:-530}"
+case "${1:-}" in
+  *) _st="$( . "$(dirname "$0")/project-root.sh" >/dev/null 2>&1 && printf '%s' "${NF_STATE:-}")"
+     URL="${2:-$(cat "${_st:-${CLAUDE_PROJECT_DIR:-$PWD}/.nightflight}/board.url" 2>/dev/null)}" ;;
+esac
+[ -n "$URL" ] || { echo "조종석 주소가 없습니다. ledger.sh 조종석 \"<주소>\" 로 등록하십시오." >&2; exit 1; }
+
+B=$(osascript -e 'tell application "Finder" to get bounds of window of desktop' 2>/dev/null)
+SW=$(echo "$B" | awk -F', *' '{print $3+0}'); SH=$(echo "$B" | awk -F', *' '{print $4+0}')
+[ "${SW:-0}" -gt 0 ] || { SW=1440; SH=900; }
+X=$(( SW - W - 24 )); Y=40
+H=$(( SH * 78 / 100 )); [ "$H" -lt 620 ] && H=$(( SH - 90 ))
+
+APP=""
+for A in "Google Chrome" "Microsoft Edge" "Brave Browser"; do
+  [ -d "/Applications/$A.app" ] && { APP="$A"; break; }
+done
+[ -n "$APP" ] || { echo "Chrome 계열 브라우저가 없습니다. 주소: $URL" >&2; exit 1; }
+
+_RUN=0
+ps ax -o command= | grep -F "/$APP.app/Contents/MacOS/" | grep -v -e "nightflight-cockpit" -e "Helper" -e "crashpad" -e "grep" | grep -q . && _RUN=1
+_OK=0
+[ "$_RUN" = 1 ] && osascript -e "tell application \"$APP\" to get bounds of front window" >/dev/null 2>&1 && _OK=1
+if [ "$_OK" = 1 ]; then
+  open -na "$APP" --args --new-window --app="$URL"
+  for _ in 1 2 3 4 5 6 7 8; do
+    sleep 0.4
+    osascript -e "tell application \"$APP\" to set bounds of front window to {$X, $Y, $((X+W)), $((Y+H))}" >/dev/null 2>&1 \
+      && { echo "  · $APP · $(osascript -e "tell application \"$APP\" to get bounds of front window" 2>/dev/null)  (화면 ${SW}×${SH})"; exit 0; }
+  done
+fi
+
+PROF="$HOME/.nightflight-cockpit"
+echo "  자동화 권한이 없어 ②전용 창으로 엽니다." >&2
+echo "  ⚠️ 이 창은 «따로 뜬 브라우저»라 claude.ai 로그인을 **한 번** 하셔야 합니다(그 뒤로는 유지됩니다)." >&2
+echo "     ①을 쓰시려면: 시스템 설정 → 개인정보 보호 및 보안 → 자동화 → 터미널이 $APP 제어 허용" >&2
+if open -na "$APP" --args --user-data-dir="$PROF" --no-first-run --new-window \
+  --window-size="$W,$H" --window-position="$X,$Y" --app="$URL"; then
+  echo "  · $APP(전용 프로필) · 오른쪽 ${W}×${H} (화면 ${SW}×${SH})"
+else
+  echo "  🔴 $APP 를 열지 못했습니다. 조종석 주소를 브라우저에 직접 붙여 넣어 여실 수 있습니다." >&2
+  exit 1
+fi

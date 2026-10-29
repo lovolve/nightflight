@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>출시까지 해야 하는 것</title>
+<style>
+
+:root{
+  --ground:#F5F7F9; --panel:#FFFFFF;
+  --ink:#13161B; --ink-2:#39414E; --muted:#697180; --faint:#99A1AE;
+  --rule:#E0E5EB; --rule-2:#EDF0F4;
+  --now:#23374F; --now-ink:#FFFFFF;
+  --alert:#94590A; --alert-bg:#FBF4E7; --alert-rule:#E6D2AE;
+  --open:#1F5E7A; --open-bg:#EDF5F9; --open-rule:#BFD8E4;
+  --ok:#2E7D5B; --ok-bg:#EDF6F1; --ok-rule:#BFDCCC;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --ground:#0F1216; --panel:#161A20; --ink:#E8EBF0; --ink-2:#BFC6D1;
+  --muted:#8A93A2; --faint:#6A7380; --rule:#262C35; --rule-2:#1D222A;
+  --now:#C3D3E8; --now-ink:#0F1216;
+  --alert:#DFAD6A; --alert-bg:#211C12; --alert-rule:#433320;
+  --open:#8FC5DC; --open-bg:#111D23; --open-rule:#27414E;
+  --ok:#6FC79B; --ok-bg:#101D17; --ok-rule:#1F3A2B;
+}}
+:root[data-theme="dark"]{
+  --ground:#0F1216; --panel:#161A20; --ink:#E8EBF0; --ink-2:#BFC6D1;
+  --muted:#8A93A2; --faint:#6A7380; --rule:#262C35; --rule-2:#1D222A;
+  --now:#C3D3E8; --now-ink:#0F1216;
+  --alert:#DFAD6A; --alert-bg:#211C12; --alert-rule:#433320;
+  --open:#8FC5DC; --open-bg:#111D23; --open-rule:#27414E;
+  --ok:#6FC79B; --ok-bg:#101D17; --ok-rule:#1F3A2B;
+}
+*{box-sizing:border-box}
+body{background:var(--ground); color:var(--ink); margin:0; line-height:1.6;
+  font-family:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo",sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:46rem; margin:0 auto; padding:2.5rem 1rem 4rem}
+h1{font-size:1.6rem; line-height:1.35; margin:0 0 .4rem; letter-spacing:-.02em}
+.lede{color:var(--muted); margin:0 0 2rem; font-size:.95rem}
+fieldset{border:0; border-top:1px solid var(--rule); margin:0; padding:1.4rem 0 .2rem}
+legend{padding:0; font-weight:600; font-size:1.02rem}
+.hint{color:var(--muted); font-size:.85rem; margin:.1rem 0 .7rem}
+.opts{display:flex; flex-wrap:wrap; gap:.5rem}
+label.opt{display:inline-flex; align-items:center; gap:.45rem; cursor:pointer;
+  border:1px solid var(--rule); border-radius:999px; padding:.42rem .85rem;
+  background:var(--panel); font-size:.92rem; color:var(--ink-2)}
+label.opt:has(input:checked){border-color:var(--now); background:var(--now); color:var(--now-ink)}
+label.opt input{margin:0}
+#go{margin-top:1.8rem; width:100%; border:0; border-radius:.6rem; cursor:pointer;
+  background:var(--now); color:var(--now-ink); font-size:1rem; font-weight:600;
+  padding:.85rem 1rem; font-family:inherit}
+#go:disabled{opacity:.45; cursor:default}
+#out{margin-top:2.2rem}
+.sec{border-top:1px solid var(--rule); padding:1.3rem 0 .2rem}
+.cap{font-weight:600; margin:0 0 .5rem; font-size:1rem}
+.big{font-size:1.25rem; font-weight:650; margin:.2rem 0 .3rem; letter-spacing:-.01em}
+ul.rows{list-style:none; margin:.3rem 0 0; padding:0}
+ul.rows li{display:flex; flex-wrap:wrap; gap:.2rem .7rem; align-items:baseline;
+  padding:.5rem 0; border-bottom:1px solid var(--rule-2)}
+ul.rows li .nm{font-weight:550}
+ul.rows li .dd{color:var(--muted); font-size:.9rem}
+.note{border-left:3px solid var(--open-rule); background:var(--open-bg); color:var(--ink-2);
+  padding:.7rem .9rem; margin:.7rem 0 0; border-radius:0 .35rem .35rem 0; font-size:.92rem}
+.warn{border-left:3px solid var(--alert-rule); background:var(--alert-bg); color:var(--alert);
+  padding:.7rem .9rem; margin:.7rem 0 0; border-radius:0 .35rem .35rem 0; font-size:.92rem}
+.good{border-left:3px solid var(--ok-rule); background:var(--ok-bg); color:var(--ok);
+  padding:.7rem .9rem; margin:.7rem 0 0; border-radius:0 .35rem .35rem 0; font-size:.92rem}
+.foot{color:var(--faint); font-size:.82rem; margin-top:2.4rem; border-top:1px solid var(--rule-2);
+  padding-top:1rem}
+b{font-weight:650}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>출시까지 무엇을 해야 하는지 먼저 보시겠어요?</h1>
+  
+  
+  <p class="lede"><span id="몇가지">몇</span> 가지만 답해 주시면 알려 드립니다. 깔지 않아도 됩니다.</p>
+
+  <form id="q"></form>
+  <button id="go" disabled>무엇을 해야 하는지 보기</button>
+
+  <div id="out"></div>
+
+  <p class="foot" id="foot"></p>
+</div>
+
+<script>
+(function(){
+  var TABLE = null, ASK = null;
+  var $ = function(id){ return document.getElementById(id); };
+  var esc = function(s){ var d=document.createElement('div'); d.textContent=s==null?'':String(s);
+                         return d.innerHTML; };
+
+  function 수사(n){
+    var 말 = ['','한','두','세','네','다섯','여섯','일곱','여덟','아홉'];
+    return 말[n] || String(n);
+  }
+  var ASKUI = [
+    {ax:'플랫폼',   q:'어디에 올리시려고요?',   hint:'고르실 수 있는 만큼 고르세요', multi:true,
+     아직: '아직 안 정했다'},
+    {ax:'만드는법', q:'어떻게 만드시려고요?',   hint:'아직 안 정하셨어도 됩니다', multi:false,
+     label:{'전화기에맞게':'네이티브(그 기기에 맞게 직접 만든 앱)',
+            '웹을껍데기에':'웹뷰(앱 안에서 웹사이트를 그대로 보여 주는 화면)',
+            '모름':'아직 모르겠다'}},
+    {ax:'계정종류', q:'누구 이름으로 내시려고요?', hint:'', multi:false,
+     label:{'개인':'제 이름으로', '조직':'회사 이름으로', '아직없음':'아직 모르겠다'}},
+    {ax:'기능',     q:'이런 기능이 들어가나요?', hint:'없으면 비워 두세요', multi:true}
+  ];
+
+  var 홀로값 = [];
+  function 홀로막기(){
+    var es = document.querySelectorAll('#q input[type=checkbox]');
+    for (var i = 0; i < es.length; i++){
+      es[i].addEventListener('change', function(ev){
+        var 나 = ev.target, 이름 = 나.name;
+        if (!나.checked) return;
+        var 같은칸 = document.querySelectorAll('#q input[name=' + 이름 + ']');
+        var 나는홀로 = 홀로값.indexOf(나.value) >= 0;
+        for (var j = 0; j < 같은칸.length; j++){
+          var 다 = 같은칸[j];
+          if (다 === 나) continue;
+          if (나는홀로 || 홀로값.indexOf(다.value) >= 0) 다.checked = false;
+        }
+      });
+    }
+  }
+
+  function draw(){
+    var 몇 = document.getElementById('몇가지');
+    if(몇){ 몇.textContent = 수사(ASKUI.length); }
+    var h = '';
+    ASKUI.forEach(function(it, i){
+      h += '<fieldset><legend>' + esc(it.q) + '</legend>';
+      if(it.hint){ h += '<p class="hint">' + esc(it.hint) + '</p>'; }
+      h += '<div class="opts">';
+      (ASK[it.ax] || []).forEach(function(v, j){
+        var txt = (it.label && it.label[v]) || v;
+        h += '<label class="opt"><input type="' + (it.multi?'checkbox':'radio') + '"'
+           + ' name="a' + i + '" value="' + esc(v) + '"> ' + esc(txt) + '</label>';
+      });
+      if(it.아직){
+        h += '<label class="opt none"><input type="checkbox" name="n' + i + '"> '
+           + esc(it.아직) + '</label>';
+      }
+      h += '</div></fieldset>';
+    });
+    $('q').innerHTML = h;
+    홀로막기();
+    $('q').addEventListener('change', ready);
+    ready();
+  }
+
+  function answers(){
+    var a = {};
+    ASKUI.forEach(function(it, i){
+      var got = [].slice.call(document.querySelectorAll('[name=a'+i+']:checked'))
+                  .map(function(e){ return e.value; });
+      if(it.아직 && 아직고름(i)){ got = []; }
+      a[it.ax] = it.multi ? got : (got[0] || '');
+    });
+    return a;
+  }
+  function 아직고름(i){
+    var e = document.querySelector('[name=n' + i + ']');
+    return !!(e && e.checked);
+  }
+  function 서로끈다(){
+    ASKUI.forEach(function(it, i){
+      if(!it.아직) return;
+      var none = document.querySelector('[name=n' + i + ']');
+      var opts = [].slice.call(document.querySelectorAll('[name=a' + i + ']'));
+      if(!none) return;
+      if(none.checked){ opts.forEach(function(e){ e.checked = false; }); }
+      else if(opts.some(function(e){ return e.checked; })){ none.checked = false; }
+    });
+  }
+  function ready(){
+    서로끈다();
+    var a = answers();
+    var 플랫폼답함 = a['플랫폼'].length > 0 || 아직고름(0);
+    var ok = 플랫폼답함 && ASKUI.every(function(it, i){
+      if (it.multi) return true;
+      return !!a[it.ax];
+    });
+    $('go').disabled = !ok;
+  }
+
+  function key(a){
+    return Object.keys(a).sort().map(function(ax){
+      var v = a[ax];
+      return ax + '=' + (Array.isArray(v) ? v.slice().sort().join('·') : v);
+    }).join('|');
+  }
+
+  function show(){
+    var r = TABLE['표'][key(answers())];
+    if(!r){
+      $('out').innerHTML = '<div class="sec"><p class="warn">이 조합은 <b>세지 못했습니다</b> — '
+        + '「해야 할 일이 없다」는 뜻이 아닙니다. 깔면 알려 드립니다.</p></div>';
+      return;
+    }
+    var gs = TABLE['관문들'], h = '';
+
+    if(r['오늘신청'].length){
+      h += '<div class="sec"><p class="cap">오늘 할 것</p><ul class="rows">';
+      r['오늘신청'].forEach(function(ix){
+        var 모름 = !/^[0-9]+$/.test(gs[ix]['최대']);
+        h += '<li><span class="nm">' + esc(gs[ix]['이름']) + '</span>'
+           + '<span class="dd">' + esc(gs[ix]['말'])
+           + (모름 ? ' · 언제 올지는 깔고 나서 함께 정합니다' : '')
+           + (gs[ix]['확인'] === '원문' ? '' : ' · 저희는 요약만 보았습니다')
+           + '</span></li>';
+      });
+      h += '</ul><p class="good">만드는 동안 같이 진행되니까, 다 만든 뒤에 '
+         + '기다리지 않으셔도 됩니다.</p></div>';
+    } else {
+      h += '<div class="sec"><p class="cap">오늘 할 것</p>'
+         + '<p class="good">오늘 하실 일은 <b>없습니다.</b> 만드는 데만 집중하시면 됩니다'
+         + (r['걸림'].length ? ' — 아래 것들은 <b>낸 뒤에</b> 시작됩니다.' : '.')
+         + '</p></div>';
+    }
+
+    if(r['막힘'].length){
+        h += '<div class="sec"><p class="cap">이 방식으로는 안 되는 것 ' + r['막힘'].length + '가지</p>';
+      r['막힘'].forEach(function(ix){
+        h += '<p class="warn"><b>' + esc(gs[ix]['이름']) + '</b><br>'
+           + '이 방식으로는 <b>출시가 안 됩니다.</b> 기다려서 풀리는 일이 아니라 '
+           + '<b>만드는 방식을 바꾸셔야</b> 합니다.</p>';
+      });
+      h += '</div>';
+    }
+
+    if(r['걸림'].length){
+      var 기다릴것 = r['걸림'].filter(function(ix){ return r['막힘'].indexOf(ix) < 0; });
+      if(기다릴것.length){
+      h += '<div class="sec"><p class="cap">해야 하는 것 ' + 기다릴것.length + '가지</p><ul class="rows">';
+      r['걸림'].forEach(function(ix){
+        var g = gs[ix];
+        if (r['막힘'].indexOf(ix) >= 0) { return; }
+        h += '<li><span class="nm">' + esc(g['이름']) + '</span>'
+           + '<span class="dd">' + esc(g['말']) + (g['시작']==='제출뒤' ? ' · 낸 뒤에 시작됩니다' : '')
+           + '</span>';
+        if(g['확인']==='요약'){
+          h += '<span class="dd">⚠️ 저희는 요약만 보았습니다 — 직접 확인하셔야 합니다</span>';
+        } else if(g['확인']==='미확인'){
+          h += '<span class="dd">⚠️ 저희가 확인하지 않았습니다</span>';
+        }
+        h += '</li>';
+      });
+      h += '</ul></div>';
+      }
+    }
+
+    if(r['못센것']){
+      h += '<div class="sec"><p class="cap">아직 모르는 것 ' + r['못센것'] + '가지</p>'
+         + '<p class="note">여기서는 ' + 수사(ASKUI.length) + ' 가지만 여쭈었습니다. 나머지는 '
+         + '<b>몇 가지를 더 여쭈어야</b> 알 수 있어서 세지 못했습니다 — '
+         + '<b>깔면 전부 알려 드립니다.</b></p></div>';
+    }
+
+    h += '<p class="note">모두 ' + r['총'] + '가지 가운데 <b>' + r['안걸림'] + '가지</b>는 '
+       + '대표님 경우에 <b>안 하셔도 됩니다.</b></p>';
+
+
+    h += '<div class="sec"><p class="warn">' + esc(TABLE['가정']['화면에할말']) + '</p></div>';
+    if (TABLE['범위밖']) h += '<div class="sec"><p class="note">' + esc(TABLE['범위밖']) + '.</p></div>';
+
+    h += '<div class="sec"><p class="note">여기까지가 <b>알려 드리는 것</b>입니다. '
+       + '<b>어떤 순서로 하는지</b>는 깔고 나서 함께 합니다.</p></div>';
+
+    $('out').innerHTML = h;
+    $('out').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  fetch('관문셈.json').then(function(res){ return res.json(); }).then(function(d){
+    TABLE = d; ASK = d['고를수있는값']; 홀로값 = d['홀로고르는값'] || [];
+    draw();
+    $('go').addEventListener('click', function(e){ e.preventDefault(); show(); });
+    $('foot').textContent = '이 답은 저희가 ' + d['만든날'] + ' 에 만든 표로 알려 드린 것입니다. '
+      + '조항 원문과 「저희가 언제 읽었나」는 깔고 나서 보여 드립니다.';
+  }).catch(function(){
+    $('q').innerHTML = '';
+    $('go').style.display = 'none';
+    $('out').innerHTML = '<div class="sec"><p class="warn">지금은 <b>알려 드릴 수 없습니다</b> — '
+      + '「해야 할 일이 없다」는 뜻이 아닙니다. 잠시 뒤에 다시 와 주세요.</p></div>';
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "name": "lovolve",
+  "owner": {
+    "name": "Lovolve",
+    "email": "support@lovolve.app"
+  },
+  "description": "혼자 앱을 내는 창업자를 위한 도구",
+  "plugins": [
+    {
+      "name": "nightflight",
+      "source": ".",
+      "description": "야간비행 — 밖이 안 보여도 계기로 난다",
+      "version": "0.1.0"
+    }
+  ]
+}
