@@ -25,6 +25,8 @@ for f in sorted(glob.glob(os.path.join(sys.argv[1], "*.json"))):
             d = {"걸리나짝": d.get("걸리나짝"), "걸리나": d.get("걸리나"), "못쟀다": d.get("못쟀다")}
         elif n == "now.json" and isinstance(d, dict):
             d = {k: v for k, v in d.items() if k != "updatedAt"}
+        elif n == "piled.json" and isinstance(d, dict):
+            d = {k: v for k, v in d.items() if k != "dict"}
         b = json.dumps(d, ensure_ascii=False, sort_keys=True).encode("utf-8")
     except Exception:
         b = open(f, "rb").read()
@@ -192,25 +194,39 @@ print(" · ".join(names))
 
 MARK="$ST/board.막음"
 TOLD="$ST/board.안내함"
-ALREADY=0
-if [ -n "$SID" ]; then
-  grep -qxF "$SID" "$TOLD" 2>/dev/null && ALREADY=1
-else
-  [ -f "$MARK" ] && ALREADY=1
-fi
-if [ "$AGAIN" = "1" ] || [ "$ALREADY" = "1" ]; then
-  [ "$AGAIN" = "1" ] || exit 0
+RECEIPT="$(shasum "$ST/board.sent" 2>/dev/null | cut -d' ' -f1)"; RECEIPT="${RECEIPT:-없음}"
+nf_told_set() {
+  { awk -F'\t' -v s="$1" '$1!=s' "$TOLD" 2>/dev/null | tail -n 49; printf '%s\t%s\t%s\n' "$1" "$2" "$3"; } > "$TOLD.$$" \
+    && mv -f "$TOLD.$$" "$TOLD"
+}
+nf_warn_once() {
   python3 -I -c '
-import json, sys
+import json
 print(json.dumps({"systemMessage":
   "  ⚠️ 조종석이 기록보다 오래됐습니다 — 이번에는 못 올렸습니다. 「조종석 올려」라고 말씀해 주시면 올립니다."},
   ensure_ascii=False))
-' "$CHANGED"
-  exit 0
-fi
+'
+}
 if [ -n "$SID" ]; then
-  { tail -n 49 "$TOLD" 2>/dev/null; printf '%s\n' "$SID"; } > "$TOLD.$$" && mv -f "$TOLD.$$" "$TOLD"
+  _nf_line="$(awk -F'\t' -v s="$SID" '$1==s{l=$0} END{print l}' "$TOLD" 2>/dev/null)"
+  TSTATE=""; THASH=""
+  if [ -n "$_nf_line" ]; then
+    TSTATE="$(printf '%s' "$_nf_line" | cut -f2 -s)"; THASH="$(printf '%s' "$_nf_line" | cut -f3 -s)"
+    [ -n "$TSTATE" ] || TSTATE="조용"
+  fi
+  [ "$TSTATE" = "조용" ] && exit 0
+  if [ "$AGAIN" = "1" ]; then
+    [ "$TSTATE" = "막음" ] || exit 0
+    [ "$THASH" != "$RECEIPT" ] && exit 0
+    nf_told_set "$SID" 조용 "$RECEIPT"; nf_warn_once; exit 0
+  fi
+  if [ "$TSTATE" = "막음" ] && [ "$THASH" = "$RECEIPT" ]; then
+    nf_told_set "$SID" 조용 "$RECEIPT"; exit 0
+  fi
+  nf_told_set "$SID" 막음 "$RECEIPT"
 else
+  if [ "$AGAIN" = "1" ]; then nf_warn_once; exit 0; fi
+  [ -f "$MARK" ] && exit 0
   : > "$MARK"
 fi
 
@@ -236,11 +252,11 @@ print(json.dumps({
     "`bin/ledger.sh 앱설정 이미한것 <값> 화면` 을 돌리고, 끝나면 그 칸을 "
     "ArtifactData delete 로 지우십시오(지워야 다음에 또 안 옮깁니다).\n"
     "  ④ 올라갔으면 `" + here + "/board_push.sh --올렸다 " + root + "` 를 돌리십시오. "
-    "그래야 다른 대화의 턴 끝이 이 판을 올린 것으로 압니다.\n"
+    "올리시면 다음에 바뀔 때 또 알려 드립니다 — 조종석이 실시간으로 따라옵니다.\n"
     + "" +
     "⛔ 올릴 수 없는 자리(그 도구가 없음)라면 — 클로드가 아닌 도구에서는 흔합니다 — "
     "창업자께 **파일로 된 조종석**을 알려 드리고 넘어가십시오: " + st + "/조종석.html "
-    "(턴 끝마다 다시 지어집니다. 실시간이 아니라 «그때 적은 판»입니다). 이 대화에서는 다시 안 막습니다."
+    "(턴 끝마다 다시 지어집니다. 실시간이 아니라 «그때 적은 판»입니다). 올리지 않으면 이 대화에서는 다시 안 막습니다."
   )}, ensure_ascii=False))
 ' "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)"
 exit 0
