@@ -10,7 +10,7 @@
       "name": "nightflight",
       "source": ".",
       "description": "야간비행 — 밖이 안 보여도 계기로 난다",
-      "version": "0.1.1"
+      "version": "0.1.2"
     }
   ]
 }

@@ -147,7 +147,9 @@ print(json.dumps({
     "(새로 만드는 칸이라 version 을 안 붙입니다) → 끝나면 "
     "`" + here + "/board_push.sh --올렸다 " + root + "`. "
     "칸이 없으면 건너뜁니다 — 조종석이 「아직 기록 없음 · 첫 대화를 하면 채워집니다」로 보입니다.\n"
-    "  ④ 사용자께 한 줄로 알려 드립니다: 조종석을 만들었고 그 주소 — 옆 창에 열어 두면 진행이 보입니다.\n"
+    "  ④ 조종석을 띄웁니다: Artifact open · url <받은 주소> (칸을 다 올린 뒤에 — 빈 판이 먼저 보이지 않게). "
+    "열 수 없는 자리면 건너뜁니다.\n"
+    "  ⑤ 사용자께 한 줄로 알려 드립니다: 조종석을 만들어 열었고 그 주소 — 옆 창에 두면 진행이 보입니다.\n"
     "⛔ 만들 수 없는 자리(그 도구가 없음 · 로그인 안 됨)라면 — 클로드가 아닌 도구에서는 흔합니다 — "
     "사용자께 **파일로 된 조종석**을 알려 드리십시오: " + st + "/조종석.html "
     "(턴 끝마다 다시 지어집니다. 실시간은 아니고 «그때 적은 판»입니다). "
@@ -189,8 +191,15 @@ print(" · ".join(names))
 [ -n "$CHANGED" ] || CHANGED="(전부)"
 
 MARK="$ST/board.막음"
-if [ "$AGAIN" = "1" ] || [ -f "$MARK" ]; then
-  rm -f "$MARK"
+TOLD="$ST/board.안내함"
+ALREADY=0
+if [ -n "$SID" ]; then
+  grep -qxF "$SID" "$TOLD" 2>/dev/null && ALREADY=1
+else
+  [ -f "$MARK" ] && ALREADY=1
+fi
+if [ "$AGAIN" = "1" ] || [ "$ALREADY" = "1" ]; then
+  [ "$AGAIN" = "1" ] || exit 0
   python3 -I -c '
 import json, sys
 print(json.dumps({"systemMessage":
@@ -199,7 +208,11 @@ print(json.dumps({"systemMessage":
 ' "$CHANGED"
   exit 0
 fi
-: > "$MARK"
+if [ -n "$SID" ]; then
+  { tail -n 49 "$TOLD" 2>/dev/null; printf '%s\n' "$SID"; } > "$TOLD.$$" && mv -f "$TOLD.$$" "$TOLD"
+else
+  : > "$MARK"
+fi
 
 python3 -I -c '
 import json, sys
@@ -223,11 +236,11 @@ print(json.dumps({
     "`bin/ledger.sh 앱설정 이미한것 <값> 화면` 을 돌리고, 끝나면 그 칸을 "
     "ArtifactData delete 로 지우십시오(지워야 다음에 또 안 옮깁니다).\n"
     "  ④ 올라갔으면 `" + here + "/board_push.sh --올렸다 " + root + "` 를 돌리십시오. "
-    "그래야 다음 턴에 또 안 멈춥니다.\n"
-    + others +
+    "그래야 다른 대화의 턴 끝이 이 판을 올린 것으로 압니다.\n"
+    + "" +
     "⛔ 올릴 수 없는 자리(그 도구가 없음)라면 — 클로드가 아닌 도구에서는 흔합니다 — "
     "창업자께 **파일로 된 조종석**을 알려 드리고 넘어가십시오: " + st + "/조종석.html "
-    "(턴 끝마다 다시 지어집니다. 실시간이 아니라 «그때 적은 판»입니다). 다음 턴에는 안 막습니다."
+    "(턴 끝마다 다시 지어집니다. 실시간이 아니라 «그때 적은 판»입니다). 이 대화에서는 다시 안 막습니다."
   )}, ensure_ascii=False))
 ' "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)"
 exit 0
