@@ -19,6 +19,8 @@
 6. **`.gitignore` 에서 「기록을 다시 여는 줄」을 꼴로 걷는다.** 이 저장소에서는 그것이
    내용이라 일부러 담지만, 받는 분에게는 **그분의 기록**이다(2026-10-25).
    ⛔ 낱개 이름이 아니라 꼴이다 — 줄이 늘어도 따라온다.
+7. **공개 판과 버전이 같으면 안 모은다**(2026-11-01). 같은 버전으로 올리면 이미 설치한 사람의
+   업데이트가 「이미 최신」으로 끝난다 — 실제로 그렇게 새 판이 안 갔다(`--같은버전` 으로만 넘긴다).
 
 사용:  python3 배포모으기.py <나갈 폴더>
        python3 배포모으기.py <나갈 폴더> --모아
@@ -266,6 +268,21 @@ def main() -> int:
         if 빠짐:
             print("     · 「꼭」인데 없는 것 %d개" % len(빠짐))
         return 1
+
+    if 모아 and "--같은버전" not in sys.argv:
+        import json, urllib.request
+        내버전 = json.loads((뿌리 / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")).get("version", "")
+        try:
+            with urllib.request.urlopen("https://raw.githubusercontent.com/lovolve/nightflight/HEAD/.claude-plugin/plugin.json", timeout=10) as r:
+                공개버전 = json.loads(r.read().decode("utf-8")).get("version", "")
+        except Exception:
+            공개버전 = None
+            print("  ⚠️ 공개 판의 버전을 읽지 못했습니다 — 버전을 올렸는지 직접 보십시오.")
+        if 공개버전 and 공개버전 == 내버전:
+            print("  🔴 **모으지 않았습니다** — 버전이 공개 판과 같습니다(%s)." % 내버전)
+            print("     버전을 올리지 않으면 이미 설치한 사람은 업데이트해도 새 판을 받지 못합니다.")
+            print("     plugin.json 과 marketplace.json 의 버전을 함께 올리십시오.")
+            return 1
 
     갈것 = sorted(f for f, _ in 나감)
     print("=== 받는 사람에게 갈 것 %d개 · 여기 남을 것 %d개 ===" % (len(갈것), len(안나감)))
