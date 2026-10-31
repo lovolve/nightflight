@@ -12,7 +12,7 @@ case "$KIND" in
         exit 1
       fi
     fi
-    if printf '%s' "$NAME" | grep -q '개발'; then
+    if printf '%s' "$NAME" | grep -qE '개발|확인|출시|수정'; then
       _MISS="$(NFTOOLS="$(cd "$NF_PYDIR/../tools" 2>/dev/null && pwd)" python3 -I -c '
 import os, sys
 sys.path.insert(0, os.environ["NFTOOLS"])
@@ -34,6 +34,10 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
         echo "     엮이면 「ledger.sh 영향」, 안 엮이면 「ledger.sh 독립 <기능> <이유>」" >&2
         exit 1
       fi
+    fi
+    if printf '%s' "$NAME" | grep -q '설계'; then
+      _P12="$(awk -F'\t' '$1=="1"||$1=="2"{n++} END{print n+0}' "$(dirname "$STATE")/plan.tsv" 2>/dev/null)"
+      [ "${_P12:-0}" = 0 ] && echo "  ⚠️ 기획 · 검증 표가 비어 있습니다 — 설계로 넘어가지만, 무엇을 왜 만드는지가 조종석에 안 남습니다. 가져오는 앱이면 기획 · 검증에서 정한 것도 채워 주십시오." >&2
     fi
     printf '%s\t단계\t%s\t\t\n' "$(date +%F)" "$NAME" >> "$STATE"
     echo "  · 단계: $NAME"

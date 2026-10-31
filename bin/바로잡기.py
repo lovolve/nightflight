@@ -42,18 +42,25 @@ if 종류 == "겹침":
         줄들 = 읽기(p)
         if not 줄들:
             continue
-        본, 남는, 옮길 = set(), [], []
+        본, 앞, 남는, 옮길 = set(), {}, [], []
         for 줄 in 줄들:
             c = 줄.split("\t")
             if not 줄.strip() or 줄.startswith("#") or (p == 기록 and len(c) > 1 and c[1] == "등록"):
                 남는.append(줄); continue
             k = 키(c)
-            if k in 본:
+            if p == 기록:
+                종 = c[1] if len(c) > 1 else ""
+                겹 = 앞.get(종) == k
+                앞[종] = k
+            else:
+                겹 = k in 본
+                본.add(k)
+            if 겹:
                 옮길.append((os.path.basename(p), 줄))
             else:
-                본.add(k); 남는.append(줄)
+                남는.append(줄)
         if 옮길:
-            쓰기(p, 남는); 옮김(옮길); 합 += len(옮길)
+            옮김(옮길); 쓰기(p, 남는); 합 += len(옮길)
     print("  겹쳐 적은 줄 %d개를 옮겼습니다(처음 적은 것만 남김 · 옮긴 줄은 바로잡은줄.tsv 에 남습니다)." % 합)
     sys.exit(0)
 
@@ -75,5 +82,5 @@ if len(찾음) > 1:
         print("     · " + 줄들[i][:150], file=sys.stderr)
     sys.exit(2)
 줄 = 줄들.pop(찾음[0])
-쓰기(p, 줄들); 옮김([(os.path.basename(p), 줄)])
+옮김([(os.path.basename(p), 줄)]); 쓰기(p, 줄들)
 print("  바로잡았습니다 — 조종석에서 뺐고, 원래 줄은 바로잡은줄.tsv 에 까닭과 함께 남겼습니다.")

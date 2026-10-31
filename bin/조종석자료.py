@@ -560,9 +560,16 @@ for c in rows:
         else:
             _확인방법["분류 못 함"] = _확인방법.get("분류 못 함", 0) + 1
 
+try:
+    _li_s = _ilu.spec_from_file_location("_li", os.path.join(os.environ.get("TOOLS", ""), "lint_import.py"))
+    _li = _ilu.module_from_spec(_li_s); _li_s.loader.exec_module(_li)
+    _가져오기 = _li.진행()
+except Exception:
+    _가져오기 = None
 w("now.json", {"stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
                  .isoformat(timespec="seconds").replace("+00:00", "Z"),
                "앱이름": _appname, "폴더": _folder,
+               "가져오기": _가져오기,
                "stage": stage, "stageLabel": stage_label,
                "decisions": len(decisions), "broken": sum(1 for x in decisions if x["broken"]),
                "blocks": len(blocks), "ask": card,

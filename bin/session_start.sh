@@ -30,10 +30,6 @@ IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || tr
 
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
 nf_registered || { printf '%s' "$IN" >/dev/null; exit 0; }
-if ! awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_PERSON" 2>/dev/null; then
-  mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
-  printf '%s\t프로젝트\t%s\t%s\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" "$(nf_bundleid 2>/dev/null | tr -d '[:space:]')" >> "$NF_PERSON" 2>/dev/null
-fi
 _nf_kan="$NF_HOME/이용권.json"
 if [ ! -f "$_nf_kan" ] || [ -n "$(find "$_nf_kan" -mmin +60 2>/dev/null)" ]; then
   if nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; then printf '%s\n' "$NF_KAN_ANSWER" > "$_nf_kan" 2>/dev/null
@@ -58,10 +54,16 @@ bash "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 || true
 
 if ! { nf_dev 2>/dev/null && [ -n "${NF_PID:-}" ]; }; then NF_PID="$(nf_personid 2>/dev/null | tr -d "[:space:]")"; fi
 NF_MPRINT="$(nf_macprint 2>/dev/null | tr -d "[:space:]")"
-NF_BID="$(nf_bundleid 2>/dev/null | tr -d "[:space:]")"
+NF_BID="$(nf_productid 2>/dev/null | tr -d "[:space:]")"
 NF_DEV="$(nf_dev 2>/dev/null && printf 1 || printf 0)"
 NF_CALL="$(awk -F'\t' '$2=="호칭"{v=$3; s=1} END{if (s) print v}' "$NF_PERSON" 2>/dev/null | tr -d '\000-\037\177')"
 printf '%s' "$IN" | NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/열쇠상태" \
   NF_MPRINT="$NF_MPRINT" NF_BID="$NF_BID" NF_DEV="$NF_DEV" NF_CALL="$NF_CALL" \
-  NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
+  NF_HOME="$NF_HOME" NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
+if [ -f "$NF_HOME/이용권.새로" ]; then
+  rm -f "$NF_HOME/이용권.새로"
+  if ! { nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; }; then
+    ( _a="$(bash "$HERE/열쇠.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$NF_HOME/이용권.json.$$" && mv -f "$NF_HOME/이용권.json.$$" "$NF_HOME/이용권.json" ) >/dev/null 2>&1 &
+  fi
+fi
 exit 0

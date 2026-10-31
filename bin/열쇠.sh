@@ -20,7 +20,7 @@ GARBLED="$(두말 "서버가 뜻 모를 답을 보냈습니다. 잠시 뒤에 �
     printf '  %s\n' "$(cat "$STATEFILE")"
     echo "  ⚠️ $(두말 "이건 마지막으로 넣었을 때 받은 말입니다. 지금 맞는지는 서버가 정합니다." "This is the status from when you last entered your key. Your current status may differ.")"
   else
-    echo "  $(두말 "아직 라이선스 키를 안 넣으셨습니다." "No license key entered yet.")"
+    echo "  $(두말 "아직 이 컴퓨터를 켜지 않으셨습니다. 결제하셨으면 결제하신 메일 주소를 대화창에 알려 주십시오." "This computer isn't set up yet. If you've paid, tell this chat the email you paid with.")"
   fi
 }
 
@@ -37,6 +37,10 @@ for m in d.get("맥들") or []:
     번호, 등록, 마지막, mid = m.get("번호"), str(m.get("등록일") or "")[:10], str(m.get("마지막날") or "")[:10], str(m.get("id") or "")
     print(("    · Computer %s — added %s · last used %s  [%s]" if en else "    · %s번 컴퓨터 — 등록 %s · 마지막으로 쓴 날 %s  [%s]") % (번호, 등록 or "?", 마지막 or "?", mid))
 ' 2>/dev/null; }
+정상답() { NF_ANS="$1" python3 -I -c 'import json,os,sys
+try: d=json.loads(os.environ["NF_ANS"])
+except Exception: sys.exit(1)
+sys.exit(0 if isinstance(d, dict) and "있나" in d else 1)' 2>/dev/null; }
 CODE="${1-}"
 키읽기() { local v=""; IFS= read -r v || true; printf '%s' "$v" | tr -d '[:space:]'; }
 [ "$CODE" = "-" ] && CODE="$(키읽기)"
@@ -131,11 +135,13 @@ sys.exit(0 if ("확인번호" in d or re.search(r"(?<!\d)\d{6}(?!\d)", 글)) els
     exit 0 ;;
   칸읽기)
     ANSWER="$(서버 내이용권 "$(몸 p_사람id "$PERSONID" p_맥지문 "$MACPRINT")")" || exit 4
+    정상답 "$ANSWER" || exit 4
     printf '%s\n' "$ANSWER"
     exit 0 ;;
   보기)
     ANSWER="$(서버 내이용권 "$(몸 p_사람id "$PERSONID" p_맥지문 "$MACPRINT")")" || 못닿음
     [ -n "$ANSWER" ] || 못닿음
+    정상답 "$ANSWER" || 못닿음
     ANSWER="$ANSWER" NFL="$NFL" python3 -I - <<'PY'
 import json, os
 d = json.loads(os.environ["ANSWER"])
@@ -166,28 +172,34 @@ for a in 앱 + 접은:
 PY
     exit 0 ;;
   등급)
-    NEW="${2:?라이트나 플러스 중 하나를 적어 주십시오}"; KEY="${3-}"
+    NEW="${2:?라이트나 플러스 중 하나를 적어 주십시오}"; KEY="${3-}"; KEEP=""
+    if [ "$KEY" = "남길" ]; then KEEP="${4:?남길 제품을 쉼표로 적어 주십시오}"; KEY=""
+      case "$KEEP" in *[!a-z0-9.,-]*) echo "$(두말 "남길 제품은 목록에 나온 제품 번호를 쉼표로 이어 적어 주십시오." "List the products to keep, comma-separated, as shown.")" >&2; exit 1 ;; esac
+    fi
     case "$NEW" in 라이트|헤비|플러스|lite|Lite|plus|Plus|heavy|Heavy) ;;
       *) echo "$(두말 "라이트나 플러스 중 하나로 말씀해 주십시오." "Please choose Lite or Plus.")" >&2; exit 1 ;; esac
     [ "$KEY" = "-" ] && KEY="$(키읽기)"
     if [ -n "$KEY" ]; then
       키꼴 "$KEY" || 꼴틀림
       ANSWER="$(결제 %EB%93%B1%EA%B8%89 "$(몸 사람id "$PERSONID" 맥지문 "$MACPRINT" 키 "$KEY" 등급 "$NEW" 언어 "$NFL")")" || 못닿음
+    elif [ -n "$KEEP" ]; then
+      ANSWER="$(결제 %EB%93%B1%EA%B8%89 "$(몸 사람id "$PERSONID" 맥지문 "$MACPRINT" 등급 "$NEW" 언어 "$NFL" 남길 "$KEEP" \
+        | python3 -I -c 'import json,sys; d=json.load(sys.stdin); d["남길"]=[x for x in d["남길"].split(",") if x][:2]; print(json.dumps(d, ensure_ascii=False))')")" || 못닿음
     else
       ANSWER="$(결제 %EB%93%B1%EA%B8%89 "$(몸 사람id "$PERSONID" 맥지문 "$MACPRINT" 등급 "$NEW" 언어 "$NFL")")" || 못닿음
     fi
     [ -n "$ANSWER" ] || 못닿음
     서버말 "$ANSWER"
     if printf '%s' "$ANSWER" | grep -q '"앱들"' && printf '%s' "$ANSWER" | grep -q '"된다" *: *false'; then
-      echo "  [모델] 위 목록을 사용자에게 보여 드리고 «계속 쓰실 2개»(무료 제품 1개는 따로 그대로)를 고르시게 하십시오. 답을 들은 뒤에만:"
-      echo "  [모델]  고르지 않은 제품마다 $0 앱빼기 <제품 번호> 확인 → 다 비우면 $0 등급 라이트 를 다시 부르십시오."
+      echo "  [모델] 위 목록을 사용자에게 보여 드리고 «계속 쓰실 유료 제품 2개까지»(무료 제품 1개는 따로 그대로)를 고르시게 하십시오. 답을 들은 뒤에만:"
+      echo "  [모델]  $0 등급 라이트 남길 <고른 제품>[,<고른 제품>] — 고르지 않은 제품은 기다림 없이 빠집니다(하나씩 풀면 다시 넣을 때 30일을 기다립니다)."
     fi
     exit 0 ;;
   앱빼기)
     BID="${2:?비울 제품 번호를 적어 주십시오 — 「열쇠.sh 보기」에 나옵니다}"
     if [ "${3-}" != "확인" ]; then
       echo "  $(두말 "이 제품의 제품등록을 풀려고 합니다: $BID" "About to remove this product from your plan's product count: $BID")"
-      echo "  $(두말 "설계를 시작하고 7일 안이면 제품등록이 돌아옵니다. 7일이 지났으면 제품만 접히고 제품등록은 그대로 남습니다. 푸시겠습니까?" "Within 7 days of design start the registration comes back; after that the product is folded but still counts. Release it?")"
+      echo "  $(두말 "풀면 그 자리가 바로 돌아옵니다. 같은 제품을 다시 넣는 것은 30일 뒤입니다(한 달에 한 번은 바로 됩니다). 무료 제품은 30일에 한 번 바꿀 수 있습니다. 푸시겠습니까?" "The slot comes back right away. Re-adding the same product waits 30 days (once a month it's immediate). The free product can be switched once every 30 days. Release it?")"
       echo "  [모델] 사람이 그러라고 하면: 열쇠.sh 앱빼기 $BID 확인 — 사람이 답하기 전에는 부르지 마십시오"
       exit 0
     fi

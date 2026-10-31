@@ -69,13 +69,36 @@ def _우리것걷기(기존: str) -> str:
     return "\n".join(줄[:자름]).rstrip("\n")
 
 
+def _링크걷기(집: Path) -> None:
+    """🔴 2026-10-29 서버 레드팀 17회차 ④ — 기록 폴더 자신 · 그 안 두 층의 바로가기를 걷는다(링크만).
+    남기는 것: tools/ 안 도구 바로가기 · 이 플러그인을 가리키는 것. ⛔ 같은 규칙: bin/project-root.sh"""
+    import os
+    plug = str(Path(__file__).resolve().parent.parent)
+    try:
+        if 집.is_symlink():
+            집.unlink()
+            return
+        for 첫 in list(집.iterdir()):
+            후보 = [첫] + (list(첫.iterdir()) if 첫.is_dir() and not 첫.is_symlink() else [])
+            for l in 후보:
+                if not l.is_symlink() or l.parent.name == "tools" and l.parent.parent == 집:
+                    continue
+                if os.readlink(l).startswith(plug + os.sep):
+                    continue
+                l.unlink()
+    except OSError:
+        pass
+
+
 def state_dir(create: bool = False) -> Path:
     """기록이 사는 디렉터리. 이미 있는 것을 쓰고, 없으면 첫 번째를 만든다."""
     r = root()
     for d in _DIRS:
         p = r / d
         if p.is_dir() and (d != ".claude" or (p / "ledger.tsv").is_file()):
-            return p
+            _링크걷기(p)
+            if p.is_dir():
+                return p
     p = r / _DIRS[0]
     if create:
         p.mkdir(parents=True, exist_ok=True)

@@ -26,7 +26,7 @@ fi
 
 PERSONID="$(nf_personid | tr -d '[:space:]')"
 MACPRINT="$(nf_macprint 2>/dev/null | tr -d '[:space:]')"
-BUNDLEID="$(nf_bundleid 2>/dev/null | tr -d '[:space:]')"
+BUNDLEID="$(nf_productid 2>/dev/null | tr -d '[:space:]')"
 
 BODY="$(NF_B_PID="$PERSONID" NF_B_STAGE="$STAGE" NF_B_KIND="$KIND" NF_B_MAC="$MACPRINT" NF_B_BUNDLE="$BUNDLEID" python3 -I -c 'import json,os; e=os.environ; print(json.dumps({"사람id":e["NF_B_PID"],"어느단계":int(e["NF_B_STAGE"]),"무엇을물었나":e["NF_B_KIND"][:40],"맥지문":e["NF_B_MAC"],"번들id":e["NF_B_BUNDLE"]}, ensure_ascii=False))')"
 

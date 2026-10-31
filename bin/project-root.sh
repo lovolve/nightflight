@@ -64,12 +64,49 @@ if [ -d "$NF_ROOT/.nightflight" ]; then NF_STATE="$NF_ROOT/.nightflight"
 elif [ -f "$NF_ROOT/.claude/ledger.tsv" ]; then NF_STATE="$NF_ROOT/.claude"
 fi
 [ -n "$NF_STATE" ] || NF_STATE="$NF_ROOT/.nightflight"
+_nf_plug="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd -P)"
+[ -L "$NF_STATE" ] && rm -f "$NF_STATE" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더가 다른 곳을 가리키는 바로가기여서 걷었습니다(그 자리에 쓰게 될 수 있었습니다)." >&2
+if [ -d "$NF_STATE" ]; then
+  while IFS= read -r _nf_l; do
+    case "$_nf_l" in "$NF_STATE"/tools/*) continue ;; esac
+    case "$(readlink "$_nf_l" 2>/dev/null)" in "$_nf_plug"/*) continue ;; esac
+    rm -f "$_nf_l" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더 안의 바로가기를 걷었습니다(저장소 밖에 쓰게 될 수 있었습니다): ${_nf_l#"$NF_ROOT"/}" >&2
+  done < <(find "$NF_STATE" -maxdepth 2 -type l 2>/dev/null)
+  unset _nf_l
+fi
 
-nf_registered() { [ -f "$NF_STATE/ledger.tsv" ]; }
+nf_registered_at() {
+  [ -n "${1:-}" ] || return 1
+  if [ -n "${NF_TEST_REG_BY_LEDGER:-}" ] && nf_dev 2>/dev/null; then
+    { [ -f "$1/.nightflight/ledger.tsv" ] || [ -f "$1/.claude/ledger.tsv" ]; } && return 0
+  fi
+  awk -F'\t' -v r="$1" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_HOME/사람.tsv" 2>/dev/null
+}
+nf_registered() { nf_registered_at "$NF_ROOT"; }
+
+nf_productid() {
+  if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi
+  local p="$NF_HOME/사람.tsv" v n
+  nf_registered || return 0
+  v="$(awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{v=$4} END{print v}' "$p" 2>/dev/null | tr -d '[:space:]')"
+  if printf '%s' "$v" | grep -qE '^[a-z0-9][a-z0-9.-]{1,154}$'; then printf '%s' "$v"; return; fi
+  n="p-$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+  [ "${#n}" -eq 18 ] || return 0
+  awk -F'\t' -v OFS='\t' -v r="$NF_ROOT" -v n="$n" '$2=="프로젝트"&&$3==r{$4=n; while (NF<6) $(NF+1)=""} {print}' "$p" > "$p.$$" 2>/dev/null \
+    && mv -f "$p.$$" "$p" && printf '%s' "$n"
+}
 
 NF_GI_MARK="야간비행이 더한 줄"
 NF_GI_MARK2="야간비행이 더한 줄 (2)"
 
+nf_not_product_root() {
+  local r="${1:-$NF_ROOT}"
+  case "$r" in
+    "$HOME"|"$HOME/"|"$HOME/Desktop"|"$HOME/Documents"|"$HOME/Downloads"|"$HOME/Library"|"$HOME/Library/"*|/|/tmp|/tmp/*|/private/tmp|/private/tmp/*) return 0 ;;
+  esac
+  [ -f "$r/.claude-plugin/plugin.json" ] && [ ! -f "$r/.nightflight-dev" ] && return 0
+  return 1
+}
 nf_state_make() {
   mkdir -p "$NF_STATE" 2>/dev/null || return 1
   if [ -f "$NF_ROOT/.claude-plugin/plugin.json" ] && [ -f "$NF_ROOT/.nightflight-dev" ] \

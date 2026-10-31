@@ -35,7 +35,7 @@ fi
 
 . "$(dirname "$0")/project-root.sh"
 REPO="$NF_ROOT"
-[ -f "$NF_STATE/ledger.tsv" ] || exit 0
+nf_registered || exit 0
 
 TOUCHED="$NF_STATE/repeat-guard.tsv"
 RUN_LINTS=1
@@ -124,7 +124,13 @@ run_dev lint_gate_bias.py      "공개 출시 절차 표가 원문보다 쉽게 
 run_dev lint_vague_words.py    "제가 지어낸 불명확한 말이 사용자 쪽에 있나" -
 run_one lint_screen_label.py   "조종석에 나가는 줄에 화면 문구·종류가 있나"   -
 run_one lint_screen_spec.py    "화면 흐름의 화면마다 «언제 보나»·«하는 일»이 적혀 있나"   -
+_nf_run_was="$RUN_LINTS"
+if [ "$RUN_LINTS" != 1 ] && [ -f "$NF_STATE/가져오기.tsv" ] \
+   && [ -n "$(find "$NF_STATE/가져오기.tsv" "$NF_STATE/ledger.tsv" "$NF_STATE/plan.tsv" "$NF_STATE/screens.tsv" -mmin -120 2>/dev/null | head -1)" ]; then
+  RUN_LINTS=1
+fi
 run_one lint_import.py         "개발 중간에 깐 앱이면 조종석 칸을 다 가져왔나(가져왔음 · 이 앱엔 없음 · 아직)"   -
+RUN_LINTS="$_nf_run_was"
 run_dev lint_screen_words.py   "화면에 목록에 없는 새 말이 생겼나" -
 run_dev lint_shell_hangul.py   "셸에 한글 변수 이름이 있나"                   -
 run_dev lint_python_isolated.py "파이썬을 글로 넘길 때 열린 폴더를 끊었나"      -

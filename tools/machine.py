@@ -100,13 +100,25 @@ def 느린값(새로=False) -> dict:
 
 
 def 잰다(느린것도=True) -> dict:
-    압박 = _n(_run(["sysctl", "-n", "kern.memorystatus_vm_pressure_level"]), 1)
+    압박 = _n(_run(["sysctl", "-n", "kern.memorystatus_vm_pressure_level"]))
     스왑글 = _run(["sysctl", "-n", "vm.swapusage"])
     m = re.search(r"used\s*=\s*([\d.]+)M", 스왑글)
     스왑쓴 = float(m.group(1)) if m else None
     디스크 = "/System/Volumes/Data" if os.path.isdir("/System/Volumes/Data") else "/"
-    빈GB = _n(_run(["df", "-g", 디스크]).splitlines()[1] .split()[3]) if _run(["df", "-g", 디스크]) else None
-    쓴비율 = _n(next((c for c in _run(["df", "-H", 디스크]).splitlines()[1].split() if c.endswith("%")), ""))
+    def _df줄(*옵션):
+        줄 = _run(["df", *옵션, 디스크]).splitlines()
+        return 줄[1].split() if len(줄) > 1 else []
+    _g = _df줄("-g")
+    빈GB = _n(_g[3]) if len(_g) > 3 else None
+    쓴비율 = _n(next((c for c in _df줄("-H") if c.endswith("%")), ""))
+    if 빈GB is None or 쓴비율 is None:
+        try:
+            import shutil
+            _du = shutil.disk_usage(디스크)
+            빈GB = 빈GB if 빈GB is not None else int(_du.free / 1024 ** 3)
+            쓴비율 = 쓴비율 if 쓴비율 is not None else (int(round(_du.used * 100 / (_du.used + _du.free))) if (_du.used + _du.free) else None)
+        except Exception:
+            pass
     유령수, 유령MB = _유령()
     d = {
         "압박": 압박,

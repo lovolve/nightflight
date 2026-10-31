@@ -15,7 +15,7 @@
   ledger.sh 가져오기                      칸마다 지금 상태
   python3 tools/lint_import.py            대화 끝 검사 — 시작했는데 «아직»이 남았으면 알린다
 """
-import sys
+import re, sys
 from datetime import date
 from pathlib import Path
 
@@ -36,6 +36,8 @@ import _root
     ("정한 것",         ("기록", "결정"),          'ledger.sh 결정 "<정한 것>" "<근거 — 문서 · 커밋>" "<다시 볼 조건>"'),
     ("만드는 법",       ("기록", "표준"),          'ledger.sh 표준 "<방식>" "<어느 파일>" 코드 "<기능>"'),
     ("출시 절차 질문",   ("앱설정", "플랫폼|돈받기|기능"), 'ledger.sh 앱설정 <플랫폼|돈받기|기능> "<값>" 코드'),
+    ("출시 상태",       ("앱설정", "출시상태"),     'ledger.sh 앱설정 출시상태 "<출시 전 | 심사 중 | 출시함 — 근거: 스토어 주소 · 출시 커밋>" 코드'),
+    ("읽은 문서",       ("앱설정", "읽은문서"),     'ledger.sh 앱설정 읽은문서 "<README · CLAUDE.md · docs/… — 문서마다 정한 것 n건>" 코드'),
 ]
 
 
@@ -81,6 +83,8 @@ def 센다():
     for 이름, (어디, 무엇), 명령 in 칸들:
         if 어디 == "기록":
             n = sum(1 for c in 줄 if len(c) > 1 and c[1] in 무엇.split("|"))
+            if 이름 == "지금 단계":
+                n = sum(1 for c in 줄 if len(c) > 2 and c[1] == "단계" and "진단" not in c[2])
         elif 어디 == "앱설정":
             n = sum(1 for c in 줄 if len(c) > 2 and c[1] == "앱설정" and c[2] in 무엇.split("|"))
             if 이름 == "제품 이름" and not n:
@@ -91,7 +95,10 @@ def 센다():
             n = sum(1 for c in plan줄 if len(c) > 5 and c[5].startswith("설치 전"))
         else:
             n = 화면수 or (1 if 화면없음 else 0)
-        if n:
+        if n and 이름 == "화면 흐름" and not 화면없음:
+            후보 = _화면파일수()
+            out.append((이름, "일부만" if 후보 and n * 2 < 후보 else "가져왔음", n, 명령))
+        elif n:
             out.append((이름, "가져왔음", n, 명령))
         elif 이름 in 없음:
             out.append((이름, "없음", 없음[이름], 명령))
@@ -146,19 +153,73 @@ def _커밋수():
         return 0
 
 
+코드파일문턱 = 5
+_코드끝 = (".swift", ".kt", ".java", ".ts", ".tsx", ".js", ".jsx", ".dart", ".py", ".vue", ".svelte")
+_안봄 = {".git", "node_modules", "Pods", "DerivedData", "build", ".build", "dist", ".next", ".venv", "venv", ".nightflight", ".claude"}
+
+
+def _코드파일수():
+    import os
+    뿌리 = str(_root.state_dir().parent)
+    n = 0
+    for dp, dn, fn in os.walk(뿌리):
+        dn[:] = [d for d in dn if d not in _안봄]
+        if dp[len(뿌리):].count(os.sep) >= 4:
+            dn[:] = []
+        n += sum(1 for f in fn if f.endswith(_코드끝))
+        if n >= 코드파일문턱:
+            break
+    return n
+
+
+_화면끝 = re.compile(r"(View|Screen|Page)\.(swift|kt|tsx|jsx|dart|vue)$|^page\.(tsx|jsx)$")
+
+
+def _화면파일수():
+    """코드에서 «화면»으로 보이는 파일 수 — 이름이 …View · …Screen · …Page 이거나 page.tsx 인 것(대략이다 · 못 세면 0)."""
+    import os
+    try:
+        뿌리 = str(_root.state_dir().parent)
+    except Exception:
+        return 0
+    n = 0
+    for dp, dn, fn in os.walk(뿌리):
+        dn[:] = [d for d in dn if d not in _안봄]
+        if dp[len(뿌리):].count(os.sep) >= 6:
+            dn[:] = []
+        n += sum(1 for f in fn if _화면끝.search(f) and not f.startswith(("Preview", "Base")))
+    return n
+
+
+def 진행():
+    """조종석 «가져오기» 줄이 그릴 것 — 같은 셈을 두 곳에서 하지 않게 이 함수 하나가 준다(bin/조종석자료.py 가 받아 싣는다).
+    보일까: 가져오기를 시작했거나 코드가 쌓인 앱이고, 아직 · 일부만인 칸이 남았을 때만(다 끝나면 줄이 사라진다)."""
+    시작함 = bool(표지()["시작"])
+    대상 = 시작함 or _커밋수() >= 커밋문턱 or _코드파일수() >= 코드파일문턱
+    칸 = []
+    for 이름, 상태, 값, _ in 센다():
+        칸.append({"이름": 이름, "상태": 상태, "수": 값 if isinstance(값, int) else None,
+                  "이유": 값 if 상태 == "없음" else "",
+                  "후보": _화면파일수() if 이름 == "화면 흐름" and 상태 in ("가져왔음", "일부만") else None})
+    남 = sum(1 for c in 칸 if c["상태"] in ("아직", "일부만"))
+    return {"보일까": bool(대상 and 남), "전체": len(칸), "끝": sum(1 for c in 칸 if c["상태"] in ("가져왔음", "없음")),
+            "남": 남, "칸": 칸}
+
+
 def main():
     시작함 = bool(표지()["시작"])
-    if not 시작함 and _커밋수() < 커밋문턱:
+    if not 시작함 and _커밋수() < 커밋문턱 and _코드파일수() < 코드파일문턱:
         return 0
-    남 = [x for x in 센다() if x[1] == "아직"]
+    남 = [x for x in 센다() if x[1] in ("아직", "일부만")]
     if not 남:
         return 0
     if 시작함:
         print(f"  🔴 개발 중간에 깐 앱인데 조종석 칸 {len(남)}개를 아직 가져오지 않았습니다 — 코드에서 찾아 채우거나, 없으면 «없음»을 이유와 함께 적으십시오")
     else:
         print(f"  🔴 코드가 쌓인 앱인데 조종석 칸 {len(남)}개가 비어 있습니다 — «가져오기» 스킬대로 `ledger.sh 가져오기 시작` 으로 적고 코드에서 찾아 채우거나, 없으면 «없음»을 이유와 함께 적으십시오")
-    for 이름, _, _, 명령 in 남:
-        print(f"     · {이름} → {명령}  |  없으면: ledger.sh 가져오기 없음 \"{이름}\" \"<이유>\"")
+    for 이름, 상태, n, 명령 in 남:
+        덧 = f" (일부만 — {n}개 적힘 · 코드의 화면 파일 {_화면파일수()}개)" if 상태 == "일부만" else ""
+        print(f"     · {이름}{덧} → {명령}  |  없으면: ledger.sh 가져오기 없음 \"{이름}\" \"<이유>\"")
     return 1
 
 

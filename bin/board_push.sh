@@ -117,7 +117,7 @@ if [ -z "$URL" ]; then
   [ "$PROOT" = "$(cd "$HOME" && pwd)" ] && exit 0
   [ "$PROOT" = "$(cd "$HERE/.." && pwd)" ] && exit 0
   PST="$(nf_state_of "$PROOT")"
-  [ -f "$PST/ledger.tsv" ] || exit 0
+  NIGHTFLIGHT_PROJECT_DIR="$PROOT" CLAUDE_PROJECT_DIR="$PROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
   if [ -d "$PST" ]; then
     ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
     python3 "$HERE/../tools/조종석파일.py" "$PROOT" >/dev/null 2>&1 || true

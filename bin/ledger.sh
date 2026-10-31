@@ -39,11 +39,12 @@ fi
 STATE="$NF_STATE/ledger.tsv"
 _nf_cmd="${1:-show}"
 _nf_was_reg=""; nf_registered && _nf_was_reg=1
-if [ -n "$_nf_was_reg" ] || [ "$_nf_cmd" = 등록 ]; then
+if [ -n "$_nf_was_reg" ] || { [ "$_nf_cmd" = 등록 ] && ! nf_not_product_root; }; then
   nf_state_make 2>/dev/null || mkdir -p "$(dirname "$STATE")"
 else
   case "$_nf_cmd" in
     호칭|낱말묻기|아는낱말|아는말인가|풀어쓸말|낱말올림|사전예방|-h|--help|help|도움말) ;;
+    등록) ;;
     show) echo "  이 폴더는 아직 야간비행에 등록되지 않았습니다 — 기록이 없습니다."
           echo "  [모델] 사용자가 «야간비행에 등록해» 같은 말을 하면 그때 ledger.sh 등록 을 부르십시오."
           exit 0 ;;

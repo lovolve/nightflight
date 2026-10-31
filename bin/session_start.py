@@ -184,60 +184,64 @@ if _들고올것():
         import urllib.request, urllib.parse, uuid
 
         _프록시막음 = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-        def 서버에묻기(사람id, 요청id, 열쇠상태):
+        _단계 = now.get("stage") if isinstance(now, dict) and isinstance(now.get("stage"), int) and 0 <= now.get("stage") <= 8 else None
+        def 서버에묻기(사람id, 요청id, 열쇠상태, 단계=None):
             키 = os.environ.get("NF_DOORKEY", "")
+            몸 = {"p_사람id": 사람id, "p_요청id": 요청id, "p_열쇠상태": 열쇠상태,
+                  "p_맥지문": os.environ.get("NF_MPRINT") or None,
+                  "p_번들id": os.environ.get("NF_BID") or None}
+            if 단계 is not None:
+                몸["p_단계"] = 단계
             req = urllib.request.Request(
                 urllib.parse.quote(os.environ.get("NF_CARRY_URL", ""), safe=":/?=&"),
-                data=json.dumps({"p_사람id": 사람id, "p_요청id": 요청id, "p_열쇠상태": 열쇠상태,
-                                 "p_맥지문": os.environ.get("NF_MPRINT") or None,
-                                 "p_번들id": os.environ.get("NF_BID") or None}).encode("utf-8"),
+                data=json.dumps(몸).encode("utf-8"),
                 headers={"apikey": 키, "Authorization": "Bearer " + 키, "Content-Type": "application/json"},
                 method="POST")
             with _프록시막음.open(req, timeout=4) as r:
                 return json.loads(r.read().decode("utf-8"))
 
+        _열 = "넣음" if os.path.isfile(os.environ.get("NF_KEYFILE", "")) else "없음"
         try:
-            문 = 서버에묻기(os.environ.get("NF_PID", ""), str(uuid.uuid4()),
-                          "넣음" if os.path.isfile(os.environ.get("NF_KEYFILE", "")) else "없음")
+            문 = 서버에묻기(os.environ.get("NF_PID", ""), str(uuid.uuid4()), _열, _단계)
         except Exception:
-            문 = {"확인": "못함"}
+            try:
+                문 = 서버에묻기(os.environ.get("NF_PID", ""), str(uuid.uuid4()), _열) if _단계 is not None else {"확인": "못함"}
+            except Exception:
+                문 = {"확인": "못함"}
 
-if isinstance(문, dict) and 문.get("된다") is False and 문.get("확인") != "못함":
-    코드 = 문.get("거절코드") or "미결제"
-    덧 = ""
-    if 코드 == "앱칸참":
-        왜 = "플랜의 유료 제품등록(%s개)을 다 써서" % (문.get("칸수") or "")
-        알림 = ("플랜의 제품등록을 다 써서 이번 대화는 이전 기록 없이 시작합니다. "
-                "플러스 플랜으로 바꾸시거나, 설계를 시작하고 7일이 안 된 제품의 제품등록을 푸시면 이어집니다.")
-    elif 코드 == "메일확인필요":
-        왜 = "무료 제품을 쓰려면 처음 한 번 메일 확인이 필요해서"
-        알림 = ("무료 제품을 쓰시려면 처음 한 번 메일 확인이 필요합니다. 메일 주소를 알려 주시면 확인 코드를 보내 드립니다"
-                "(비밀번호는 없습니다). 결제하셨으면 결제하신 메일 주소를 알려 주시면 플랜이 켜집니다.")
-        덧 = (" 사용자가 메일 주소를 말하면 `printf '%s\\n' <메일> | " + os.path.join(os.environ.get("HERE", ""), "열쇠.sh")
-              + " 무료메일` 로 보내고 돌아온 말을 그대로 전하십시오. 사용자가 메일로 받은 여섯 자리 코드를 말하면 `printf '%s\\n' <코드> | " + os.path.join(os.environ.get("HERE", ""), "열쇠.sh") + " 무료코드` 로 넣고, 돌아온 말을 그대로 전하십시오.")
-    elif 코드 == "만료":
-        왜 = "이용권 기간이 끝나서"
-        알림 = "이용권 기간이 끝나 이번 대화는 이전 기록 없이 시작합니다. 갱신하시면 이어집니다."
-    else:
-        왜 = "이 제품이 이 컴퓨터의 무료 제품(%s)이 아니라서" % (문.get("무료앱") or "")
-        알림 = ("무료로 제품 1개가 이미 등록돼 있습니다. "
-                "이 제품도 쓰시려면 이용권이 필요합니다.")
-    print(json.dumps({"hookSpecificOutput": {
-        "hookEventName": "SessionStart",
-        "additionalContext":
-            "야간비행: " + head + ". " + 왜 + " 이번 대화에는 이전 기록"
-            "(정해진 것 · 표준 방식 · 해 봤는데 안 된 것 · 하던 일)을 불러오지 않았습니다. "
-            "첫 답에서 사용자에게 한 줄로 알리십시오: «" + 알림 + "»" + 덧 + " "
-            "⛔ 이전 기록을 모르는 상태입니다 — 이미 정해진 것을 다시 제안하거나 막힌 길을 다시 갈 수 있으니, "
-            "정하기 전에 사용자에게 확인하십시오." + "\n\n" + 쓰기규칙}}, ensure_ascii=False))
-    sys.exit(0)
 
 say("야간비행 — **들고 있는 것**을 돌려드립니다. " + head + ".")
+if src in ("startup", "") and isinstance(now, dict) and now.get("stage") is None:
+    say("⭐ **아직 진단 전입니다.** 사용자 첫 말에 답하면서 먼저 «0-진단»으로 이 맥을 점검하고(질문 없이), 본 것을 한 줄로 말씀드린 뒤 `ledger.sh 단계 \"0. 진단\"` 으로 적으십시오. "
+        "이미 만들던 제품이면(커밋 · 화면 파일 · 기획 메모가 있으면) 진단 뒤 «가져오기» 스킬대로 조종석 칸을 코드에서 채우십시오(`ledger.sh 가져오기 시작`).")
 if isinstance(문, dict) and 문.get("까닭") == "무료앱등록":
     say("⭐ 이 제품이 이 컴퓨터의 **무료 제품**으로 등록됐습니다(컴퓨터 한 대에 1개 · 구독과 상관없이 계속).")
     say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 제품을 무료 제품으로 등록했습니다. 플랜이 없거나 구독이 끝나도 이 제품은 계속 쓰실 수 있습니다.»")
 elif isinstance(문, dict) and 문.get("확인") == "못함":
     say("⚠️ 이용권을 서버에서 확인하지 못해 이번에는 그대로 불러왔습니다(막지 않습니다).")
+_등 = 문.get("제품등록") if isinstance(문, dict) else None
+if isinstance(_등, dict):
+    try:
+        open(os.path.join(os.environ.get("NF_HOME", ""), "이용권.새로"), "w").close() if os.environ.get("NF_HOME") else None
+    except OSError:
+        pass
+    _열쇠 = os.path.join(os.environ.get("HERE", ""), "열쇠.sh")
+    if _등.get("까닭") == "무료앱등록":
+        say("⭐ 이 제품이 이 컴퓨터의 **무료 제품**으로 제품등록됐습니다.")
+        say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 제품을 무료 제품으로 등록했습니다. 플랜이 없거나 구독이 끝나도 이 제품은 계속 쓰실 수 있습니다.»")
+    elif _등.get("된다") is False:
+        _코 = _등.get("거절코드") or ""
+        _말 = {"앱칸참": "플랜의 제품등록을 다 써서 이 제품은 아직 등록되지 않았습니다. 다른 제품을 빼시면 이 제품을 넣을 수 있습니다.",
+              "다시넣기기다림": "이 제품은 뺀 지 30일이 지나야 다시 넣을 수 있습니다" + ((" — " + str(_등.get("다시넣는날"))[:10] + "부터") if _등.get("다시넣는날") else "") + ".",
+              "메일확인필요": "무료 제품을 쓰시려면 처음 한 번 메일 확인이 필요합니다. 메일 주소를 알려 주시면 확인 코드를 보내 드립니다.",
+              "만료": "이용권 기간이 끝나 이 제품은 등록되지 않았습니다. 갱신하시면 등록됩니다.",
+              "미결제": "무료 제품 1개는 이미 다른 제품입니다. 이 제품도 쓰시려면 플랜이 필요합니다."}.get(_코, "")
+        if _말:
+            say("⚠️ 제품등록이 안 됐습니다(이전 기록은 그대로 불러왔습니다). 첫 답에서 사용자에게 한 줄로 알리십시오: «" + _말 + "»")
+            if _코 == "메일확인필요":
+                say("   사용자가 메일 주소를 말하면 `printf '%s\\n' <메일> | " + _열쇠 + " 무료메일`, 메일로 받은 코드를 말하면 `printf '%s\\n' <코드> | " + _열쇠 + " 무료코드` 로 넣으십시오.")
+            elif _코 == "앱칸참":
+                say("   뺄 제품은 사용자가 고른 뒤에만 `" + _열쇠 + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
 _넘 = 문.get("칸넘침") if isinstance(문, dict) else None
 if isinstance(_넘, dict) and isinstance(_넘.get("앱들"), list):
     _앱 = [적음(str(x), 80) for x in _넘["앱들"]]
