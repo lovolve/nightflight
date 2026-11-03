@@ -53,7 +53,8 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
       fi
     fi
     case "$_SN" in
-      3) python3 -I "$NF_PYDIR/모델권함.py" "" 설계 2>/dev/null || true ;;
+      3) python3 -I "$NF_PYDIR/표준첫일.py" "$STATE" 2>/dev/null || true
+         python3 -I "$NF_PYDIR/모델권함.py" "" 설계 2>/dev/null || true ;;
       4) python3 -I "$NF_PYDIR/레드팀권함.py" "$STATE" 개발 2>/dev/null || true ;;
       6) python3 -I "$NF_PYDIR/레드팀권함.py" "$STATE" 출시 2>/dev/null || true ;;
     esac

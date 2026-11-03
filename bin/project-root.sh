@@ -82,7 +82,28 @@ nf_registered_at() {
   fi
   awk -F'\t' -v r="$1" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_HOME/사람.tsv" 2>/dev/null
 }
-nf_registered() { nf_registered_at "$NF_ROOT"; }
+nf_conv_id() { printf '%s' "${NF_SESSION:-${CLAUDE_CODE_SESSION_ID:-}}" | tr -d '\t\r\n'; }
+nf_conv_ok_at() {
+  local f="$NF_HOME/대화.tsv" s
+  [ -n "${1:-}" ] || return 1
+  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
+  s="$(nf_conv_id)"
+  [ -n "$s" ] || return 0
+  awk -F'\t' -v r="$1" -v s="$s" '$1==r&&($2=="*"||$2==s){f=1} END{exit !f}' "$f" 2>/dev/null
+}
+nf_conv_add() {
+  local f="$NF_HOME/대화.tsv"
+  [ -n "${1:-}" ] && [ -n "${2:-}" ] || return 1
+  mkdir -p "$NF_HOME" 2>/dev/null
+  awk -F'\t' -v r="$1" -v s="$2" '$1==r&&$2==s{f=1} END{exit !f}' "$f" 2>/dev/null && return 0
+  printf '%s\t%s\n' "$1" "$2" >> "$f"
+}
+nf_conv_scope() {
+  awk -F'\t' -v r="$1" '$1==r&&$2=="*"{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 폴더; return; }
+  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 대화; return; }
+  echo 폴더
+}
+nf_registered() { nf_registered_at "$NF_ROOT" && nf_conv_ok_at "$NF_ROOT"; }
 
 nf_productid() {
   if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi

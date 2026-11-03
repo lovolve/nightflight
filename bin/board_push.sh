@@ -111,6 +111,9 @@ fi
 ROOT="${CLAUDE_PROJECT_DIR:-${CWD:-$(cd "$HERE/.." && pwd)}}"
 ST="$(nf_state_of "$ROOT")"
 URL="$(cat "$ST/board.url" 2>/dev/null || true)"
+if [ -n "$URL" ]; then
+  NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$ROOT" CLAUDE_PROJECT_DIR="$ROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
+fi
 
 if [ -z "$URL" ]; then
   PROOT="${CLAUDE_PROJECT_DIR:-$CWD}"
@@ -119,7 +122,7 @@ if [ -z "$URL" ]; then
   [ "$PROOT" = "$(cd "$HOME" && pwd)" ] && exit 0
   [ "$PROOT" = "$(cd "$HERE/.." && pwd)" ] && exit 0
   PST="$(nf_state_of "$PROOT")"
-  NIGHTFLIGHT_PROJECT_DIR="$PROOT" CLAUDE_PROJECT_DIR="$PROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
+  NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$PROOT" CLAUDE_PROJECT_DIR="$PROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
   if [ -d "$PST" ]; then
     ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
     python3 "$HERE/../tools/조종석파일.py" "$PROOT" >/dev/null 2>&1 || true

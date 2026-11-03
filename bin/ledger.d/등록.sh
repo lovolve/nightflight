@@ -17,11 +17,21 @@ case "$KIND" in
     if awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_PERSON" 2>/dev/null; then
       _nf_again=1
       echo "  이 폴더는 이미 야간비행에 등록돼 있습니다. 이용권과 제품등록 상태만 새로 읽습니다."
+      if [ "$(nf_conv_scope "$NF_ROOT")" = 대화 ] && [ -n "$(nf_conv_id)" ] && ! nf_conv_ok_at "$NF_ROOT"; then
+        nf_conv_add "$NF_ROOT" "$(nf_conv_id)" && echo "  이 대화도 야간비행 대화로 붙였습니다 — 기록과 조종석은 그대로 이어집니다."
+      fi
     else
       grep -q $'\t등록\t' "$STATE" 2>/dev/null || printf '%s\t등록\t%s\t\t\t\n' "$(date +%F)" "$(basename "$NF_ROOT" | tr -d '\t\r\n')" >> "$STATE"
       mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
       printf '%s\t프로젝트\t%s\t\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" >> "$NF_PERSON" 2>/dev/null
       echo "  이 폴더를 야간비행 프로젝트로 등록했습니다."
+      if [ -n "$(nf_conv_id)" ]; then
+        nf_conv_add "$NF_ROOT" "$(nf_conv_id)" 2>/dev/null || true
+        echo "  야간비행은 이 대화에서만 움직입니다. 같은 폴더의 다른 대화(메일 · 조사 같은 것)에는 끼어들지 않습니다."
+        echo "  [모델] 진단 전에 사용자에게 한 번만 물으십시오: «이 폴더에서 여는 모든 대화에도 야간비행을 켤까요? 기본은 이 대화만입니다.» 켜자고 하시면 ledger.sh 등록범위 폴더."
+      else
+        nf_conv_add "$NF_ROOT" '*' 2>/dev/null || true
+      fi
     fi
     if nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; then _KAN="$NF_KAN_ANSWER"
     else _KAN="$(bash "$NF_PYDIR/열쇠.sh" 칸읽기 2>/dev/null || true)"
@@ -39,6 +49,18 @@ case "$KIND" in
     echo "  [모델]  ⭐ 큰 단계(진단 · 가져오기 · 단계 하나)마다 과정을 보이십시오:"
     echo "  [모델]     시작할 때 대화창에 «지금 ~하고 있습니다» 한 줄 + ledger.sh 하는중 \"<그 말>\" --화면 \"<그 말>\" (조종석의 «지금 하는 일» 줄이 됩니다)"
     echo "  [모델]     끝나면 대화창에 «~이 끝났습니다» 한 줄 + ledger.sh 조종석지금 (조종석이 있으면 그 칸을 바로 올립니다 · 작은 걸음마다는 부르지 않습니다)"
+    ;;
+
+  등록범위)
+    _nf_cf="$NF_HOME/대화.tsv"
+    case "${2:-}" in
+      폴더) nf_conv_add "$NF_ROOT" '*' && echo "  이 폴더에서 여는 모든 대화에서 야간비행이 움직입니다." ;;
+      대화) [ -n "$(nf_conv_id)" ] && nf_conv_add "$NF_ROOT" "$(nf_conv_id)"
+            awk -F'\t' -v r="$NF_ROOT" '!($1==r&&$2=="*")' "$_nf_cf" > "$_nf_cf.$$" 2>/dev/null && mv -f "$_nf_cf.$$" "$_nf_cf"
+            echo "  야간비행은 「야간비행」이라고 하신 대화에서만 움직입니다." ;;
+      *) echo "  지금: $( [ "$(nf_conv_scope "$NF_ROOT")" = 폴더 ] && echo '이 폴더의 모든 대화' || echo '야간비행이라고 하신 대화만')"
+         echo "  [모델] 바꾸려면 ledger.sh 등록범위 폴더 또는 ledger.sh 등록범위 대화" ;;
+    esac
     ;;
 
 esac

@@ -27,6 +27,11 @@ if [ -z "$_nf_py_ok" ]; then
 fi
 unset _nf_py _nf_py_ok
 IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || true)"
+NF_SESSION="$(printf '%s' "$IN" | python3 -I -c 'import json,sys
+try: d=json.load(sys.stdin)
+except Exception: d={}
+print(str((d if isinstance(d,dict) else {}).get("session_id") or ""))' 2>/dev/null || true)"
+export NF_SESSION
 
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
 nf_registered || { printf '%s' "$IN" >/dev/null; exit 0; }

@@ -180,8 +180,17 @@ for p in (d.get("단계") or {}).values():
         exit 1
       fi
     fi
+    STACK="${6:-}"; FAILS="${7:-}"
+    if [ -n "${5:-}" ] && [ "${5}" != "공통" ]; then
+      if [ -z "$STACK" ] || [ -z "$FAILS" ]; then
+        echo "  ⛔ 기능의 표준 구현 방식은 도구 조합과 실패 경우가 함께 있어야 합니다." >&2
+        echo "     ledger.sh 표준 \"<방식>\" \"<출처>\" <확인> \"${5}\" \"<도구 조합 — 예: 아이폰 앱 · 애플 결제 · 우리 서버>\" \"<실패 경우 — 예: 결제 실패 · 취소 · 보류 · 환불>\"" >&2
+        echo "     실패 경우가 정말 없으면 «없음: <이유>»로 적으십시오. 우리가 겪어서 배운 규칙이면 ledger.sh 배운것 을 쓰십시오." >&2
+        exit 1
+      fi
+    fi
     screen_need 1 "$WHAT" 표준
-    printf '%s\t표준\t%s\t%s\t%s\t%s\t\n' "$(date +%F)" "$WHAT" "$SRC" "$CONF" "${5:-}" >> "$STATE"
+    printf '%s\t표준\t%s\t%s\t%s\t%s\t\t%s\t%s\n' "$(date +%F)" "$WHAT" "$SRC" "$CONF" "${5:-}" "$(printf '%s' "$STACK" | tr '\t\n' '  ')" "$(printf '%s' "$FAILS" | tr '\t\n' '  ')" >> "$STATE"
     screen_save "$WHAT"
     echo "  · 기록에 남김 [표준] $WHAT"
     echo "      출처: $SRC"
@@ -198,6 +207,14 @@ for p in (d.get("단계") or {}).values():
       fi
     fi
     board_nudge 표준
+    ;;
+
+  배운것)
+    RULE="${2:?우리가 겪어서 배운 규칙 — 한 줄로}"
+    SRC="${3:?어디서 배웠나 — 어떤 일을 겪었나}"
+    CONF="${4:-돌려봄}"
+    _EX=(); [ -n "$SCR" ] && _EX+=(--화면 "$SCR"); [ -n "$SCRK" ] && _EX+=(--종류 "$SCRK")
+    exec bash "$0" 표준 "$RULE" "$SRC" "$CONF" 공통 ${_EX[@]+"${_EX[@]}"}
     ;;
 
   표준목록)

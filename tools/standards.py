@@ -41,6 +41,20 @@ CONFIRM = {
 }
 SOURCED = ("돌려봄", "공식문서", "남이한것")
 
+배운규칙 = "우리가 배운 규칙"
+공통이름 = ("공통", "그 밖에", "")
+
+
+def 갈래(row: dict, topic: str) -> str:
+    if topic in 공통이름:
+        return "배운규칙"
+    return "기능표준" if row.get("도구조합") and row.get("실패") else "다시확인"
+
+
+def 완성(row: dict) -> bool:
+    """개발 관문과 조종석이 세는 «표준 구현 방식» — 출처가 있고 도구 조합·실패 경우까지 있는 기능 표준."""
+    return row.get("갈래") == "기능표준" and row.get("확인") in SOURCED
+
 
 import _labels as _lb
 
@@ -53,9 +67,11 @@ def compute(ledger: Path = None) -> dict:
     p = Path(ledger) if ledger else _root.ledger()
     _표 = _lb.항목표(p.parent)
     if not p.is_file():
-        return {"못쟀다": True, "기능별": {}, "출처있음": 0, "출처없음": 0, "모른낱말": []}
+        return {"못쟀다": True, "기능별": {}, "출처있음": 0, "출처없음": 0, "모른낱말": [],
+                "기능표준": 0, "배운규칙": 0, "다시확인": 0}
 
     per, sourced, unsourced, badword = {}, 0, 0, []
+    n갈래 = {"기능표준": 0, "배운규칙": 0, "다시확인": 0}
     for line in p.read_text(encoding="utf-8").splitlines():
         c = line.rstrip("\n").split("\t")
         if len(c) < 4 or c[1] != "표준":
@@ -67,10 +83,17 @@ def compute(ledger: Path = None) -> dict:
             badword.append({"기능": topic, "낱말": conf, "무엇": what})
             conf = ""
         row = {"무엇": what, "출처": why, "확인": conf, "날": d,
-               "뜻": CONFIRM.get(conf, "")}
+               "뜻": CONFIRM.get(conf, ""),
+               "도구조합": (c[7].strip() if len(c) > 7 else ""), "실패": (c[8].strip() if len(c) > 8 else "")}
+        row["갈래"] = 갈래(row, topic)
+        if row["갈래"] == "배운규칙":
+            topic = 배운규칙
+        elif row["갈래"] == "다시확인":
+            row["뜻"] = "도구 조합 · 실패 경우가 없습니다 — 다시 확인하기 전에는 표준이 아닙니다"
         row["이름표"] = _표.get(what, (None, None))[0]
         row["구분"] = _lb.종류(_표, what)
         per.setdefault(topic, []).append(row)
+        n갈래[row["갈래"]] += 1
         if conf in SOURCED:
             sourced += 1
         else:
@@ -80,7 +103,7 @@ def compute(ledger: Path = None) -> dict:
         per[k].sort(key=lambda r: r["날"], reverse=True)
 
     return {"못쟀다": False, "기능별": (_uw.바꾼다(per) if _uw else per), "출처있음": sourced,
-            "출처없음": unsourced, "모른낱말": badword}
+            "출처없음": unsourced, "모른낱말": badword, **n갈래}
 
 
 def 사람말(d: dict) -> list:
@@ -94,10 +117,14 @@ def 사람말(d: dict) -> list:
         out.append("  ⚠️ 기능마다 **어떤 방식이 표준인지**를 적어 두지 않으면,")
         out.append("     다음에 같은 기능을 **다른 방식으로 또 만듭니다**.")
         return out
-    for feat, rows in sorted(d["기능별"].items()):
+    for feat, rows in sorted(d["기능별"].items(), key=lambda kv: (kv[0] == 배운규칙, kv[0])):
         out.append(f"  ▸ {feat}")
         for r in rows:
             out.append(f"   · {r['무엇']}")
+            if r.get("갈래") == "기능표준":
+                out.append(f"       도구 조합: {r['도구조합']}  ·  실패 경우: {r['실패']}")
+            elif r.get("갈래") == "다시확인":
+                out.append(f"       🔴 {r['뜻']}")
             if r["확인"] in SOURCED:
                 out.append(f"       출처: {r['출처']}  ({CONFIRM[r['확인']]}, {r['날']})")
             elif r["확인"] == "내기억":
@@ -106,6 +133,8 @@ def 사람말(d: dict) -> list:
             else:
                 out.append(f"       🔴 확인 칸이 비었거나 모르는 말입니다 — 「{r['출처']}」")
     out.append("")
+    out.append(f"  기능의 표준 구현 방식 {d.get('기능표준', 0)}가지 · 다시 확인 필요 {d.get('다시확인', 0)}가지 · "
+               f"우리가 배운 규칙 {d.get('배운규칙', 0)}가지")
     out.append(f"  출처가 있는 것 {d['출처있음']}가지 · "
                f"🔴 아직 표준이라 부를 수 없는 것 {d['출처없음']}가지")
     if d["모른낱말"]:

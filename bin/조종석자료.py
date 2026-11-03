@@ -566,10 +566,17 @@ try:
     _가져오기 = _li.진행()
 except Exception:
     _가져오기 = None
+try:
+    _dj_s = _ilu.spec_from_file_location("_dj", os.path.join(os.environ.get("TOOLS", ""), "따라잡기.py"))
+    _dj = _ilu.module_from_spec(_dj_s); _dj_s.loader.exec_module(_dj)
+    _따라잡기 = _dj.compute()
+except Exception:
+    _따라잡기 = None
 w("now.json", {"stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
                  .isoformat(timespec="seconds").replace("+00:00", "Z"),
                "앱이름": _appname, "폴더": _folder,
                "가져오기": _가져오기,
+               "따라잡기": _따라잡기,
                "stage": stage, "stageLabel": stage_label,
                "decisions": len(decisions), "broken": sum(1 for x in decisions if x["broken"]),
                "blocks": len(blocks), "ask": card,
