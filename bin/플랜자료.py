@@ -11,10 +11,19 @@
   구분: «등록 전»(설계를 넘었는데 서버에 아직 제품등록이 없다) · «무료»(무료 제품 — 2026-10-28 «평생»이라는 말을 뺐다) · «플랜»(유료 제품등록) · «접음»(설계를 시작하고 7일이 지나 접은 제품 — 제품등록은 그대로 센다) ·
         «아이디어»(아이디어 · 검증 — 제품등록 아님). 제품수에듦 = 구분이 아이디어가 아님(옛 이름 · 조종석이 읽는다).
 ⭐ 2026-10-28 플랜 개편: 라이트 = 무료 1 + 유료 2(모두 3) · 플러스 = 무료 1 + 유료 14(모두 15) ·
-  구독이 끝나도 무료 제품 1개는 계속. 서버의 «칸수»는 유료 몫(2 · 14)이라 한도는 칸수 + 1 이다.
+  무료 제품은 이 컴퓨터의 무료 1년 동안(2026-11-03). 서버의 «칸수»는 유료 몫(2 · 14)이라 한도는 칸수 + 1 이다.
 ⛔ 서버를 부르지 않는다 — 이용권.json 은 대화 시작 훅이 뒤에서 채운다(못 받았으면 null 칸으로 둔다).
 """
 import json, os, sys, time
+import datetime as _dt
+
+
+def _한국날(v):
+    try:
+        t = _dt.datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+        return (t + _dt.timedelta(hours=9)).strftime("%Y-%m-%d") if t.tzinfo else str(v)[:10]
+    except (ValueError, TypeError):
+        return None
 
 집 = os.environ.get("NF_HOME") or os.path.expanduser("~/.nightflight")
 지금 = os.path.realpath(sys.argv[1]) if len(sys.argv) > 1 else ""
@@ -104,4 +113,5 @@ print(json.dumps({
     "한도": ((int(칸) + 1) if 칸 is not None else None) if 있나 else 1,
     "무료제품": (무료이름 or ("앱 번호를 못 읽은 제품" if 무료 in 번호없음 else 무료)) if 무료 else None,
     "등록수": len(목록), "프로젝트": 프로젝트, "받은때": 받은때,
+    "무료끝": _한국날(권.get("무료끝")) if 권.get("무료끝") else None,
 }, ensure_ascii=False))

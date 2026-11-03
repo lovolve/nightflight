@@ -49,7 +49,7 @@ case "$CODE" in
     echo "쓰는 법: 열쇠.sh -  (키는 표준입력 한 줄)   예: printf '%s\n' NF-ABCDEFGH-JKMNPQRSTU | 열쇠.sh -   (키 자리에 - 를 쓰면 키를 표준입력에서 읽어 명령 인자에 안 남긴다)"
     echo "         열쇠.sh - 풀기 <번호>             컴퓨터 자리를 바꾸는 확인 링크를 결제한 메일로 보냅니다(링크에서 고르고 확인해야 바뀝니다)"
     echo "         열쇠.sh 보기                       이 컴퓨터의 이용권 · 제품등록을 봅니다"
-    echo "         열쇠.sh 무료메일                   메일로 확인 코드를 보냅니다 — 결제한 메일이면 플랜이, 아니면 무료 제품이 켜집니다(메일 주소는 표준입력 한 줄)"
+    echo "         열쇠.sh 무료메일                   결제한 메일로 확인 코드를 보냅니다 — 그 메일로 결제한 플랜이 이 컴퓨터에 켜집니다(메일 주소는 표준입력 한 줄 · 무료 1년은 메일 없이 됩니다)"
     echo "         열쇠.sh 무료코드                   메일로 받은 여섯 자리 코드를 넣습니다(코드는 표준입력 한 줄)"
     echo "         열쇠.sh 컴퓨터바꾸기 <맥id>         컴퓨터 3대가 찼을 때, 사용자가 고른 한 대를 빼고 이 컴퓨터를 켭니다(고른 뒤에만)"
     echo "         열쇠.sh 앱빼기 <제품 번호> [확인]   다 만든 제품의 칸을 비웁니다(「확인」 없이는 무엇을 비울지만 말합니다)"
@@ -122,7 +122,9 @@ sys.exit(0 if ("확인번호" in d or re.search(r"(?<!\d)\d{6}(?!\d)", 글)) els
       exit 1
     fi
     printf '%s' "$ANSWER" | grep -q '"된다"[[:space:]]*:[[:space:]]*true' || exit 1
+    printf '%s' "$ANSWER" | grep -q '"플랜없음"[[:space:]]*:[[:space:]]*true' && exit 1
     상태적기 "$ANSWER"
+    rm -f "${NF_HOME:-$HOME/.nightflight}/무료끝남" 2>/dev/null
     exit 0 ;;
   컴퓨터바꾸기)
     MID="${2:?뺄 컴퓨터의 맥id를 적어 주십시오 — 무료코드가 보여 준 목록에 있습니다}"
@@ -158,7 +160,7 @@ if en:
     print(f"  Plan           {dict(라이트='Lite', 헤비='Plus').get(d.get('등급'), d.get('등급'))} plan")
     print(f"  Valid until    {str(d.get('만료') or '')[:10]}")
     print(f"  Computers      {d.get('맥수')}/3")
-    print(f"  Products       {수}/{(칸 + 1) if 칸 else 'no limit'}" + (f"  (1 free forever + {칸} paid)" if 칸 else ""))
+    print(f"  Products       {수}/{(칸 + 1) if 칸 else 'no limit'}" + (f"  (1 free + {칸} paid)" if 칸 else ""))
 else:
     print(f"  플랜        {dict(라이트='라이트', 헤비='플러스').get(d.get('등급'), d.get('등급'))} 플랜")
     print(f"  쓸 수 있는 날  {str(d.get('만료') or '')[:10]} 까지")

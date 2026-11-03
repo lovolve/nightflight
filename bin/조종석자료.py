@@ -168,8 +168,12 @@ for d, k, what, why, pre, topic, bound in rows[-80:]:
         feed.append(it)
 feed.reverse()
 
-w = lambda n, o: open(os.path.join(os.environ["OUT"], n), "w", encoding="utf-8").write(
-    json.dumps(o, ensure_ascii=False, indent=1))
+def w(n, o):
+    p = os.path.join(os.environ["OUT"], n)
+    t = "%s.%d.tmp" % (p, os.getpid())
+    with open(t, "w", encoding="utf-8") as f:
+        f.write(json.dumps(o, ensure_ascii=False, indent=1))
+    os.replace(t, p)
 import datetime
 
 RG = os.path.join(os.path.dirname(os.environ["STATE"]), "repeat-guard.tsv")

@@ -19,15 +19,23 @@ if not isinstance(d, dict):
     print("  플랜의 제품등록은 지금 확인하지 못했습니다 — 아이디어 · 검증 단계는 그대로 쓰실 수 있습니다.")
 else:
     무료 = d.get("무료앱")
+    import datetime as _dt
+    def _한국날(v):
+        try:
+            t = _dt.datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+            return (t + _dt.timedelta(hours=9)).strftime("%Y-%m-%d") if t.tzinfo else str(v)[:10]
+        except (ValueError, TypeError):
+            return ""
+    끝 = _한국날(d.get("무료끝")) if d.get("무료끝") else ""
+    오늘 = _dt.date.today().isoformat()
     칸, 앱들 = (d.get("칸수"), d.get("앱들") or []) if d.get("있나") else (None, [])
     접은 = (d.get("접은제품") or []) if d.get("있나") else []
     if bid and (bid == 무료 or bid in 앱들):
         print("  이 제품은 이미 제품등록돼 있습니다(" + ("무료 제품" if bid == 무료 else "플랜") + ").")
-    elif not 무료 and d.get("메일확인") is not True:
-        print("  무료 제품을 쓰시려면 처음 한 번 메일 확인이 필요합니다(컴퓨터 한 대에 1개). 메일 주소를 알려 주시면 여섯 자리 확인 코드를 보내 드립니다.")
-        print("  [모델] 사용자가 메일 주소를 말하면 printf '%s\\n' <메일> | " + 열쇠 + " 무료메일 · 메일로 받은 코드를 말하면 printf '%s\\n' <코드> | " + 열쇠 + " 무료코드")
+    elif not 무료 and 끝 and 끝 < 오늘 and not d.get("있나"):
+        print("  이 컴퓨터의 무료 1년이 끝났습니다(" + 끝 + "). 설계 단계부터는 이용권이 필요합니다. 플랜 안내: " + 주소)
     elif not 무료:
-        print("  설계 단계에 들어가면 이 제품이 이 컴퓨터의 무료 제품으로 제품등록됩니다(컴퓨터 한 대에 1개 · 플랜과 상관없이 계속).")
+        print("  설계 단계에 들어가면 이 제품이 이 컴퓨터의 무료 제품으로 제품등록됩니다(이 컴퓨터의 무료 1년 동안" + ((" · " + 끝 + "까지") if 끝 else "") + ").")
     elif not d.get("있나"):
         print("  ⚠️ 이 컴퓨터의 무료 제품은 이미 «%s» 입니다(컴퓨터 한 대에 1개)." % 보임(무료))
         print("     아이디어 · 검증 단계는 그대로 쓰실 수 있고, 설계 단계부터는 이 제품에 이용권이 필요합니다. 플랜 안내: " + 주소)

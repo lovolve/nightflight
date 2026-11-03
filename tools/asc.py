@@ -173,7 +173,7 @@ def app_id(args) -> str:
     b = _이폴더번들()
     if b:
         for a in (req("GET", "/v1/apps?filter[bundleId]=" + b + "&limit=2").get("data") or []):
-            print(f"[asc] 이 폴더의 번들 id({b})로 앱을 찾았습니다: {a['id']}", file=sys.stderr)
+            print(f"[asc] 이 폴더의 앱 식별 이름({b})으로 앱을 찾았습니다: {a['id']}", file=sys.stderr)
             return a["id"]
         sys.exit(f"앱스토어에 번들 id «{b}» 로 등록된 앱이 아직 없습니다 — 앱스토어 웹에서 «새로운 앱»을 먼저 만들어야 합니다.")
     sys.exit("앱 ID가 없다. --app <id> 또는 ASC_APP_ID 환경변수를 줄 것.")
@@ -245,7 +245,7 @@ def cmd_준비(rest):
     print(f"붙었습니다 — 이 계정의 앱 {len(apps)}개를 읽었습니다.")
     if b:
         mine = [a for a in apps if (a.get("attributes") or {}).get("bundleId", "").lower() == b]
-        print(f"  이 폴더의 앱(번들 id {b}): " + ("앱스토어에 있습니다" if mine else "앱스토어에 아직 없습니다 — 웹에서 «새로운 앱»을 먼저 만들어야 합니다"))
+        print(f"  이 폴더의 앱(식별 이름 {b}): " + ("앱스토어에 있습니다" if mine else "앱스토어에 아직 없습니다 — 웹에서 «새로운 앱»을 먼저 만들어야 합니다"))
 
 
 def cmd_status(app: str):

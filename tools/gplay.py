@@ -138,7 +138,7 @@ def cmd_준비(args):
         sys.exit("구글 로그인에 실패했습니다 — 열쇠 파일이 맞는지, «Google Play Android Developer API»를 켰는지 확인해 주십시오.")
     pk = 이폴더패키지() if "--pkg" not in args else _패키지(args)
     if not pk:
-        print("  붙었습니다. 이 폴더에서 안드로이드 패키지 이름을 못 찾아, 앱 접근은 아직 확인하지 않았습니다(--pkg 로 주시면 확인합니다).")
+        print("  붙었습니다. 이 폴더에서 안드로이드 앱 식별 이름을 못 찾아, 앱 접근은 아직 확인하지 않았습니다.")
         return
     try:
         e = req(j, "POST", f"{pk}/edits", {})

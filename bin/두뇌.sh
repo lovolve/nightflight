@@ -23,6 +23,10 @@ if ! [[ "$STAGE" =~ ^[0-8]$ ]] || [ -z "$KIND" ]; then
   echo "쓰는 법: 두뇌.sh <단계 0~8> <갈래>" >&2
   exit 2
 fi
+if [ -f "${NF_HOME:-$HOME/.nightflight}/무료끝남" ] && [ -z "$LISTONLY" ]; then
+  echo "이 컴퓨터의 무료 1년이 끝나 단계 안내를 받지 못했습니다 — 계속 쓰시려면 이용권이 필요합니다(플랜 안내: https://www.lovolve.app/nightflight/#price)."
+  exit 0
+fi
 
 PERSONID="$(nf_personid | tr -d '[:space:]')"
 MACPRINT="$(nf_macprint 2>/dev/null | tr -d '[:space:]')"
