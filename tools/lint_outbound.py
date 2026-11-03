@@ -36,6 +36,7 @@ HERE = Path(__file__).resolve().parent.parent
 SKIP = {
     "tools/asc.py": "애플 App Store Connect — 사용자 자기 데이터",
     "tools/asc_mcp.py": "같은 것(MCP 로 감싼 것)",
+    "tools/gplay.py": "구글 플레이 — 사용자 자기 데이터(2026-11-03 · asc.py 와 같은 까닭)",
     "tools/verify_upload.sh": "같은 것(올라갔는지 확인)",
     "tools/lint_user_facing.py": "낱말 목록에 `curl` 이 글자로 들어 있다",
     "tools/lint_outbound.py": "이 파일 자체",
@@ -152,7 +153,7 @@ def main() -> int:
 
     if not hits:
         print("  ✅ 우리 서버로 나가는 호출이 **아직 없다** — 봉투를 잊을 자리도 없다")
-        print(f"     ⚠️ 이건 「안전하다」가 아니라 「아직 안 보낸다」다. 애플 쪽 {len(SKIP)-3}곳은 세지 않는다")
+        print(f"     ⚠️ 이건 「안전하다」가 아니라 「아직 안 보낸다」다. 스토어(애플 · 구글) 쪽 {len(SKIP)-3}곳은 세지 않는다")
         if SAID_OUT:
             print(f"     ⚠️ {len(SAID_OUT)}곳은 「찾는 말이다」라고 **선언해서** 넘겼다 — "
                   + " · ".join(SAID_OUT[:6]))

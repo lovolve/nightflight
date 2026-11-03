@@ -273,7 +273,7 @@ def main() -> int:
         import json, urllib.request
         내버전 = json.loads((뿌리 / ".claude-plugin" / "plugin.json").read_text(encoding="utf-8")).get("version", "")
         try:
-            with urllib.request.urlopen("https://raw.githubusercontent.com/lovolve/nightflight/HEAD/.claude-plugin/plugin.json", timeout=10) as r:
+            with urllib.request.build_opener(urllib.request.ProxyHandler({})).open("https://raw.githubusercontent.com/lovolve/nightflight/HEAD/.claude-plugin/plugin.json", timeout=10) as r:
                 공개버전 = json.loads(r.read().decode("utf-8")).get("version", "")
         except Exception:
             공개버전 = None
@@ -281,7 +281,7 @@ def main() -> int:
         if 공개버전 and 공개버전 == 내버전:
             print("  🔴 **모으지 않았습니다** — 버전이 공개 판과 같습니다(%s)." % 내버전)
             print("     버전을 올리지 않으면 이미 설치한 사람은 업데이트해도 새 판을 받지 못합니다.")
-            print("     plugin.json 과 marketplace.json 의 버전을 함께 올리십시오.")
+            print("     [모델] plugin.json 과 marketplace.json 의 버전을 함께 올리십시오.")
             return 1
 
     갈것 = sorted(f for f, _ in 나감)

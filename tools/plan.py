@@ -145,6 +145,63 @@ def 기능추가(단계, 기능, 세부들):
         print(f"      ○ {s}")
 
 
+_단계기본 = Path(__file__).resolve().parent.parent / "data" / "단계기본.tsv"
+_확인상태 = {"봤음": ("완료", "직접 봤음"), "안됨": ("확인 필요", "안 됨"), "폰필요": ("확인 필요", "진짜 휴대폰 필요"),
+            "됨": ("완료", "됨"), "남음": ("시작 전", ""), "막힘": ("방법 찾는 중", "막힘"),
+            "고침": ("완료", "고침"), "고치는중": ("진행 중", ""), "모름": ("확인 필요", "원인 모름"),
+            "읽음": ("진행 중", ""), "답초안": ("진행 중", ""), "올림": ("완료", "올림")}
+
+
+def 단계기본깔기(단계):
+    """대표님 2026-11-03 «조종석이 자동으로 채우게» — 그 단계 줄이 하나도 없을 때만 data/단계기본.tsv 의 자리를 깐다.
+    이미 적힌 단계확인 줄도 같이 옮긴다(전에 적은 일이 설계표와 안 이어져 있었다)."""
+    단계 = _단계(str(단계))
+    rows = 읽기()
+    if any(r["단계"] == 단계 for r in rows) or not _단계기본.exists():
+        return 0
+    오늘 = date.today().isoformat()
+    n = 0
+    for l in _단계기본.read_text(encoding="utf-8").splitlines():
+        c = l.split("\t")
+        if len(c) >= 3 and c[0] == 단계:
+            rows.append({"단계": 단계, "기능": c[1].strip(), "세부기능": c[2].strip(), "상태": "시작 전", "이름표": "",
+                         "출처": "단계 기본", "바뀐날": 오늘})
+            n += 1
+    if not n:
+        return 0
+    쓰기(rows)
+    lp = _file().with_name("ledger.tsv")
+    if lp.exists():
+        for l in lp.read_text(encoding="utf-8").splitlines():
+            c = l.split("\t")
+            if len(c) > 5 and c[1] == "단계확인" and c[5].strip() == 단계:
+                단계확인잇기(단계, c[2], c[4].strip(), 조용히=True)
+    print(f"  · 설계표 [{단계이름[int(단계)]}] 기본 자리 {n}개를 깔았습니다")
+    return n
+
+
+def 단계확인잇기(단계, 무엇, 상태, 조용히=False):
+    """단계확인 한 줄을 설계표에 잇는다 — 같은 이름이 있으면 상태를 바꾸고, 없으면 그 단계 첫 기능 아래 새 자리로 붙인다."""
+    단계 = _단계(str(단계))
+    무엇 = (무엇 or "").replace("·", ",").replace("\t", " ").strip()[:60]
+    if not 무엇 or 상태 not in _확인상태:
+        return
+    rows = 읽기()
+    st, 표 = _확인상태[상태]
+    hit = [r for r in rows if r["단계"] == 단계 and r["세부기능"] == 무엇]
+    if not hit:
+        첫 = next((r["기능"] for r in rows if r["단계"] == 단계), None)
+        if not 첫:
+            return
+        rows.append({"단계": 단계, "기능": 첫, "세부기능": 무엇, "상태": st, "이름표": 표, "출처": "단계확인", "바뀐날": date.today().isoformat()})
+    else:
+        for r in hit:
+            r["상태"], r["이름표"], r["바뀐날"] = st, 표, date.today().isoformat()
+    쓰기(rows)
+    if not 조용히:
+        print(f"  · 조종석 설계표에도 적었습니다: {무엇} → {st}")
+
+
 def 세부기능(단계, 기능, 세부):
     기능추가(단계, 기능, [세부])
 
@@ -582,6 +639,10 @@ if __name__ == "__main__":
     try:
         if cmd == "기능추가" and len(a) >= 3:
             기능추가(a[1], a[2], a[3:])
+        elif cmd == "단계기본" and len(a) == 2:
+            단계기본깔기(a[1])
+        elif cmd == "단계확인잇기" and len(a) == 4:
+            단계확인잇기(a[1], a[2], a[3])
         elif cmd == "세부기능" and len(a) == 4:
             세부기능(a[1], a[2], a[3])
         elif cmd == "세부빼기" and len(a) == 3:

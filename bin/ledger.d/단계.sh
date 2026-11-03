@@ -44,6 +44,7 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
     fi
     printf '%s\t단계\t%s\t\t\n' "$(date +%F)" "$NAME" >> "$STATE"
     echo "  · 단계: $NAME"
+    case "$_SN" in 5|6|7|8) NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/plan.py" 단계기본 "$_SN" 2>/dev/null || true ;; esac
     python3 -I "$NF_PYDIR/새제품안내.py" "$STATE" 단계 2>/dev/null || true
     board_nudge 단계
     _BR="$NF_PYDIR/두뇌.sh"
@@ -105,6 +106,8 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
     esac
     printf '%s\t단계확인\t%s\t%s\t%s\t%s\n' "$(date +%F)" "$WHAT" "${5:-}" "$HOW" "$SNUM" >> "$STATE"
     echo "  · 기록에 남김 [$SNUM단계·$HOW] $WHAT"
+    case "$SNUM" in 5|6|7|8) NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/plan.py" 단계기본 "$SNUM" >/dev/null 2>&1 || true
+                             NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/plan.py" 단계확인잇기 "$SNUM" "$WHAT" "$HOW" 2>/dev/null || true ;; esac
     ;;
 
   검증)

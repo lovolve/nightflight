@@ -333,6 +333,18 @@ if _sc0.get("구글보일까"):
     say("   [모델] «구글 플레이 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 tools/gplay.py 준비 를 불러 나온 차례를 하나씩 안내하십시오.")
     say()
 
+if isinstance((now or {}).get("단계끝"), dict) and (now or {}).get("단계끝", {}).get("단계") in (5, 6, 7, 8):
+    try:
+        import importlib.util as _u3
+        os.environ["NF_STATE"] = STATE
+        _s3 = _u3.spec_from_file_location("_plan3", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "plan.py"))
+        _m3 = _u3.module_from_spec(_s3); _s3.loader.exec_module(_m3)
+        import contextlib as _cl, io as _io
+        with _cl.redirect_stdout(_io.StringIO()):
+            _m3.단계기본깔기(now["단계끝"]["단계"])
+    except (Exception, SystemExit):
+        pass
+
 _dk = (now or {}).get("단계끝") or {}
 if _dk.get("끝") and _dk.get("다음이름"):
     say("➡️ **%s 단계의 끝 조건이 다 찼습니다** — %s" % (적음(_dk.get("이름", ""), 20), " · ".join("%s %s" % (적음(x["이름"], 40), 적음(x.get("지금", ""), 30)) for x in _dk.get("조건", []))))
