@@ -32,6 +32,8 @@ from pathlib import Path
 _HERE = Path(__file__).resolve().parent
 _PLUGIN = _HERE.parent
 _BRAIN = _PLUGIN.parent / "nightflight-server" / "catalog" / "관문-기준값.tsv"
+if not _BRAIN.exists() and (Path.home() / "nightflight-server" / "catalog" / "관문-기준값.tsv").exists():
+    _BRAIN = Path.home() / "nightflight-server" / "catalog" / "관문-기준값.tsv"
 _PUBLIC = _PLUGIN / "data" / "관문.tsv"
 
 
