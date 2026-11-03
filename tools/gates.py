@@ -90,6 +90,9 @@ def _judger(axes, asked):
         if op == "!=":
             return "걸림" if want not in got else "안걸림"
         g = got[0]
+        if g.replace(" ", "") in ("아직없음", "아직안만듦", "없음"):
+            import datetime as _dt
+            g = _dt.date.today().isoformat()
         if not re.match(r"^\d{4}-\d{2}-\d{2}$", g):
             return "모름"
         if op == ">":  return "걸림" if g > want else "안걸림"
@@ -124,7 +127,7 @@ def _judger(axes, asked):
     return judge
 
 
-범위밖 = "사업자 신고 · 개인정보 · 연령 등급처럼 나라마다 다른 법은 이 도구가 다루지 않습니다"
+범위밖 = "사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(스토어의 연령 등급 설문은 AI가 대신 넣습니다)"
 
 
 def compute(state=None, person=None, gates=None, brain=None, 플랫폼필요=True) -> dict:

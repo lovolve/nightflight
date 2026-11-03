@@ -3,7 +3,10 @@ case "$KIND" in
 
   단계)
     NAME="${2:?단계 이름 — 0. 진단 · 1. 기획 · 2. 검증 · 3. 설계 · 4. 개발 · 5. 확인 · 6. 출시 · 7. 수정 · 8. 출시후 (가져오기 시험 2026-10-25: 이름 목록이 없어 짐작했다)}"
-    if printf '%s' "$NAME" | grep -q '검증'; then
+    _WHY=""; [ "${3:-}" = "--이유" ] && _WHY="${4:-}"
+    _SN=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/단계끝.py" 번호 "$NAME" 2>/dev/null) || _SN=""
+    NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/단계끝.py" 넘기 "$NAME" "$_WHY" || exit 1
+    if [ "$_SN" = 2 ]; then
       _MISSI=""
       for _k in 한줄 누구 문제; do awk -F'\t' -v k="$_k" '$2=="제품소개"&&$3==k&&$4!=""{f=1} END{exit !f}' "$STATE" 2>/dev/null || _MISSI="$_MISSI $_k"; done
       if [ -n "$_MISSI" ]; then
@@ -12,7 +15,7 @@ case "$KIND" in
         exit 1
       fi
     fi
-    if printf '%s' "$NAME" | grep -qE '개발|확인|출시|수정'; then
+    if [ -n "$_SN" ] && [ "$_SN" -ge 4 ]; then
       _MISS="$(NFTOOLS="$(cd "$NF_PYDIR/../tools" 2>/dev/null && pwd)" python3 -I -c '
 import os, sys
 sys.path.insert(0, os.environ["NFTOOLS"])
@@ -35,7 +38,7 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
         exit 1
       fi
     fi
-    if printf '%s' "$NAME" | grep -q '설계'; then
+    if [ "$_SN" = 3 ]; then
       _P12="$(awk -F'\t' '$1=="1"||$1=="2"{n++} END{print n+0}' "$(dirname "$STATE")/plan.tsv" 2>/dev/null)"
       [ "${_P12:-0}" = 0 ] && echo "  ⚠️ 기획 · 검증 표가 비어 있습니다 — 설계로 넘어가지만, 무엇을 왜 만드는지가 조종석에 안 남습니다. 가져오는 앱이면 기획 · 검증에서 정한 것도 채워 주십시오." >&2
     fi
@@ -43,13 +46,19 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
     echo "  · 단계: $NAME"
     python3 -I "$NF_PYDIR/새제품안내.py" "$STATE" 단계 2>/dev/null || true
     board_nudge 단계
-    _SN=$(printf '%s' "$NAME" | awk '{n=split("진단 기획 검증 설계 개발 확인 출시 수정 출시후",a," "); r=""; for(i=n;i>=1;i--) if(index($0,a[i])){r=i-1; break} print r}')
     _BR="$NF_PYDIR/두뇌.sh"
     if [ -n "$_SN" ] && [ -x "$_BR" ] && [ -n "${NF_BRAIN_BASE:-}" ] && [ -n "${NF_DOORKEY:-}" ] && [ -z "${NF_NO_BRAIN_LIST:-}" ]; then
       _GL="$(NF_BRAIN_TIMEOUT=4 "$_BR" "$_SN" --목록 2>/dev/null)"
       if [ -n "$_GL" ]; then
         echo "  · 이 단계에서 받을 수 있는 안내: $_GL"
         echo "    지금 하는 일에 맞는 것을 골라 바로 받으십시오: 두뇌.sh $_SN <갈래>"
+      fi
+    fi
+    if [ "$_SN" = 1 ] || [ "$_SN" = 0 ]; then
+      _APPQ=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/단계끝.py" 앱설정빈것 2>/dev/null)
+      if [ -n "$_APPQ" ]; then
+        echo "  · 기획의 첫 질문 — 아직 안 정한 앱 설정: $_APPQ"
+        echo "    [모델] ledger.sh 앱설정묻기 를 불러 나온 질문을 한 번에 하나씩 여쭙고, 답을 ledger.sh 앱설정 으로 적으십시오. 출시 준비의 오래 걸리는 일(개발자 계정 · 사업자 번호)이 이 답에서 미리 시작됩니다."
       fi
     fi
     case "$_SN" in

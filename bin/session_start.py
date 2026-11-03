@@ -308,6 +308,37 @@ else:
         "문제가 있으면 `확인 필요`·`방법 찾는 중` + 짧은 이름표. 새 세부기능이 생기면 사용자에게 확인받고 `세부기능` 으로 더하십시오.")
     say()
 
+if (_dk0 := (now or {}).get("단계끝") or {}).get("단계") in (0, 1, 2):
+    _빈 = [x for x in (_dk0.get("조건") or []) if x.get("이름", "").startswith("앱 설정") and not x.get("됨")]
+    if _빈 or _dk0.get("단계") in (0, 2):
+        try:
+            import importlib.util as _u2
+            _s2 = _u2.spec_from_file_location("_dk2", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "단계끝.py"))
+            _m2 = _u2.module_from_spec(_s2); _s2.loader.exec_module(_m2)
+            _빈칸 = _m2.앱설정빈것()
+        except Exception:
+            _빈칸 = []
+        if _빈칸:
+            say("📝 **앱 설정이 아직 비었습니다** — %s" % " · ".join(_빈칸))
+            say("   [모델] 사용자 첫 말에 답한 뒤 ledger.sh 앱설정묻기 를 불러 나온 질문을 한 번에 하나씩 여쭙고, 답을 ledger.sh 앱설정 으로 적으십시오.")
+            say()
+
+_sc0 = (now or {}).get("스토어연결") or {}
+if _sc0.get("보일까"):
+    say("🔌 **앱스토어 연결이 아직 없습니다**(%s) — 출시 때 스토어 정보 · 사진 · 심사 메모를 AI가 대신 넣으려면 먼저 연결해야 합니다." % 적음(_sc0.get("애플", ""), 20))
+    say("   [모델] 사용자 첫 말에 답한 뒤 «앱스토어 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 tools/asc.py 준비 를 불러 나온 차례를 하나씩 안내하십시오.")
+    say()
+if _sc0.get("구글보일까"):
+    say("🔌 **구글 플레이 연결이 아직 없습니다** — 출시 때 스토어 정보를 AI가 대신 넣으려면 먼저 연결해야 합니다.")
+    say("   [모델] «구글 플레이 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 tools/gplay.py 준비 를 불러 나온 차례를 하나씩 안내하십시오.")
+    say()
+
+_dk = (now or {}).get("단계끝") or {}
+if _dk.get("끝") and _dk.get("다음이름"):
+    say("➡️ **%s 단계의 끝 조건이 다 찼습니다** — %s" % (적음(_dk.get("이름", ""), 20), " · ".join("%s %s" % (적음(x["이름"], 40), 적음(x.get("지금", ""), 30)) for x in _dk.get("조건", []))))
+    say("   [모델] 사용자 첫 말에 답한 뒤 «%s 단계가 끝났습니다. 다음 %s 단계로 가실까요?»를 여쭈십시오. 좋다고 하시면 ledger.sh 단계 \"%d. %s\" 로 적으십시오." % (적음(_dk.get("이름", ""), 20), 적음(_dk.get("다음이름", ""), 20), int(_dk.get("다음") or 0), "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()[int(_dk.get("다음") or 0) % 9]))
+    say()
+
 _cu = (now or {}).get("따라잡기") or {}
 if _cu.get("보일까") and _cu.get("고름") is None and _cu.get("제안"):
     say("🧭 **따라잡기 제안 — 사용자 첫 말에 답한 뒤 이 대화에서 먼저 여쭈십시오**")
@@ -330,6 +361,12 @@ if st and not st.get("못쟀다"):
     for t, x in rows:
         say("   · [%s] %s  (%s)" % (적음(t, 80), 적음(x["무엇"]), 적음(x.get("확인", ""), 80)))
     if tail: say(tail)
+    _실패 = [(t, x) for t, xs in (st.get("기능별") or {}).items() for x in xs
+             if x.get("갈래") == "기능표준" and x.get("실패") and not str(x.get("실패")).startswith("없음")]
+    if _실패:
+        say("   🧯 기능마다 정한 실패 경우 — 개발할 때 이 경우마다 사용자가 볼 화면과 문구를 만드십시오:")
+        for t, x in _실패[:10]:
+            say("   · [%s] %s" % (적음(t, 40), 적음(x.get("실패", ""), 120)))
     say("   ⛔ 같은 일을 **다른 방식으로 또 짜지 마십시오.** 두 방식이 한 앱에 공존하게 됩니다.")
     say()
 

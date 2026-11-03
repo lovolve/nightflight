@@ -8,7 +8,7 @@
 
 ⛔ 셈은 여기 하나다 — 조종석(now.json «따라잡기»)과 대화 시작 안내가 같은 것을 읽는다.
 ⛔ 이미 끝난 일은 제안하지 않는다 · 지금 단계보다 앞(지나간 단계)의 일만 제안한다.
-⛔ 고른 뒤에는 다시 묻지 않는다 — 안 고른 것은 «나중에 하기»로 남는다. 고른 것이 다 끝나면 카드가 사라진다.
+⛔ 고른 뒤에는 다시 묻지 않는다(대화창 질문). 조종석은 줄마다 «시작하기» 하나 — 누른 일은 «하는 중», 끝난 일은 사라진다(대표님 2026-11-03 «가»).
 
 쓰는 법: 따라잡기.py [--json]            지금 셈
          따라잡기.py 고름 <id,id,…>        사용자가 고른 것 적기 (id: 표준 · 실패 · 검증 · 기획)
@@ -99,20 +99,22 @@ def compute(ledger=None):
                 "끝": bool(기획세부) and 기획끝 == len(기획세부), "남은것": []},
     }
     목록 = [dict(id=k, **제안[k]) for k in 차례 if 제안[k]["단계"] < cur and not 제안[k]["끝"]]
-    고름, 건너뜀 = None, False
+    고름, 건너뜀, 적힘 = [], False, False
     for c in 줄:
         if len(c) > 2 and c[1] == "따라잡기":
+            적힘 = True
             if c[2] == "고름":
-                고름, 건너뜀 = [x for x in (c[3] if len(c) > 3 else "").split(",") if x in 제안], False
+                for x in (c[3] if len(c) > 3 else "").split(","):
+                    if x in 제안 and x not in 고름:
+                        고름.append(x)
+                건너뜀 = False
             elif c[2] == "건너뜀":
                 고름, 건너뜀 = [], True
-    if 고름 is None:
-        return {"보일까": bool(목록), "고름": None, "단계": 단계들[cur], "제안": 목록}
-    고른것 = [dict(id=k, **제안[k]) for k in 차례 if k in 고름]
-    안고른것 = [dict(id=k, **제안[k]) for k in 차례 if k not in 고름 and 제안[k]["단계"] < cur and not 제안[k]["끝"]]
-    남음 = [x for x in 고른것 if not x["끝"]]
-    return {"보일까": bool(남음), "고름": 고름, "건너뜀": 건너뜀, "단계": 단계들[cur],
-            "고른것": 고른것, "안고른것": 안고른것, "끝": len(고른것) - len(남음)}
+    for x in 목록:
+        x["고름"] = x["id"] in 고름
+    끝낸것 = [k for k in 고름 if 제안[k]["끝"]]
+    return {"보일까": bool(목록) and not 건너뜀, "단계": 단계들[cur], "제안": 목록,
+            "고름": (고름 if 적힘 else None), "건너뜀": 건너뜀, "끝낸것": 끝낸것}
 
 
 def 적기(종류, 값=""):
@@ -131,9 +133,9 @@ def 적기(종류, 값=""):
     if 종류 == "건너뜀":
         print("  · 따라잡기 제안을 건너뛰었습니다 — 지금 단계 일을 이어 가십시오.")
         return
-    print("  · 따라잡기 — 고른 것: " + " · ".join(x["이름"] for x in d.get("고른것", [])))
-    for x in d.get("고른것", []):
-        if x["끝"]:
+    print("  · 따라잡기 — 하는 중: " + " · ".join(x["이름"] for x in d.get("제안", []) if x.get("고름")))
+    for x in d.get("제안", []):
+        if not x.get("고름"):
             continue
         덧 = (" — 남은 기능: " + " · ".join(x["남은것"][:12])) if x.get("남은것") else ""
         print(f"    [모델] {x['이름']}: {x['지금']}{덧}")

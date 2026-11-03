@@ -167,6 +167,7 @@ case "$KIND" in
   등록|등록범위) _NFP="$(nf_part 등록)" || exit 1; . "$_NFP" ;;
   바로잡기) _NFP="$(nf_part 바로잡기)" || exit 1; . "$_NFP" ;;
   따라잡기) python3 -I "$NF_PYDIR/../tools/따라잡기.py" "${@:2}" ;;
+  개인정보초안) python3 -I "$NF_PYDIR/../tools/개인정보초안.py" "${NF_ROOT:-$PWD}" ;;
   레드팀) _NFP="$(nf_part 레드팀)" || exit 1; . "$_NFP" ;;
   기여동의|기여후보|기여|기여목록|기여취소) _NFP="$(nf_part 기여)" || exit 1; . "$_NFP" ;;
 

@@ -572,11 +572,25 @@ try:
     _따라잡기 = _dj.compute()
 except Exception:
     _따라잡기 = None
+try:
+    _dk_s = _ilu.spec_from_file_location("_dk", os.path.join(os.environ.get("TOOLS", ""), "단계끝.py"))
+    _dk = _ilu.module_from_spec(_dk_s); _dk_s.loader.exec_module(_dk)
+    _단계끝 = _dk.compute()
+except Exception:
+    _단계끝 = None
+try:
+    _sc_s = _ilu.spec_from_file_location("_sc", os.path.join(os.environ.get("TOOLS", ""), "스토어연결.py"))
+    _sc = _ilu.module_from_spec(_sc_s); _sc_s.loader.exec_module(_sc)
+    _스토어연결 = _sc.compute()
+except Exception:
+    _스토어연결 = None
 w("now.json", {"stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
                  .isoformat(timespec="seconds").replace("+00:00", "Z"),
                "앱이름": _appname, "폴더": _folder,
                "가져오기": _가져오기,
                "따라잡기": _따라잡기,
+               "단계끝": _단계끝,
+               "스토어연결": _스토어연결,
                "stage": stage, "stageLabel": stage_label,
                "decisions": len(decisions), "broken": sum(1 for x in decisions if x["broken"]),
                "blocks": len(blocks), "ask": card,

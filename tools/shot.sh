@@ -32,7 +32,15 @@ mkdir -p "$OUT"
 [ -f "$(dirname "$PROJ")/project.yml" ] && command -v xcodegen >/dev/null && \
   (cd "$(dirname "$PROJ")" && xcodegen generate >/dev/null)
 
-UDID=$(xcrun simctl list devices | grep Booted | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+if [ "${SHOT_STORE:-}" = 1 ]; then
+  UDID=$(xcrun simctl list devices | grep Booted | grep "Pro Max" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+  [ -n "$UDID" ] || UDID=$(xcrun simctl list devices available | grep -E "iPhone (1[6-9]|2[0-9]) Pro Max" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+  [ -n "$UDID" ] || die "스토어용으로 찍을 가장 큰 iPhone 기기가 없다(Xcode 의 기기 목록에 Pro Max 를 더할 것)."
+  OUT="${SHOT_DIR:-/tmp/${SCHEME}-store}"; mkdir -p "$OUT"
+  xcrun simctl list devices | grep "$UDID" | grep -q Booted || { echo "부팅: $UDID"; xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1 || true; }
+else
+  UDID=$(xcrun simctl list devices | grep Booted | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+fi
 if [ -z "$UDID" ]; then
   UDID=$(xcrun simctl list devices available | grep -E "iPhone 1[6-9]|iPhone 2[0-9]" \
          | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
@@ -41,6 +49,9 @@ if [ -z "$UDID" ]; then
   xcrun simctl boot "$UDID"
   xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1 || true
 fi
+
+[ "${SHOT_STORE:-}" = 1 ] && xcrun simctl status_bar "$UDID" override --time 9:41 --batteryState charged --batteryLevel 100 \
+  --cellularMode active --cellularBars 4 --wifiBars 3 >/dev/null 2>&1 || true
 
 xcrun simctl spawn "$UDID" defaults write com.apple.Accessibility ReduceMotionEnabled -bool true 2>/dev/null || true
 
@@ -83,6 +94,11 @@ else
   for s in "$@"; do i=$((i+1)); shoot "$(printf '%02d-%s' "$i" "$s")" "$ARG" "$s"; done
 fi
 xcrun simctl terminate "$UDID" "$BUNDLE" >/dev/null 2>&1 || true
+if [ "${SHOT_STORE:-}" = 1 ]; then
+  xcrun simctl status_bar "$UDID" clear >/dev/null 2>&1 || true
+  for f in "$OUT"/*.png; do [ -f "$f" ] && echo "  · $(basename "$f") — $(sips -g pixelWidth -g pixelHeight "$f" 2>/dev/null | awk '/pixel/{print $2}' | paste -sd'x' -) 픽셀"; done
+  echo "  스토어용 사진은 $OUT 에 있습니다 — 앱스토어 웹의 «iPhone» 사진 칸에 올리면 됩니다."
+fi
 
 _shot_root="$(python3 -I -c 'import os, sys; print(os.path.dirname(os.path.dirname(os.path.realpath(sys.argv[1]))))' "${BASH_SOURCE[0]}" 2>/dev/null)"
 if [ -f "${_shot_root:-/nonexistent}/.nightflight-dev" ]; then SHOT_KEEP_DAYS="${SHOT_KEEP_DAYS:-30}"; else SHOT_KEEP_DAYS="${SHOT_KEEP_DAYS:-0}"; fi
