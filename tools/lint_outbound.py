@@ -99,6 +99,9 @@ def main() -> int:
         print("     ⭐ 고치는 법: 프록시를 막은 여는것을 만들어 그것으로 부르십시오.")
         print("        [모델] urllib.request.build_opener(urllib.request.ProxyHandler({}))")
         return 1
+    if not (HERE / "tests").is_dir():
+        print("  ⚠️ 받는 분에게 깔린 판이라 봉투 표지를 재지 못했습니다(표지는 만드는 쪽 주석에 있고 배포 때 걷힙니다) — «통과»가 아닙니다.")
+        return 0
     hits, gives = [], []
     for f in sorted(list((HERE / "bin").rglob("*.sh")) + list((HERE / "tools").rglob("*.py"))
                     + list((HERE / "tools").rglob("*.sh")) + list((HERE / "probe").rglob("*.sh"))):
