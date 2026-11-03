@@ -129,7 +129,7 @@ def 조건(idx, lp=None):
     return out
 
 
-def 넘기(목표이름, 이유="", lp=None):
+def 넘기(목표이름, 이유="", lp=None, 적기=False):
     lp = Path(lp) if lp else _기록()
     to = 번호(목표이름, lp)
     if to is None:
@@ -148,6 +148,9 @@ def 넘기(목표이름, 이유="", lp=None):
     if not 안됨:
         return 0
     if 이유.strip():
+        if not 적기:
+            print("  · 끝나지 않은 것을 남기고 넘어갑니다(이유는 단계가 바뀔 때 기록합니다): " + " · ".join("%s %s" % (단계들[k], x["이름"]) for k, x in 안됨))
+            return 0
         with open(lp, "a", encoding="utf-8") as f:
             f.write("\t".join([__import__("time").strftime("%Y-%m-%d"), "단계건너뜀", "%d→%d" % (cur, to),
                                이유.replace("\t", " ").replace("\n", " "), "", "", ""]) + "\n")
@@ -185,4 +188,6 @@ if __name__ == "__main__":
         sys.exit(0)
     if a[:1] == ["넘기"]:
         sys.exit(넘기(a[1] if len(a) > 1 else "", a[2] if len(a) > 2 else ""))
+    if a[:1] == ["건너뜀적기"]:
+        sys.exit(넘기(a[1] if len(a) > 1 else "", a[2] if len(a) > 2 else "", 적기=True))
     print(json.dumps(compute(), ensure_ascii=False, indent=1))

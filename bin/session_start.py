@@ -326,11 +326,11 @@ if (_dk0 := (now or {}).get("단계끝") or {}).get("단계") in (0, 1, 2):
 _sc0 = (now or {}).get("스토어연결") or {}
 if _sc0.get("보일까"):
     say("🔌 **앱스토어 연결이 아직 없습니다**(%s) — 출시 때 스토어 정보 · 사진 · 심사 메모를 AI가 대신 넣으려면 먼저 연결해야 합니다." % 적음(_sc0.get("애플", ""), 20))
-    say("   [모델] 사용자 첫 말에 답한 뒤 «앱스토어 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 tools/asc.py 준비 를 불러 나온 차례를 하나씩 안내하십시오.")
+    say("   [모델] 사용자 첫 말에 답한 뒤 «앱스토어 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 %s 준비 를 불러" % os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "asc.py") + " 나온 차례를 하나씩 안내하십시오.")
     say()
 if _sc0.get("구글보일까"):
     say("🔌 **구글 플레이 연결이 아직 없습니다** — 출시 때 스토어 정보를 AI가 대신 넣으려면 먼저 연결해야 합니다.")
-    say("   [모델] «구글 플레이 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 tools/gplay.py 준비 를 불러 나온 차례를 하나씩 안내하십시오.")
+    say("   [모델] «구글 플레이 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 %s 준비 를 불러" % os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "gplay.py") + " 나온 차례를 하나씩 안내하십시오.")
     say()
 
 if isinstance((now or {}).get("단계끝"), dict) and (now or {}).get("단계끝", {}).get("단계") in (5, 6, 7, 8):

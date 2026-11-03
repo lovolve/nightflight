@@ -146,6 +146,8 @@ def jwt() -> str:
 
 def req(method: str, path: str, body=None, raw=False):
     url = API + path if path.startswith("/") else path
+    if not url.startswith(API + "/"):
+        sys.exit("애플 앱스토어 주소(" + API + ")로만 보냅니다 — 다른 주소에는 애플 인증을 싣지 않습니다.")
     r = urllib.request.Request(url, method=method,
                                headers={"Authorization": "Bearer " + jwt(),
                                         "Content-Type": "application/json"})

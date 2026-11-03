@@ -78,7 +78,7 @@ if [ -f "$L" ] && [ -n "${GAP:-}" ] && [ "${GAP:-0}" -ge 86400 ]; then
       _THIS=$(date +%Y-%m)
       if [ "$(cat "$_MARK" 2>/dev/null)" != "$_THIS" ]; then
         _OLD=$(awk -F'\t' '!/^#/ && NF>3 && $4!=""{if (o=="" || $4<o) o=$4} END{print o}' \
-               "$(dirname "$0")/../../nightflight-server/catalog/관문-기준값.tsv" 2>/dev/null)
+               "$(python3 -I "$(dirname "$0")/../tools/관문기준값.py" 자리 2>/dev/null)" 2>/dev/null)
         if [ -n "${_OLD:-}" ]; then
           _D=$(( (NOW - $(date -j -f '%Y-%m-%d' "$_OLD" +%s 2>/dev/null || echo "$NOW")) / 86400 ))
           OUT="$OUT · 규정을 마지막으로 읽은 것이 ${_D}일 전입니다(바뀌었는지는 모릅니다)"

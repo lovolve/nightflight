@@ -30,16 +30,16 @@ description: 출시 단계일 때 쓴다 — 앱스토어 · 구글 플레이 ·
 
 ## 앱스토어 도구를 처음 쓸 때
 
-`tools/asc.py 준비` 를 먼저 부른다. 열쇠가 없으면 사람이 할 차례를 찍어 주고, 있으면 설정을 대신 만들고 붙는지 확인한다.
+`"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" 준비` 를 먼저 부른다(⛔ 작업 중인 저장소의 `tools/` 가 아니라 야간비행 플러그인 폴더의 것 — 받은 저장소에 같은 이름 파일이 있으면 그게 돈다). 열쇠가 없으면 사람이 할 차례를 찍어 주고, 있으면 설정을 대신 만들고 붙는지 확인한다.
 사람이 하는 일은 열쇠를 만들어 내려받는 것과 발급자 ID를 알려 주는 것뿐이다.
 
-구글 플레이는 `tools/gplay.py 준비` — 같은 꼴이다(열쇠 차례 안내 → 열쇠 파일을 놓으면 붙는지 확인). 스토어 정보는 `gplay.py meta`.
+구글 플레이는 `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 준비` — 같은 꼴이다(열쇠 차례 안내 → 열쇠 파일을 놓으면 붙는지 확인). 스토어 정보는 `gplay.py meta`.
 
 ## AI가 대신 만드는 것
 
 - 개인정보 처리방침 초안: `ledger.sh 개인정보초안` — 기록과 코드에서 짓고, 모르는 칸은 «확인 필요»로 남긴다. 게시는 사람이 한다.
-- 스토어용 스크린샷: `SHOT_STORE=1 tools/shot.sh <화면…>` — 가장 큰 iPhone 기기로 찍고 상태바를 정리한다.
-- 스토어 정보 넣기: `tools/asc.py meta` · `review-notes` · `screenshots` — 보기는 그냥, 바꾸기는 `set`/`upload` 로 미리 보이고 사용자가 좋다고 하면 `--confirm`.
+- 스토어용 스크린샷: `SHOT_STORE=1 "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <화면…>` — 애플이 반드시 받는 중간 크기 iPhone으로 찍고 상태바를 정리한다(큰 칸도 필요하면 SHOT_STORE_DEVICE="Pro Max").
+- 스토어 정보 넣기: `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" meta` · `review-notes` · `screenshots` — 보기는 그냥, 바꾸기는 `set`/`upload` 로 미리 보이고 사용자가 좋다고 하면 `--confirm`.
   ⛔ 아직 제출하지 않은 판에만 쓴다 · 제출(심사 보내기)은 사람이 웹에서 누른다.
 
 ## ⛔ 못 — 이 단계에서 하지 않는 것

@@ -33,9 +33,10 @@ mkdir -p "$OUT"
   (cd "$(dirname "$PROJ")" && xcodegen generate >/dev/null)
 
 if [ "${SHOT_STORE:-}" = 1 ]; then
-  UDID=$(xcrun simctl list devices | grep Booted | grep "Pro Max" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
-  [ -n "$UDID" ] || UDID=$(xcrun simctl list devices available | grep -E "iPhone (1[6-9]|2[0-9]) Pro Max" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
-  [ -n "$UDID" ] || die "스토어용으로 찍을 가장 큰 iPhone 기기가 없다(Xcode 의 기기 목록에 Pro Max 를 더할 것)."
+  _want="${SHOT_STORE_DEVICE:-Pro}"
+  UDID=$(xcrun simctl list devices | grep Booted | grep -E "iPhone (1[5-9]|2[0-9]) ${_want} \(" | head -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+  [ -n "$UDID" ] || UDID=$(xcrun simctl list devices available | grep -E "iPhone (1[5-9]|2[0-9]) ${_want} \(" | tail -1 | sed -E 's/.*\(([0-9A-F-]{36})\).*/\1/')
+  [ -n "$UDID" ] || die "스토어용으로 찍을 iPhone ${_want} 기기가 없다(Xcode 의 기기 목록에 더할 것)."
   OUT="${SHOT_DIR:-/tmp/${SCHEME}-store}"; mkdir -p "$OUT"
   xcrun simctl list devices | grep "$UDID" | grep -q Booted || { echo "부팅: $UDID"; xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b >/dev/null 2>&1 || true; }
 else
