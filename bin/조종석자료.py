@@ -782,6 +782,12 @@ try:
     _md["잰때"] = _time.time()
 except Exception as _e:
     _md = {"못쟀다": type(_e).__name__}
+try:
+    import 판확인 as _판확인
+    _판확인.뒤에서받기()
+    _md["판"] = _판확인.상태()
+except Exception:
+    pass
 w("machine.json", _md)
 
 try:

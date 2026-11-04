@@ -76,6 +76,15 @@ if 조종석말:
         say.append("야간비행: 사용자가 조종석을 열어 달라고 하셨는데 이 프로젝트의 조종석 주소가 아직 없습니다. "
                    "⛔ 조종석열기 · 브라우저 · 다른 창으로 열지 마십시오. 조종석을 올리는 안내(턴 끝 자동 점검)를 따라 먼저 올리고, 그다음 Artifact action \"open\" 으로 여십시오.")
 
+if re.search(r"(야간비행|조종석|플러그인)[^.\n]{0,12}(업데이트|최신 ?판|새 ?판)", prompt):
+    say.append(
+        "야간비행: 사용자가 야간비행 업데이트를 요청하셨습니다. 차례대로 하십시오. "
+        "클로드 코드: `claude plugin marketplace update lovolve` 뒤 `claude plugin update nightflight@lovolve -y`. "
+        "`claude` 명령이 없으면 클로드 앱 안의 실행 파일을 찾아 쓰십시오. "
+        "Codex: `codex plugin marketplace upgrade lovolve` 뒤 `codex plugin add nightflight@lovolve`. "
+        "⛔ 끝난 «뒤»에 명령 출력에서 판 번호를 확인해 전하고, 실패하면 실패라고 말하십시오. "
+        "그다음 앱을 다시 시작해야 적용된다고 말하십시오. Codex 는 `/hooks` 에서 다시 승인해야 할 수 있다고 함께 말하십시오.")
+
 if say:
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit",
                                              "additionalContext": "\n".join(say)}},

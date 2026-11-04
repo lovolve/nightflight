@@ -56,6 +56,7 @@ if [ -d "$NF_STATE/tools" ]; then
 fi
 
 python3 -I "$HERE/../tools/관문기준값.py" 받기 >/dev/null 2>&1 || true
+python3 -I "$HERE/../tools/판확인.py" 받기 >/dev/null 2>&1 || true
 bash "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 || true
 
 if ! { nf_dev 2>/dev/null && [ -n "${NF_PID:-}" ]; }; then NF_PID="$(nf_personid 2>/dev/null | tr -d "[:space:]")"; fi

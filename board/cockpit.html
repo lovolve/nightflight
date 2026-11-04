@@ -554,6 +554,11 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 
 .n-hero{border:1px solid var(--open-rule); border-radius:12px; background:var(--panel); padding:16px 16px 12px; margin:0 0 4px}
 .n-top{display:flex; gap:16px; align-items:center}
+.n-upd{flex:none; display:flex; align-items:center; gap:12px; font-size:var(--fs-5); color:var(--muted); text-align:right}   
+.n-upd .ok{color:var(--done-b)} .n-upd .new{color:var(--ink)}
+.n-upd button{all:unset; cursor:pointer; white-space:nowrap; font-size:var(--fs-5); line-height:1; padding:8px 12px; border-radius:999px; border:1px solid var(--muted); color:var(--ink)}
+.n-upd button:hover{background:var(--rule-2)} .n-upd button:focus-visible{outline:2px solid var(--open); outline-offset:2px}
+@media (max-width:620px){ .n-top{flex-wrap:wrap} .n-upd{flex-basis:100%; justify-content:space-between; text-align:left} }
 .n-pj{all:unset; cursor:pointer; margin-left:12px; vertical-align:3px; font-size:var(--fs-5); font-weight:400; color:var(--ink-2); border:1px solid var(--live-rule); border-radius:999px; padding:2px 12px; white-space:nowrap}
 .n-pj:hover, .n-pj[aria-expanded="true"]{border-color:var(--muted); color:var(--ink)} .n-pj:focus-visible{outline:2px solid var(--open); outline-offset:2px}
 .n-pjm{margin:12px 0 0 64px; max-width:380px; border:1px solid var(--live-rule); border-radius:12px; background:var(--ground); padding:8px}
@@ -1434,6 +1439,19 @@ header, .n-meta{padding-inline:16px}
     if(fd) fd.textContent = (폴더 && !shown) ? (' · 폴더 ' + 폴더) : '';
   }
 
+  function 판칸(md){
+    var 판=(md||{})['판']; if(!판||!판['지금']) return '';
+    var 글, 버튼='';
+    if(판['상태']==='필요'){
+      글='<span class="new">새 버전이 있습니다</span> · '+esc(판['지금'])+' → '+esc(판['최신']);
+      버튼='<button type="button" class="cp-say" data-say="'+esc(판['할말']||'')+'" aria-label="눌러서 복사 — '+esc(판['할말']||'')+'">업데이트하기</button>';
+    }
+    else if(판['상태']==='최신') 글='<span class="ok">최신 버전입니다</span> · '+esc(판['지금']);
+    else if(판['상태']==='앞섬') 글='공개 전 버전입니다 · '+esc(판['지금']);
+    else 글='최신 버전을 확인하지 못했습니다 · 지금 '+esc(판['지금']);
+    return '<div class="n-upd"><span>'+글+'</span>'+버튼+'</div>';
+  }
+
   function 맥걸림(md){
     if(!md||md['못쟀다']) return [];
     if(md['걸리나짝']) return md['걸리나짝'];
@@ -2214,7 +2232,7 @@ header, .n-meta{padding-inline:16px}
     var 새=(m>=1440?' stale':'');
     var 작은막대=''; if(cur!=null){ for(var q=0;q<STAGES.length;q++) 작은막대+='<i class="'+(q<cur?'d':(q===cur?'c':''))+'"></i>'; }
     h+='<div class="n-hero"><div class="n-top"><div class="n-ic"'+(포인트?' style="background:'+esc(포인트)+'"':'')+'>'+esc(이름.replace(/\s/g,'').slice(0,2))+'</div>'
-      +'<div class="n-ht"><h1><b id="appname"></b><span id="folder"></span>'+'<button type="button" class="n-pj" data-pj-menu aria-expanded="'+프로젝트열림+'">'+esc(플랜글(last.plan))+' '+(프로젝트열림?'▴':'▾')+'</button></h1>'+(한줄?'<p>'+esc(한줄)+'</p>':'')+'</div></div>'
+      +'<div class="n-ht"><h1><b id="appname"></b><span id="folder"></span>'+'<button type="button" class="n-pj" data-pj-menu aria-expanded="'+프로젝트열림+'">'+esc(플랜글(last.plan))+' '+(프로젝트열림?'▴':'▾')+'</button></h1>'+(한줄?'<p>'+esc(한줄)+'</p>':'')+'</div>'+판칸(last.machine)+'</div>'
       +(프로젝트열림?플랜목록(last.plan):'')
       +'<div class="n-bar">'+(cur!=null?'<span class="n-st"><span class="n-mini" aria-hidden="true">'+작은막대+'</span>지금 '+esc(STAGES[cur][1])+' 단계 · '+(cur+1)+'/9</span>':'<span></span>')
       +'<span class="c'+새+'"><i></i>'+esc(언제||'–')+' 새로 고침</span></div></div>';
@@ -2579,7 +2597,7 @@ header, .n-meta{padding-inline:16px}
   function 눌림말(t){ var e=document.querySelector('.n-didmsg'); if(e) e.textContent=t; 소리알림(t); }
 
   function setLive(on,t){var e=$('live'); e.className=on?'on':''; $('live-t').textContent=t; e.style.display=on?'none':'';}
-  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":"O","features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":"A","오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O"},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}}},"stuck":{"items":["A","O"]}};
+  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":"O","features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":"A","오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O"},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}}},"stuck":{"items":["A","O"]}};
   function 상자(x){ return x!==null && typeof x==='object' && !Array.isArray(x); }
   function 맞추기(v, f){
     if(f==='A'||Array.isArray(f)){ if(!Array.isArray(v)) return [];

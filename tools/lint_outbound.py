@@ -36,6 +36,7 @@ HERE = Path(__file__).resolve().parent.parent
 SKIP = {
     "tools/asc.py": "애플 App Store Connect — 사용자 자기 데이터",
     "tools/asc_mcp.py": "같은 것(MCP 로 감싼 것)",
+    "tools/판확인.py": "공개 저장소의 버전 글자만 읽는다 — 아무것도 안 보낸다(2026-11-04)",
     "tools/gplay.py": "구글 플레이 — 사용자 자기 데이터(2026-11-03 · asc.py 와 같은 까닭)",
     "tools/verify_upload.sh": "같은 것(올라갔는지 확인)",
     "tools/lint_user_facing.py": "낱말 목록에 `curl` 이 글자로 들어 있다",
