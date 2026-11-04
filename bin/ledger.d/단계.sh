@@ -11,7 +11,7 @@ case "$KIND" in
       for _k in 한줄 누구 문제; do awk -F'\t' -v k="$_k" '$2=="제품소개"&&$3==k&&$4!=""{f=1} END{exit !f}' "$STATE" 2>/dev/null || _MISSI="$_MISSI $_k"; done
       if [ -n "$_MISSI" ]; then
         echo "  ⛔ 검증에 들어가기 전에 이 제품을 간단히 적어야 합니다 — 아직:$_MISSI" >&2
-        echo "     ledger.sh 제품소개 <한줄|누구|문제|해결|수익> \"<사용자가 읽는 말>\"" >&2
+        echo "     ledger.sh 제품소개 <한줄|누구|문제|대안|왜지금|해결|뺄것|성공기준|첫사용자|수익> \"<사용자가 읽는 말>\"" >&2
         exit 1
       fi
     fi

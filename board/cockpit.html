@@ -1618,7 +1618,7 @@ header, .n-meta{padding-inline:16px}
     return !기획결정인가(x) && (m ? m === 기능 : 같은일(x.topic, 기능)); }); }
   function 기획모양(p){
     var 소=((last.features||{})['제품소개'])||{}, t='';
-    var 칸=[['누구','누구를 위한 것'],['문제','무엇을 푸나'],['해결','어떻게 푸나'],['수익','어떻게 돈을 버나']];
+    var 칸=[['누구','누구를 위한 것'],['문제','무엇을 푸나'],['대안','지금은 무엇으로 넘기나'],['왜지금','왜 지금인가'],['해결','어떻게 푸나'],['뺄것','첫 판에서 뺄 것'],['성공기준','성공 기준'],['첫사용자','첫 사용자를 만날 곳'],['수익','어떻게 돈을 버나']];
     var 있칸=칸.filter(function(k){ return 소[k[0]]; });
     if(소['한줄'] || 있칸.length) t+='<div class="sv-intro">'+(소['한줄']?'<p class="one">'+esc(소['한줄'])+'</p>':'')
       +있칸.map(function(k){ return '<div class="kv"><span class="k">'+k[1]+'</span><span class="v">'+esc(소[k[0]])+'</span></div>'; }).join('')+'</div>';

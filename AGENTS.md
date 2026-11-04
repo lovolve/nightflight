@@ -64,6 +64,12 @@ Cursor 는 이름이 다르다 — 그래서 아래 표에서 «아직 모른다
 - `hooks/src/engine/discovery.rs` 가 `CLAUDE_PLUGIN_ROOT` 를 **일부러** 넣어 준다
   (*"For OOTB compat with existing plugins that use this env var."*)
 
+⚠️ **Codex 에서 다른 점 넷 — 2026-11-04 공식 소스로 확인, 돌려 보지는 않았다**(이 컴퓨터에 Codex 가 없다).
+- 플러그인 자동 점검은 `/hooks` 에서 승인해야 돈다 — `hooks/src/engine/discovery.rs` 가 `Trusted` 인 것만 올린다. 내용이 바뀌면 `Modified` 로 돌아간다.
+- `CLAUDE_PLUGIN_ROOT` 는 **자동 점검에만** 들어간다(같은 파일). 스킬 글은 치환되지 않으므로 대화 시작 안내가 실제 폴더를 알려 준다.
+- 선택형 질문 `request_user_input` 은 계획 모드에서만 켜진다 — `features/src/lib.rs` 의 `default_mode_request_user_input` 이 기본 꺼짐이다.
+- 조종석 실시간 판은 클로드 전용 도구로 올린다. Codex 는 파일 판을 쓴다.
+
 ⛔⛔ **`hooks.json` 에 「`// 왜 …`」 열쇠를 두지 마라.** JSON 에 주석이 없어서 그렇게 적어 뒀었는데,
    Codex 의 `HooksFile` 에 `deny_unknown_fields` 가 걸려 있어 **맨 위의 그 열쇠 하나로 파일 전체가
    거절된다** — Codex 에서 훅이 **하나도** 안 붙을 상태였다(2026-10-25 발견).
