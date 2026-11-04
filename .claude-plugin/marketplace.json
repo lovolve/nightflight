@@ -4,13 +4,13 @@
     "name": "Lovolve",
     "email": "support@lovolve.app"
   },
-  "description": "혼자 앱을 내는 창업자를 위한 도구",
+  "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계",
   "plugins": [
     {
       "name": "nightflight",
       "source": ".",
-      "description": "야간비행 — 밖이 안 보여도 계기로 난다",
-      "version": "0.1.12"
+      "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계",
+      "version": "0.1.13"
     }
   ]
 }
