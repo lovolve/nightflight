@@ -1289,7 +1289,8 @@ header, .n-meta{padding-inline:16px}
 .sv-mx-row i.d, .sv-key i.d{background:var(--done-b); border-color:var(--done-b); border-width:2px; box-sizing:border-box}      
 .sv-dev .htl{fill:var(--live)} .sv-dev .fl{fill:url(#sv-ht); opacity:.75} .sv-dev .fl.full{opacity:.9}
 
-.n-res .fixb{align-self:flex-start; margin-top:8px; flex:none; max-width:100%; overflow:hidden; text-overflow:ellipsis; font-size:var(--fs-5); line-height:1; padding:8px 12px; border-radius:999px;
+.n-res .cell.act .cs{margin-bottom:8px}   
+.n-res .fixb{align-self:flex-start; margin-top:auto; flex:none; max-width:100%; overflow:hidden; text-overflow:ellipsis; font-size:var(--fs-5); line-height:1; padding:8px 12px; border-radius:999px;
   border:1px solid var(--muted); color:var(--ink); background:transparent; white-space:nowrap}   
 .n-res .cell.act:hover .fixb{background:var(--rule-2)}
 </style>
@@ -1483,9 +1484,11 @@ header, .n-meta{padding-inline:16px}
       : ('<div class="mid"><span class="slot">'
          +도넛(쓴값==null?null:쓴값/100,'pbg','parc',쓴값==null?'얼마나 썼는지 못 쟀습니다':(쓴값+'% 씀'))
          +'</span><span class="val'+(뜨?'':' good')+'">'+esc(빈)+'<small>GB</small></span></div>');
-    var 용량='<div class="cell'+(뜨?' hot':'')+'"><span class="ck">여유 저장공간</span>'
+    var 용량말=((md['할말']||{})['저장공간'])||'저장공간 정리해줘';
+    var 용량정리=(빈!=null)&&!(뜨&&((md['만들다남은것GB']||0)+(md['시뮬기기GB']||0)));
+    var 용량='<div class="cell'+(용량정리?' act':'')+(뜨?' hot':'')+'"'+(용량정리?(' role="button" tabindex="0" data-say="'+esc(용량말)+'" aria-label="눌러서 복사 — '+esc(용량말)+'"'):'')+'><span class="ck">여유 저장공간</span>'
       +용량속
-      +'<span class="cs">'+(쓴값==null?'얼마나 썼는지 못 쟀습니다':(쓴값+'% 씀'+(뜨?'':' · <span class="good">여유 있음</span>')))+'</span></div>';
+      +'<span class="cs">'+(쓴값==null?'얼마나 썼는지 못 쟀습니다':(쓴값+'% 씀'+(뜨?'':' · <span class="good">여유 있음</span>')))+'</span>'+(용량정리?'<span class="fixb">정리하기</span>':'')+'</div>';
 
     var 부팅=md['시뮬부팅']||0, 유령=md['유령']||0, 유령못잼=(md['유령']==null);
     var 전화기='<div class="ph"><svg width="26" height="40" viewBox="0 0 26 40" role="img"'
