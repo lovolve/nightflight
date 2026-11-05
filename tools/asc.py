@@ -42,12 +42,6 @@ API = "https://api.appstoreconnect.apple.com"
 
 
 def _찾아본곳() -> list:
-    """자격증명을 찾아볼 곳. ⛔ **옆 앱 폴더는 일부러 안 뒤진다** —
-    못 찾으면 옆 앱 «계정»으로 조용히 붙는 사고가 난다(2026-09-12 와 같은 모양,
-    대상이 계정이라 더 나쁘다). 배포될 도구에 남의 앱 이름이 박히는 문제도 같이 있었다.
-
-    ⭐ 둘뿐이다 — **이 앱의 것**이거나 **명시적으로 지목한 것**.
-    """
     cands = []
     if os.environ.get("ASC_ENV"):
         cands.append(Path(os.environ["ASC_ENV"]).expanduser())
@@ -57,11 +51,6 @@ def _찾아본곳() -> list:
 
 
 def _env_path():
-    """찾으면 돌려주고 **없으면 None**.
-
-    ⛔ **여기서 종료하지 않는다** — 그래야 시험이 부를 수 있다.
-    ⭐ 무엇을 골랐는지는 **언제나** 말한다. 조용히 고르지 않는다.
-    """
     for p in _찾아본곳():
         if p.exists():
             print(f"[asc] 자격증명: {p}", file=sys.stderr)
@@ -70,7 +59,6 @@ def _env_path():
 
 
 def _열쇠없음(cands) -> None:
-    """열쇠가 없을 때 하는 일 **전부**. 여기서 끝난다(종료)."""
     try:
         _kd = Path.home() / ".appstoreconnect" / "private_keys"
         _kd.mkdir(parents=True, exist_ok=True)
@@ -114,7 +102,6 @@ def _b64(d: bytes) -> bytes:
 
 
 def jwt() -> str:
-    """ES256 JWT — openssl로 서명하고 DER을 raw r||s로 편다. (asc_api.py에서 이식)"""
     env = _env()
     key_id, issuer = env["ASC_KEY_ID"], env["ASC_ISSUER_ID"]
     p8 = os.path.expanduser(f"~/.appstoreconnect/private_keys/AuthKey_{key_id}.p8")
@@ -180,7 +167,6 @@ def app_id(args) -> str:
 
 
 def _이폴더번들() -> str:
-    """이 폴더(작업 중인 앱)의 번들 id — project-root.sh 의 nf_bundleid 와 같은 판정(Xcode 설정에서 읽는다)."""
     import re as _re
     for p in sorted(Path.cwd().glob("**/project.pbxproj"))[:5]:
         if "Pods" in p.parts or "node_modules" in p.parts:
@@ -193,12 +179,6 @@ def _이폴더번들() -> str:
 
 
 def cmd_준비(rest):
-    """처음 켜기 — ⚠️ 화면 이름(«사용자 및 액세스» · «통합» · «팀 키»)은 2026-11-03 기준 기억으로 적었다 · 실제 화면과 대조는 아직 안 했다.
-    열쇠 파일을 찾고 설정 파일(asc.env)을 AI가 대신 만든다. 사람 몫은 «열쇠 만들기 · 내려받기 · 발급자 번호 알려 주기»뿐이다.
-
-    🔴 2026-11-03 출시 레드팀 🔴4: 열쇠가 없으면 «열쇠 파일을 끌어다 놓으라»는 안내만 나왔는데, 도구는 열쇠 번호가 적힌
-       설정 파일(asc.env)을 먼저 찾아서, 안내대로 해도 계속 실패했다. 열쇠 만드는 화면 위치와 «한 번만 내려받을 수 있다»는 말도 없었다.
-    """
     kd = Path.home() / ".appstoreconnect" / "private_keys"
     kd.mkdir(parents=True, exist_ok=True)
     keys = sorted(kd.glob("AuthKey_*.p8"), key=lambda p: p.stat().st_mtime, reverse=True)
@@ -302,8 +282,6 @@ def _앱언어(app: str):
 
 
 def cmd_meta(app: str, rest):
-    """meta                              고칠 수 있는 판의 스토어 정보 보기(언어마다)
-    meta set <언어> <칸> <값> [--confirm]   한 칸 바꾸기 — --confirm 없이는 바뀔 내용만 보인다"""
     v = _고칠판(app)
     if not rest:
         print(f"== {v['attributes']['versionString']} ({v['attributes'].get('appStoreState')}) ==")
@@ -342,8 +320,6 @@ def cmd_meta(app: str, rest):
 
 
 def cmd_review_notes(app: str, rest):
-    """review-notes                         심사 담당자에게 보이는 메모 · 연락처 보기
-    review-notes set <메모> [--confirm]     메모 바꾸기(시험 계정 · 기능 설명)"""
     v = _고칠판(app)
     d = req("GET", f"/v1/appStoreVersions/{v['id']}/appStoreReviewDetail").get("data")
     if not rest:
@@ -371,8 +347,6 @@ def cmd_review_notes(app: str, rest):
 
 
 def cmd_screenshots(app: str, rest):
-    """screenshots                                  언어 · 기기 종류마다 올라간 사진 수 보기
-    screenshots upload <언어> <사진…> [--confirm]   사진 올리기(가장 큰 iPhone 칸) — 올린 차례대로 붙는다"""
     v = _고칠판(app)
     locs = _판언어(v)
     if not rest:
@@ -465,7 +439,6 @@ _FENCE_CHARS = re.compile(r"[⟦⟧]") if "re" in dir() else None
 
 
 def _untrusted(s: str) -> str:
-    """제3자가 쓴 글을 «자료»로 표시한다. 지시로 읽히지 않게 한다."""
     if not s:
         return s
     s = s.replace("⟦", "").replace("⟧", "")
@@ -537,7 +510,6 @@ def cmd_sales(rest):
 
 
 def cmd_builds(app: str, rest):
-    """업로드한 빌드의 처리 상태 — 업로드 직후 '처리 중'이 끝났는지 확인."""
     r = req("GET", f"/v1/builds?filter[app]={app}&limit=8&sort=-uploadedDate"
                    "&fields[builds]=version,processingState,uploadedDate,expired")
     for b in r.get("data", []):
@@ -548,7 +520,6 @@ def cmd_builds(app: str, rest):
 
 
 def cmd_testflight(app: str, rest):
-    """베타 그룹 조회 / 테스터 초대 — 웹에서 한 명씩 넣던 것."""
     if not rest or rest[0] == "groups":
         r = req("GET", f"/v1/apps/{app}/betaGroups?limit=10"
                        "&fields[betaGroups]=name,publicLinkEnabled,publicLink,createdDate")
@@ -569,7 +540,6 @@ def cmd_testflight(app: str, rest):
 
 
 def cmd_price(app: str, rest):
-    """가격 일정 조회 — 무료/유료와 기준 지역을 확인."""
     r = req("GET", f"/v1/apps/{app}/appPriceSchedule"
                    "?include=baseTerritory,manualPrices&limit[manualPrices]=5")
     base = None

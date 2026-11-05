@@ -1,22 +1,5 @@
 #!/usr/bin/env python3
-"""규칙 0 검사 — 사용자에게 보이는 문구에 개발 용어가 있나.
-
-⛔ 왜 이 검사가 있나 (2026-10-03): `RULE-0.md` 에 이력이 적혀 있다.
-   §23 이 「개발용어는 권력이다」를 이미 적어 뒀는데 **그 문서를 인용하면서 어겼다** —
-   온보딩에 셸 명령 8개를 넣었고, `asc.py:66` 이 비개발자에게
-   「열쇠(.p8)를 이 앱의 tools/ 폴더에」라고 말하고 있었다.
-   ⭐ **규칙을 아는 것으로는 안 지켜진다. 그래서 검사로 만든다.**
-
-무엇을 보나 — «사용자 눈에 직접 닿는 것»만 본다
-   1. `ledger.sh` 호출의 사용자 문구 인자 (제목·왜·하실 일)
-   2. `board/cockpit.html` 의 화면 문자열
-   3. 옆 저장소 `../nightflight-server/explain/*.md` (있으면)
-
-⛔ 주석은 가린다 — 사고 기록이 옛 문장을 «인용»한다.
-   2026-10-03 시험 8 에서 실제로 그 오탐이 났다.
-⛔ 낱말 체크리스트는 «일부러» 개발 낱말을 보인다 → 파일 첫 20줄에
-   `RULE-0: 낱말 목록` 이 있으면 그 파일은 건너뛴다.
-"""
+"""규칙 0 검사 — 사용자에게 보이는 문구에 개발 용어가 있나."""
 import pathlib
 import re
 import sys
@@ -82,9 +65,6 @@ SEOLMYEONG = {
 
 
 def 우리링크(f: Path) -> bool:
-    """손님 폴더에 놓인 «우리 파일로 가는 링크»인가 — 그 파일은 손님 것이 아니다.
-    🔴 11~13회차 ④⑤(돌려서 확인): 설치가 tools/ 에 건 링크 파일(우리 검사 도구)을 «손볼 곳 9곳»으로 손님 모델에게 넘겼다 —
-      모델이 고치면 링크를 타고 «모든 앱이 같이 쓰는» 플러그인 원본이 바뀐다."""
     try:
         return f.is_symlink() and Path(__file__).resolve().parent.parent in f.resolve().parents
     except OSError:
@@ -92,8 +72,6 @@ def 우리링크(f: Path) -> bool:
 
 
 def 기록자리(뿌리: Path) -> Path:
-    """그 제품의 기록 자리 — `.nightflight`, 없으면 `.claude`(셸 project-root.sh · tools/_root.py 와 같은 규칙: 있는 폴더 먼저).
-    🔴 13회차 ⑤⑥: `.claude` 를 박아 새 꼴(.nightflight) 제품의 기록을 못 읽었다."""
     for d in (".nightflight", ".claude"):
         if (뿌리 / d).is_dir() and (d != ".claude" or (뿌리 / d / "ledger.tsv").is_file()):
             return 뿌리 / d
@@ -101,9 +79,6 @@ def 기록자리(뿌리: Path) -> Path:
 
 
 def 설명찾기(낱말: str) -> str:
-    """⭐ 표에 **조사가 붙은 꼴**(`저장소에`·`터미널에`)로 들어 있는 것이 있다 —
-    그대로 못 찾으면 **끝의 조사를 떼고** 한 번 더 본다. 그래도 없으면 빈 글자다.
-    ⛔ 지어내지 않는다 — 설명이 없으면 **없는 채로** 나가고, 그건 적어야 할 일이다."""
     if 낱말 in SEOLMYEONG:
         return SEOLMYEONG[낱말]
     for 조사 in ("에서", "으로", "에", "을", "를", "이", "가", "은", "는", "의", "도"):
@@ -113,10 +88,6 @@ def 설명찾기(낱말: str) -> str:
 
 
 def 내앱말(root=None) -> set:
-    """⭐ **그 사람이 «지은» 이름** — 앱 이름과 기능 지도의 말.
-    . 설명을 붙이지 않고 바꾸지도 않는다.
-    ⚠️ 지금 아는 자리는 **둘**이다 — 앱 이름과 기능 지도. 그 밖에 지으신 이름은
-       우리가 알 길이 없다. 0 이 「그 사람 말이 없다」는 뜻이 아니다."""
     import json as _j
     r = pathlib.Path(root) if root else pathlib.Path(".")
     out = set()
@@ -187,7 +158,6 @@ SEOLMYEONG.update(_풀이)
 
 
 def _alt(words):
-    """정규식 묶음을 만든다. ⛔ **긴 것부터** — 「CI/CD」가 「CI」로 먼저 잡히면 뒤가 남는다."""
     return "|".join(re.escape(w) for w in sorted(words, key=len, reverse=True))
 
 
@@ -210,7 +180,6 @@ SKIP_MARK = "RULE-0: 낱말 목록"
 
 
 def _strip_comments(line: str, kind: str) -> str:
-    """주석을 지운다 — 사고 기록이 옛 문장을 인용한다."""
     if kind in ("py", "sh"):
         s = line.lstrip()
         if s.startswith("#"):
@@ -241,7 +210,6 @@ GLOSS = re.compile(r"(이)?라고 부릅니다")
 
 
 def _설명붙었나(text: str, word: str) -> bool:
-    """그 낱말 **바로 뒤**에 괄호 설명이 붙어 있나. ⛔ 다른 자리의 괄호는 안 센다."""
     i = text.find(word)
     if i < 0:
         return False
@@ -252,8 +220,6 @@ TAUGHT = []
 
 
 def _onboarding_known() -> set:
-    """온보딩에서 **안다고 체크하신** 낱말 (`아는낱말` 줄, 띄어쓰기로 나뉜다).
-    ⛔ 이건 세지 않는다 — **한 번 안다고 하셨으면 아는 것**이다. 세는 것은 «쓰기 시작한 것»뿐이다."""
     try:
         home = os.environ.get("NIGHTFLIGHT_HOME") or str(pathlib.Path.home() / ".nightflight")
         f = pathlib.Path(home) / "사람.tsv"
@@ -270,14 +236,6 @@ def _onboarding_known() -> set:
 
 
 def 올라간낱말() -> set:
-    """대표님이 «먼저 쓰신» 낱말 — 적응형 사전이 올려 둔 것.
-
-    🔴 **이 연결이 빠져 있었다**(2026-10-08 발견). `word_rise.sh` 가 올림을
-      사람 기록에 적기만 하고, 이 검사는 그걸 «안 읽었다» — 올려도 계속 울렸다.
-      실제로 「Xcode」가 2026-10-05 에 올라가 있었는데 아무 데도 안 쓰였다.
-    ⭐ 설계(design/여정.md §적응형)는 「먼저 쓰면 조용히 올린다」이다.
-      올린 다음 조용해지지 않으면 올린 것이 아니다.
-    """
     import os
     home = os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight")
     try:
@@ -326,16 +284,6 @@ def _hits(text: str, around: str = ""):
 
 
 def scan_ledger_calls(root: Path):
-    """ledger.sh 를 부르는 곳의 «사용자 문구» 인자.
-
-    ⭐ **모델 통로는 여기서도 예외다** (2026-10-12). `scan_prints` 주석이 이 병을
-       이미 적어 뒀다 — 「그 예외가 거기만 적혀 있어 이 검사와 어긋나 있었다」.
-       🔴 **같은 일이 이 함수에 또 있었다**: 시작 훅이 모델에게 「`ledger.sh 표준목록`」을
-       알려 주는데 이 검사가 3곳을 물었다. 모델은 그 명령을 «그대로» 알아야 한다 —
-       풀어 쓰면 못 돌린다.
-    ⛔ 표지 규칙·세는 자리는 `scan_prints` 와 **같은 것을 쓴다**(`MODEL_ONLY`) —
-       두 곳에 두면 한쪽이 낡는다(우리 표준: 같은 것을 세는 자리는 하나만 둔다).
-    """
     bad = []
     for f in list(root.rglob("*.py")) + list(root.rglob("*.sh")):
         if ".git" in f.parts or "tests" in f.parts or 우리링크(f):
@@ -369,14 +317,6 @@ def scan_ledger_calls(root: Path):
 
 
 def scan_tables(root: Path):
-    """🔴 **표의 문구도 사용자에게 간다** (2026-10-08 에 실제로 샜다).
-
-    `data/기능.tsv` 의 「바로 말하는 것」이 조종석과 「묶임」 화면에 그대로 찍히는데
-    이 검사가 표를 안 보고 있었다 — 「시뮬레이터로는 확인이 안 돼」가 그대로 나갔다.
-    ⛔ 칸 번호를 여기 적지 않는다. 표가 머리글에 `RULE-0: 사용자 문구 칸 = N` 으로 밝힌다 —
-       검사 쪽에 목록을 두면 표가 늘 때 한 곳이 낡는다(이 저장소가 여러 번 치른 값).
-    ⚠️ 표지가 없는 표는 **안 본다.** 그 수를 세어 말한다 — 0 을 「안전」으로 찍지 않는다.
-    """
     bad, skipped, nouser = [], [], []
     d = root / "data"
     if not d.is_dir():
@@ -412,7 +352,6 @@ def scan_tables(root: Path):
 
 
 def scan_screen(root: Path):
-    """조종석 화면에 박힌 문자열."""
     bad = []
     f = root / "board" / "cockpit.html"
     if not f.exists():
@@ -430,11 +369,6 @@ def scan_screen(root: Path):
 
 
 def scan_user_speech(root: Path):
-    """⭐ 설계 문서 «안»의 사용자 말풍선만 본다 — `「…」` 로 묶인 줄.
-
-    카탈로그는 모델이 읽는 지시라 개발 낱말이 정당하게 들어 있다(04-개발-모듈 등).
-    그런데 그 안의 **「…」 는 사용자가 그대로 읽는 말**이다. 거기만 본다.
-    """
     bad = []
     d = root.parent / "nightflight-server"
     if not d.exists():
@@ -470,24 +404,6 @@ MODEL_ONLY = []
 
 
 def scan_echo(root: Path):
-    """⭐ `bin/`·`tools/` 의 `echo`·`print` — 화면에 «직접» 찍히는 글이다.
-
-    🔴 2026-10-03 레드팀이 찾은 구멍: 이 검사가 ①기록 호출 인자 ②조종석 화면
-       ③설계 문서의 말풍선만 봤다. **그래서 설치 스크립트가 셸 명령과 개인 볼트 경로를
-       찍는 것을 «구조적으로 못 봤다».** RULE-0 이 「문서로만 두면 안 지켜진다 —
-       이 문서가 그 증거다」라고 적어 둔 바로 그 자리에 구멍이 남아 있었다.
-    ⛔ 한글 4자 이상인 줄만 본다 — 코드·변수를 사용자 문구로 세지 않는다(같은 오탐 회피).
-       ⚠️ **그래서 영문만 있는 줄은 못 본다** — `Xcode → Edit Scheme → …` 같은 줄은
-          사용자 문구인데 통과한다. 0 이 「전부 안전」이 아닌 이유 하나가 이것이다.
-
-    ⭐ **모델 통로는 예외다** (2026-10-04). `check_touched.sh` 가 통로를 둘로 갈라 뒀고
-       (`systemMessage`=사람 / `additionalContext`=모델) **모델 쪽은 개발 용어가 정당하다.**
-       그 예외가 거기만 적혀 있어 이 검사와 어긋나 있었다 — 이제 RULE-0.md 에 적고
-       여기서 알아본다.
-    ⛔ **선언이 필요하다**: 그 줄에 `RULE-0 모델만:<이유>` 를 적어야 넘어간다.
-       이유 없이 표지만 달면 그대로 걸린다 — 표지가 «조용한 면제»가 되면 안 된다.
-    ⛔ 그리고 **몇 줄이 그 표지를 달고 있는지 세어 찍는다.** 안 보이면 늘어난다.
-    """
     bad = []
     for f in sorted(x for d in ("bin", "tools") for x in (root / d).rglob("*")
                     if x.is_file() and x.suffix in (".py", ".sh") and not 우리링크(x)):
@@ -514,15 +430,6 @@ def scan_echo(root: Path):
 
 
 def check_one(text: str) -> int:
-    """⭐ **문구 하나만 본다** — 실행 중에 쓰이는 말을 그 자리에서 거른다 (2026-10-04).
-
-    왜 생겼나: 결정 카드 ③번 칸이 「개발지식 없이 답하실 수 있는 질문인지
-    **확인했습니다**」라고만 적고 있었다 — 검사했다고 «말할» 뿐 증거가 없었다.
-    ⭐ ③의 증거는 **그 칸의 문장 자체**다. 개발 낱말 없이 쓸 수 있으면 통과한 것이고,
-       못 쓰면 그 질문은 아직 여쭐 준비가 안 된 것이다.
-    ⛔ 낱말 목록을 복사하지 않는다 — 두 곳에 있으면 한 곳이 반드시 낡는다.
-       그래서 같은 `_hits()` 를 쓴다.
-    """
     hits = _hits(text)
     if not hits:
         return 0
@@ -537,7 +444,6 @@ ASK_TIERS = (1, 2)
 
 
 def 도구가쓰는낱말() -> set:
-    """도구가 화면에서 `아는말인가` 로 실제로 묻는 낱말. ⛔ 목록을 손으로 두지 않는다."""
     import subprocess
     here = Path(__file__).resolve().parent.parent
     out = set()
@@ -558,12 +464,6 @@ def 도구가쓰는낱말() -> set:
 
 
 def _ask_list():
-    """물어볼 낱말. ⛔ 무작위가 아니다 — 같은 사람에게 두 번 물으면 같아야 한다.
-
-    ⛔ **단마다 영문·한글을 번갈아 뽑는다.** 표 순서대로 채우면 영문이 몫을 다 먹고
-       16개가 거의 다 영문이 된다 — 그러면 **영어 시험처럼 읽히고**, 대표님이 실제로
-       만나는 말(커밋·브랜치·마이그레이션)이 빠진다. 2026-10-04 에 실제로 그렇게 나왔다.
-    """
     def show(w):
         return w[2] if len(w) > 2 else w[0]
     used = 도구가쓰는낱말()

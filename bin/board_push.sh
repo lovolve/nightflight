@@ -110,9 +110,14 @@ fi
 
 ROOT="${CLAUDE_PROJECT_DIR:-${CWD:-$(cd "$HERE/.." && pwd)}}"
 ST="$(nf_state_of "$ROOT")"
-URL="$(cat "$ST/board.url" 2>/dev/null || true)"
+URL="$(python3 -I "$HERE/믿는글.py" 주소 "$ST" 2>/dev/null || true)"
+CONSENT="$(head -1 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/조종석동의" 2>/dev/null || true)"
 if [ -n "$URL" ]; then
   NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$ROOT" CLAUDE_PROJECT_DIR="$ROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
+  if [ "$CONSENT" = "아니오" ]; then
+    python3 "$HERE/../tools/조종석파일.py" "$(dirname "$ST")" >/dev/null 2>&1 || true
+    exit 0
+  fi
 fi
 
 if [ -z "$URL" ]; then
@@ -128,6 +133,7 @@ if [ -z "$URL" ]; then
     python3 "$HERE/../tools/조종석파일.py" "$PROOT" >/dev/null 2>&1 || true
   fi
   [ "$AGAIN" = "1" ] && exit 0
+  [ "$CONSENT" = "아니오" ] && exit 0
   ASKED="$PST/board.만들기"
   if [ -f "$ASKED" ]; then
     [ "$(grep -c . "$ASKED" 2>/dev/null || echo 0)" -ge 3 ] && exit 0
@@ -137,30 +143,7 @@ if [ -z "$URL" ]; then
   cp "$HERE/../board/cockpit.html" "$PST/cockpit.html" 2>/dev/null || exit 0
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
-  python3 -I -c '
-import json, sys
-root, here, st = sys.argv[1], sys.argv[2], sys.argv[3]
-print(json.dumps({
-  "decision": "block",
-  "reason": (
-    "이 프로젝트에는 아직 조종석이 없습니다 — 지금 만들어 주십시오(첫 대화에서 한 번).\n"
-    "  ① Artifact publish · file_path \"" + st + "/cockpit.html\" · icon \"gauge\" · "
-    "capabilities {\"db\":{}} · description \"이 제품의 단계와 남은 일을 보여 주는 조종석\"\n"
-    "  ② 받은 주소를 등록합니다: `" + here + "/ledger.sh 조종석 \"<받은 주소>\"` → `" + here + "/board_push.sh --화면올렸다 " + root + "`\n"
-    "  ③ " + st + "/board/ 에 칸(*.json)이 있으면 ArtifactData batch · 같은 주소 · 칸마다 "
-    "{op:\"set\", collection:\"state\", doc_id:<칸이름>, file_path:<그 json 의 절대경로>} "
-    "(새로 만드는 칸이라 version 을 안 붙입니다) → 끝나면 "
-    "`" + here + "/board_push.sh --올렸다 " + root + "`. "
-    "칸이 없으면 건너뜁니다 — 조종석이 「아직 기록 없음 · 첫 대화를 하면 채워집니다」로 보입니다.\n"
-    "  ④ 조종석을 띄웁니다: Artifact open · url <받은 주소> (칸을 다 올린 뒤에 — 빈 판이 먼저 보이지 않게). "
-    "열 수 없는 자리면 건너뜁니다.\n"
-    "  ⑤ 사용자께 한 줄로 알려 드립니다: 조종석을 만들어 열었고 그 주소 — 옆 창에 두면 진행이 보입니다.\n"
-    "⛔ 만들 수 없는 자리(그 도구가 없음 · 로그인 안 됨)라면 — 클로드가 아닌 도구에서는 흔합니다 — "
-    "사용자께 **파일로 된 조종석**을 알려 드리십시오: " + st + "/조종석.html "
-    "(턴 끝마다 다시 지어집니다. 실시간은 아니고 «그때 적은 판»입니다). "
-    "그리고 이 대화에서는 다시 안 막습니다."
-  )}, ensure_ascii=False))
-' "$PROOT" "$HERE" "$PST"
+  python3 -I "$HERE/조종석만들기안내.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
   exit 0
 fi
 
@@ -180,13 +163,15 @@ PAGENEW=0; [ -n "$PAGENOW" ] && [ "$PAGENOW" != "$PAGEWAS" ] && PAGENEW=1
 [ "$NOWSUM" = "$WAS" ] && [ "$PAGENEW" = "0" ] && exit 0
 
 CHANGED="$(python3 -I -c '
-import sys
+import re, sys
 def table(t):
     out = {}
     for line in t.splitlines():
         p = line.split()
         if len(p) >= 2:
-            out[p[1].rsplit("/", 1)[-1][:-5]] = p[0]
+            이름 = p[1].rsplit("/", 1)[-1][:-5]
+            if re.fullmatch(r"[A-Za-z0-9가-힣_-]{1,40}", 이름):
+                out[이름] = p[0]
     return out
 a, b = table(sys.argv[1]), table(sys.argv[2])
 names = [k for k in sorted(a) if a[k] != b.get(k)]
@@ -233,33 +218,6 @@ else
   : > "$MARK"
 fi
 
-python3 -I -c '
-import json, sys
-url, changed, root, here, st, pagenew = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
-others = sys.argv[7] if len(sys.argv) > 7 else ""
-page = ("  ⓪ 조종석 «화면 판»이 새것입니다 — Artifact publish · url " + url + " · file_path \"" + st + "/cockpit.html\" "
-        "(그 대화에서 처음 올리면 거절되고 지금 판을 보여 줍니다 — 같은 플러그인의 옛 판이면 그대로 다시 올리면 됩니다) → "
-        "`" + here + "/board_push.sh --화면올렸다 " + root + "`\n") if pagenew == "1" else ""
-print(json.dumps({
-  "decision": "block",
-  "reason": page + (
-    "조종석 자료가 바뀌었는데 아직 안 올라갔습니다 — 달라진 칸: " + changed + "\n"
-    "지금 올리십시오. 창업자가 조종석을 열면 이 자료를 봅니다.\n"
-    "  ① ArtifactData list · url " + url + " · collection \"state\" "
-    "— 칸마다 version 을 받습니다(없는 칸은 새로 만드는 것이라 version 을 안 붙입니다)\n"
-    "  ② ArtifactData batch · 같은 url · 달라진 칸마다 "
-    "{op:\"set\", collection:\"state\", doc_id:<칸이름>, "
-    "file_path:\"" + st + "/board/<칸이름>.json\", if_version:<①에서 받은 값>}\n"
-    "  ③ ①의 목록에 \"pressed\" 칸이 있으면 — 사용자가 조종석에서 「이미 했어요」를 "
-    "누르신 것입니다. ArtifactData get 으로 열어 값마다 "
-    "`bin/ledger.sh 앱설정 이미한것 <값> 화면` 을 돌리고, 끝나면 그 칸을 "
-    "ArtifactData delete 로 지우십시오(지워야 다음에 또 안 옮깁니다).\n"
-    "  ④ 올라갔으면 `" + here + "/board_push.sh --올렸다 " + root + "` 를 돌리십시오. "
-    "올리시면 다음에 바뀔 때 또 알려 드립니다 — 조종석이 실시간으로 따라옵니다.\n"
-    + "" +
-    "⛔ 올릴 수 없는 자리(그 도구가 없음)라면 — 클로드가 아닌 도구에서는 흔합니다 — "
-    "창업자께 **파일로 된 조종석**을 알려 드리고 넘어가십시오: " + st + "/조종석.html "
-    "(턴 끝마다 다시 지어집니다. 실시간이 아니라 «그때 적은 판»입니다). 올리지 않으면 이 대화에서는 다시 안 막습니다."
-  )}, ensure_ascii=False))
-' "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)"
+_nf_nx="$ST/board.다음말"
+python3 -I "$HERE/조종석올림안내.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
 exit 0

@@ -1,24 +1,5 @@
 #!/usr/bin/env python3
-"""SECURITY DEFINER 함수의 실행 권한이 «정말» 막혔는지 본다 — 앱 공용.
-
-왜 공용인가 (2026-09-25에 확인한 사고의 모양):
-  어느 앱은 **2026-09-16**부터 `revoke ... from public` 을 쓰고 있었다.
-  다른 앱은 그걸 모른 채 `from anon` 만 썼고, **2026-09-24에 실서버에서 터졌다** —
-  Postgres 가 함수 생성 시 `PUBLIC` 에 EXECUTE 를 기본으로 주기 때문에
-  `anon` 만 revoke 하면 **PUBLIC 상속이 남아 전혀 안 막힌다.**
-  Supabase 어드바이저가 실서버에서 잡았다. **지식은 이미 옆 앱에 있었는데 8일 뒤에 값을 치르고 다시 배웠다.**
-
-  → 앱마다 따로 짠 린트는 **옆 앱으로 안 건너간다.** 그래서 이 파일은 `appkit-shared` 에 둔다.
-
-그 앱의 `tools/lint_rls.py` 가 보던 것(클라이언트가 보낸 사용자 식별자 인자)은 그대로 두고,
-여기서는 **권한 한 가지만** 본다 — 한 검사가 한 가지만 보게 해야 「썼는가」와 「막혔는가」가 안 섞인다.
-
-⚠️ 이건 **정적 검사다.** 실제로 막혔는지는 배포 후 Supabase 어드바이저가 답한다.
-   그 사고의 교훈이 그것이다 — 린트는 「revoke 문이 있는가」까지만 안다.
-
-  사용:  python3 lint_supabase_grants.py [마이그레이션_폴더 ...]
-         (인자 없으면 현재 저장소의 supabase/migrations 를 찾는다)
-"""
+"""SECURITY DEFINER 함수의 실행 권한이 «정말» 막혔는지 본다 — 앱 공용."""
 import os
 import re
 import subprocess
@@ -27,8 +8,6 @@ from pathlib import Path
 
 
 def _rec(kind, line, why, if_not=""):
-    """기록에 남긴다 — 야간비행이 있을 때만, 그리고 «실제로 잡았을 때만».
-    통과는 기록하지 않는다. 통과를 세면 숫자가 부풀고 기록이 광고가 된다(기획 노트 §19)."""
     led = Path(__file__).resolve().parent.parent / "bin" / "ledger.sh"
     if not os.access(led, os.X_OK):
         return

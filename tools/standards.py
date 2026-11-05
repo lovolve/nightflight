@@ -1,23 +1,5 @@
 #!/usr/bin/env python3
-"""표준 — 「이 기능은 어떤 방식이 표준인가 · 출처는 무엇인가」
-
-설계: nightflight-server design/들고-있는-것.md ⓐ
-      ()
-
-⭐⭐ **왜 이 칸이 있나.** 
-   그리고 2026-10-10: 「**새 대화가 열리면 표준이 무엇이었는지를 모른다**」 —
-   그래서 **같은 기능을 다른 방식으로 또 짠다.** 그것이 삽질의 큰 이유 중 하나다.
-
-🔴 **실측으로 드러난 구멍이다**(2026-10-10): `bin/ledger.sh` 전체에 `표준` 이라는
-   낱말이 **칸 0개 · 언급 0번**이었다. ⛔ **파는 것에 적어 두고 적을 자리가 없었다.**
-
-
-4-개발 처방이 이미 못 박아 둔 것이다 — 「**「표준이다」를 내 기억으로 판정하지 않는다.**
-출처는 설계 단계가 적어 둔 것이고, 없으면 **그 자리에서 다시 리서치한다**」.
-⭐ 그래서 확인 칸은 **통제된 네 낱말**이고, 그중 하나는 **「출처가 없다」를 뜻한다.**
-⛔ 「내기억」을 **막지 않는다** — 막으면 **거짓 출처를 적게** 된다. 대신 **따로 세고
-   화면에서 「아직 표준이 아니다」라고 말한다**(「됐다 ≠ 확인했다」와 같은 꼴).
-"""
+"""표준 — 「이 기능은 어떤 방식이 표준인가 · 출처는 무엇인가」"""
 import sys
 from pathlib import Path
 
@@ -52,7 +34,6 @@ def 갈래(row: dict, topic: str) -> str:
 
 
 def 완성(row: dict) -> bool:
-    """개발 관문과 조종석이 세는 «표준 구현 방식» — 출처가 있고 도구 조합·실패 경우까지 있는 기능 표준."""
     return row.get("갈래") == "기능표준" and row.get("확인") in SOURCED
 
 
@@ -60,10 +41,6 @@ import _labels as _lb
 
 
 def compute(ledger: Path = None) -> dict:
-    """ledger.sh 와 조종석이 **같이 쓰는** 하나의 셈.
-
-    ⛔ 세는 곳을 둘로 만들지 않는다 — 이 저장소가 「확인했다」 판정으로 값을 치렀다.
-    """
     p = Path(ledger) if ledger else _root.ledger()
     _표 = _lb.항목표(p.parent)
     if not p.is_file():
@@ -89,7 +66,7 @@ def compute(ledger: Path = None) -> dict:
         if row["갈래"] == "배운규칙":
             topic = 배운규칙
         elif row["갈래"] == "다시확인":
-            row["뜻"] = "도구 조합 · 실패 경우가 없습니다 — 다시 확인하기 전에는 표준이 아닙니다"
+            row["뜻"] = "도구 조합 · 실패경로가 없습니다 — 다시 확인하기 전에는 표준이 아닙니다"
         row["이름표"] = _표.get(what, (None, None))[0]
         row["구분"] = _lb.종류(_표, what)
         per.setdefault(topic, []).append(row)
@@ -102,8 +79,11 @@ def compute(ledger: Path = None) -> dict:
     for k in per:
         per[k].sort(key=lambda r: r["날"], reverse=True)
 
+    표준확인 = sorted(k for k, xs in per.items() if k != "공통" and any(완성(x) for x in xs))
+    실패확인 = sorted(k for k, xs in per.items() if k != "공통"
+                  and any(완성(x) and not str(x.get("실패", "")).startswith("없음") for x in xs))
     return {"못쟀다": False, "기능별": (_uw.바꾼다(per) if _uw else per), "출처있음": sourced,
-            "출처없음": unsourced, "모른낱말": badword, **n갈래}
+            "출처없음": unsourced, "모른낱말": badword, "표준확인기능": 표준확인, "실패확인기능": 실패확인, **n갈래}
 
 
 def 사람말(d: dict) -> list:
@@ -133,7 +113,7 @@ def 사람말(d: dict) -> list:
             else:
                 out.append(f"       🔴 확인 칸이 비었거나 모르는 말입니다 — 「{r['출처']}」")
     out.append("")
-    out.append(f"  기능의 표준 구현 방식 {d.get('기능표준', 0)}가지 · 다시 확인 필요 {d.get('다시확인', 0)}가지 · "
+    out.append(f"  표준방식 확인 {d.get('기능표준', 0)}가지 · 다시 확인 필요 {d.get('다시확인', 0)}가지 · "
                f"우리가 배운 규칙 {d.get('배운규칙', 0)}가지")
     out.append(f"  출처가 있는 것 {d['출처있음']}가지 · "
                f"🔴 아직 표준이라 부를 수 없는 것 {d['출처없음']}가지")

@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-"""붙여 넣기 장치(key_paste.sh)의 검사 — 훅 입력(JSON)을 표준입력으로 받아, 막을 것·알릴 것·할 일 없음(PASS)을 낸다.
-
-🔴 6회차 보안 레드팀(추정): 윈도우의 파이썬은 `/dev/fd/3` 를 못 열어서, 셸 안 heredoc 으로 넘기던 이 글이 늘 실패했다 —
-   그러면 키를 넣을 때마다 셸 대비책이 「잠시 뒤 다시」만 냈다(영구 실패인데 일시 장애처럼). ⭐ 그래서 파일로 뺐다.
-⛔ 이 파일은 사용자 폴더에서 돈다 — 반드시 `python3 -I` 로 부른다(폴더의 가짜 모듈을 안 집게).
-"""
+"""붙여 넣기 장치(key_paste.sh)의 검사 — 훅 입력(JSON)을 표준입력으로 받아, 막을 것·알릴 것·할 일 없음(PASS)을 낸다."""
 import json, os, re, subprocess, sys, unicodedata
 try:
     sys.stdout.reconfigure(encoding="utf-8")

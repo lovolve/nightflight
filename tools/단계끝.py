@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
-"""단계 끝 조건 — 단계마다 «언제 끝나나»를 한 곳에서 센다. 다음 단계 제안과 단계 넘기 확인이 같은 셈을 쓴다.
-
-⭐ 대표님 2026-11-03 «각 단계에서 다음 단계로 넘어가는 시점을 파악해서 넘어가줘야 하는데» · «결과대로 수정 진행해 순서대로 하나씩».
-  레드팀(단계 넘어가기 갈래): 끝 조건이 없어 «다음으로 가실까요»가 없고 · 단계 이름을 바꾸면 확인을 피하고 · 진단에서 개발로 바로 가고 ·
-  확인 없이 출시로 간다.
-⭐ 넘어갈 때는 «막되, 이유를 적으면 넘긴다» — 이미 만들던 앱을 처음 가져올 때(기록에 단계가 없을 때)는 막지 않는다(따라잡기 카드가 맡는다).
-⛔ 단계 이름은 번호 · 기본 이름 · 프로젝트 단계 연결표(stage-map.tsv)로만 읽는다 — 셋 다 아니면 받지 않는다(이름 바꾸기로 확인을 피하는 길을 막는다).
-
-쓰는 법: 단계끝.py 번호 "<단계 이름>"          → 0~8 (못 읽으면 끝값 2)
-         단계끝.py 넘기 "<단계 이름>" [이유]   → 넘어가도 되면 0 · 안 되면 끝 조건을 찍고 1
-         단계끝.py [--json]                      → 지금 단계와 끝 조건
-"""
+"""단계 끝 조건 — 단계마다 «언제 끝나나»를 한 곳에서 센다. 다음 단계 제안과 단계 넘기 확인이 같은 셈을 쓴다."""
 import json, os, re, sys
 from pathlib import Path
 
@@ -33,7 +22,6 @@ def _줄들(lp):
 
 
 def 번호(이름, lp=None):
-    """«4. 개발» · «4» · «개발» · 프로젝트가 연결한 이름 → 0~8. 못 읽으면 None."""
     t = (이름 or "").strip()
     m = re.match(r"^([0-8])(\s|\.|-|$)", t)
     if m:
@@ -68,14 +56,12 @@ def 지금(lp=None):
 
 
 def 앱설정빈것(lp=None):
-    """기획에서 물어야 하는 앱 설정 중 아직 답이 없는 것 — 출시 준비의 오래 걸리는 일(애플 가입 · 사업자 번호 등)이 이 답에서 시작된다."""
     lp = Path(lp) if lp else _기록()
     있음 = {c[2] for c in _줄들(lp) if len(c) > 3 and c[1] == "앱설정" and c[3].strip()}
     return [v for k, v in 앱설정칸.items() if k not in 있음]
 
 
 def 조건(idx, lp=None):
-    """그 단계의 끝 조건 목록 — [{이름, 됨, 지금}]. 못 재는 것은 넣지 않는다(못 잰 것을 «안 됨»으로 몰지 않는다)."""
     lp = Path(lp) if lp else _기록()
     os.environ["NF_STATE"] = str(lp.parent)
     줄 = _줄들(lp)
@@ -106,14 +92,14 @@ def 조건(idx, lp=None):
         화면 = (scr.is_file() and any(l.startswith("화면\t") for l in scr.read_text(encoding="utf-8").splitlines())) \
             or any(len(c) > 2 and c[1] == "화면없음" and c[2].strip() for c in 줄)
         out.append({"이름": "화면 설계서", "됨": bool(화면), "지금": "있음" if 화면 else "없음"})
-        개발 = sorted({r["기능"] for r in 표줄 if str(r["단계"]).strip().isdigit() and int(r["단계"]) >= 4})
+        개발 = sorted({r["기능"] for r in 표줄 if str(r["단계"]).strip() == "4"})
         if 개발:
             try:
                 import dependencies, standards
                 연결 = set(dependencies.연결된기능(lp))
                 st = standards.compute(lp).get("기능별") or {}
                 표준 = [f for f in 개발 if any(standards.완성(x) for x in st.get(f, []))]
-                out.append({"이름": "기능마다 표준 구현 방식", "됨": len(표준) == len(개발), "지금": "%d/%d" % (len(표준), len(개발))})
+                out.append({"이름": "기능마다 표준방식 확인", "됨": len(표준) == len(개발), "지금": "%d/%d" % (len(표준), len(개발))})
                 out.append({"이름": "기능 사이 연결", "됨": not (set(개발) - 연결), "지금": "%d/%d" % (len(set(개발) & 연결), len(개발))})
             except Exception:
                 pass

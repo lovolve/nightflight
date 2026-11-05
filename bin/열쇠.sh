@@ -91,7 +91,7 @@ case "$CODE" in
     MAIL="$(키읽기)"
     case "$MAIL" in
       ?*@?*.?*) ;;
-      *) echo "$(두말 "메일 주소 꼴이 아닙니다. 받으실 메일 주소를 그대로 적어 주십시오." "That doesn't look like an email address. Please type the address where you want the code.")" >&2; exit 1 ;;
+      *) echo "$(두말 "메일 주소 꼴이 아닙니다. 결제하신 메일 주소를 그대로 적어 주십시오." "That doesn't look like an email address. Please type the address you paid with.")" >&2; exit 1 ;;
     esac
     ANSWER="$(결제 %EB%AC%B4%EB%A3%8C%EB%A9%94%EC%9D%BC "$(몸 사람id "$PERSONID" 맥지문 "$MACPRINT" 메일 "$MAIL" 언어 "$NFL")")" || 못닿음
     [ -n "$ANSWER" ] || 못닿음
@@ -101,7 +101,7 @@ try: d = json.loads(os.environ["NF_ANS"])
 except Exception: sys.exit(1)
 글 = " ".join(str(d.get(k) or "") for k in ("말", "말_en"))
 sys.exit(0 if ("확인번호" in d or re.search(r"(?<!\d)\d{6}(?!\d)", 글)) else 1)' 2>/dev/null; then
-      echo "  $(두말 "메일로 여섯 자리 확인 코드를 보냈습니다. 받으신 코드를 이 대화창에 알려 주십시오. 메일이 안 보이면 스팸함을 봐 주십시오." "We emailed you a six-digit code. Tell this chat the code. If you don't see the email, check your spam folder.")"
+      echo "  $(두말 "결제하신 메일 주소가 맞으면 여섯 자리 확인 코드를 보냈습니다. 받으신 코드를 이 대화창에 알려 주십시오. 메일이 안 보이면 스팸함을 봐 주십시오." "If that is the address you paid with, we emailed you a six-digit code. Tell this chat the code. If you don't see the email, check your spam folder.")"
       echo "  [모델] 서버 답에 확인 코드가 실려 와서 보이지 않았습니다. 사용자에게 코드를 말하지 마십시오. 서버 대화(운영자)에 알릴 일입니다."
       exit 0
     fi

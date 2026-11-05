@@ -10,16 +10,22 @@ LC_ALL=C; export LC_ALL
 set -u
 
 IN="$(python3 -I "$(cd "$(dirname "$0")" && pwd -P)/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || true)"
-IFS=$'\t' read -r DIR PCT COST SID <<EOF
+IFS=$'\t' read -r DIR PCT COST SID F5 R5 F7 <<EOF
 $(printf '%s' "$IN" | python3 -I -c '
 import json,sys
 try: d=json.load(sys.stdin)
 except Exception: d={}
-w=(d.get("workspace") or {}); c=(d.get("context_window") or {}); m=(d.get("cost") or {})
+w=(d.get("workspace") or {}); c=(d.get("context_window") or {}); m=(d.get("cost") or {}); r=(d.get("rate_limits") or {})
+import time
+def 한도(이름):
+    k=(r.get(이름) or {}); p=k.get("used_percentage"); t=k.get("resets_at")
+    남=max(0, int((t-time.time())//60)) if isinstance(t,(int,float)) else -1
+    return (round(p) if isinstance(p,(int,float)) else -1), 남
+f5,r5=한도("five_hour"); f7,_=한도("seven_day")
 print(str(w.get("project_dir") or w.get("current_dir") or ".").replace("\t", " "),
       round(c.get("used_percentage") or 0),
       round(m.get("total_cost_usd") or 0, 2),
-      "".join(ch for ch in str(d.get("session_id") or "none")[:16] if ch.isalnum() or ch in "-_") or "none", sep="\t")
+      "".join(ch for ch in str(d.get("session_id") or "none")[:16] if ch.isalnum() or ch in "-_") or "none", f5, r5, f7, sep="\t")
 ' 2>/dev/null)
 EOF
 [ -n "${DIR:-}" ] || exit 0
@@ -117,6 +123,14 @@ case "$PAINT" in
   *)   RIGHT="${M}이 대화${R} ${F}$(bar "${PCT:-0}")${R} ${M}${PCT:-0}%${R}" ;;
 esac
 [ "${COST:-0}" != "0" ] && [ "${COST:-0}" != "0.0" ] && RIGHT="$RIGHT  ${M}\$${COST}${R}"
+if [ "${F5:--1}" -ge 0 ] 2>/dev/null; then
+  LIM="5시간 ${F5}%"
+  if [ "${R5:--1}" -ge 0 ] 2>/dev/null; then
+    if [ "$R5" -ge 60 ]; then LIM="$LIM · $((R5 / 60))시간 뒤 초기화"; else LIM="$LIM · ${R5}분 뒤 초기화"; fi
+  fi
+  [ "${F7:--1}" -ge 0 ] 2>/dev/null && LIM="$LIM · 7일 ${F7}%"
+  RIGHT="$RIGHT  ${M}${LIM}${R}"
+fi
 
 plain() { printf '%s' "$1" | sed $'s/\033\\[[0-9;]*m//g'; }
 W=${COLUMNS:-$(tput cols 2>/dev/null || echo 0)}

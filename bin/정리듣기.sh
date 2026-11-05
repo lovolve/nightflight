@@ -34,8 +34,12 @@ try:
 except Exception:
     prompt = ""
 here = os.environ["HERE"]
+sys.path.insert(0, here)
+from 믿는글 import 사용자가_쓴_말
+prompt = 사용자가_쓴_말(prompt)
 tools = os.path.join(os.path.dirname(here), "tools")
-정리말 = re.search(r"(정리|치워|치우|비워|지워)", prompt)
+안함 = re.search(r"(하지\s*(마|말)|말아|말고|안\s*해도|않아도|하면\s*안|안\s*돼)", prompt)
+정리말 = None if 안함 else re.search(r"(정리|치워|치우|비워|지워)", prompt)
 시뮬 = re.search(r"(시뮬레이터|시뮬|가짜 ?전화기)", prompt)
 공간 = re.search(r"(저장공간|저장 ?공간|디스크|용량|빈 ?용량)", prompt)
 맨말 = bool(re.fullmatch(r"\s*(컴퓨터\s*)?(좀\s*)?(정리|치워)\s*(해\s*줘|해줘|줘|해|해주세요|해 주세요)?\s*", prompt))

@@ -1,25 +1,5 @@
 #!/usr/bin/env python3
-"""조종석이 읽을 **칸 파일들**을 기록에서 만든다 — `ledger.sh 조종석준비` 가 부른다.
-
-⭐ 받는 것은 **환경변수**뿐이다(선 글은 안 읽는다). 만드는 자리는 `bin/ledger.sh` 다:
-  · `STATE` — 기록 파일(`ledger.tsv`) · `OUT` — 칸 파일을 쓸 폴더(`<기록폴더>/board`)
-  · `PERSON`·`NF_PERSONFILE` — 사람 자리 · `NF_TRACE` — 처방이 내려온 흔적
-  · `UNVERIFIED_TOKENS` — 「확인 안 됨」 표지 한 줄(⛔ 여기에 목록을 다시 적지 않는다)
-  · `NF_KEYLINE` — 열쇠 안내 글자(주인은 `project-root.sh` 의 `nf_keyline()` 이다)
-  · `NF_BRAIN_SET` — 서버 자리가 다 있나 · `TOOLS` — 도구 폴더(설명을 거기서 읽는다)
-⭐ 찍는 것은 사람이 읽는 몇 줄과, `OUT` 폴더의 칸 파일들이다.
-⛔ **죽으면 끝값이 0 이 아니다** — 부르는 쪽이 그것을 보고 「만들지 못했습니다」라고 말한다.
-  🔴 전에는 그 자리에서 상태를 안 봐서, 계산이 통째로 죽은 것을 오래 몰랐다(2026-09 실측).
-
-🔴 **왜 파일로 빼냈나** (2026-10-25, ):
-   전에는 이 943줄이 `bin/ledger.sh` 안의 헤러독이었다. 그 셸 파일이 **3,341줄**이었고
-   그중 **1,124줄이 파이썬**이었다(실측).
-   ⛔ 헤러독 안에는 **아무 도구도 닿지 않는다** — 린터·형식 검사·시험이 다 비껴간다.
-   ⛔ 그리고 셸이 그 토막을 **한 줄로 묶어** 들고 있으므로, 어디서 틀렸는지도 셸 줄 번호로만
-     나온다. 3,341줄 파일의 2,500번째 줄이라고 하면 사람이 찾지 못한다.
-   ⭐ 파일로 빼면 그 뒤로는 **도구가 대신 잡는다.**
-⛔ **`-I` 로 부른다.** 그래야 받는 분 폴더에 `json.py` 가 심겨 있어도 파이썬의 것을 읽는다.
-"""
+"""조종석이 읽을 **칸 파일들**을 기록에서 만든다 — `ledger.sh 조종석준비` 가 부른다."""
 import json, os, re, sys
 
 _UNV = os.environ["UNVERIFIED_TOKENS"].split()
@@ -318,11 +298,17 @@ def _validations():
     except Exception:
         pass
     try:
+        닫음 = []
         for line in open(os.environ["STATE"], encoding="utf-8", errors="replace"):
             c = line.rstrip("\n").split("\t")
+            if len(c) > 3 and c[1] == "검증닫음":
+                닫음.append(c[2])
             if len(c) > 3 and c[1] == "검증":
                 out.append({"날": c[0], "결론": c[2], "출처": c[3], "판정": c[4] if len(c) > 4 else "",
                             "틀": c[5] if len(c) > 5 else "", "화면": _lbl.get(c[2], "")})
+        for x in out:
+            if any(k in x["결론"] for k in 닫음):
+                x["닫힘"] = True
     except Exception:
         pass
     return out
@@ -384,6 +370,11 @@ def _진단표채움(표, 값):
     환경 = [줄(k, 값[k]) for k in ("칩", "운영체제", "디스크 여유", "Xcode", "시뮬레이터", "git") if 값.get(k)]
     if 환경:
         기.append({"기능": "개발 환경 점검", "세부": 환경, "설명": ""})
+    파는곳 = str(값.get("어디에 팔 건가") or "")
+    if not 값.get("Xcode") and ("iPhone" in 파는곳 or "아이폰" in 파는곳 or not 파는곳):
+        환경.append(줄("앱을 만드는 프로그램(Xcode)이 아직 없습니다", ""))
+        if not 기:
+            기.append({"기능": "개발 환경 점검", "세부": 환경, "설명": ""})
     질문 = [줄(k, 값.get(k, "")) for k in ("어디에 팔 건가", "돈을 받을 건가", "만드는 것의 종류")]
     기.append({"기능": "제품 질문", "세부": 질문, "설명": ""})
     for f in 기:
@@ -462,7 +453,7 @@ def _ignore_detail(_r):
     except Exception:
         rules = []
     pats = (".env", ".env.*", "*.env", "*.p8", "*.p12", "*.pem", "*.key", "*.keystore", "*.jks",
-            "secrets*", "credentials*", "GoogleService-Info.plist", "google-services.json", "service-account*.json")
+            "*secret*", "credentials*", "GoogleService-Info.plist", "google-services.json", "service-account*.json")
     skip = {".git", "node_modules", "DerivedData", "build", ".build", "Pods", ".venv", "venv", "dist", ".next"}
     found = []
     for dp, dn, fn in os.walk(_r):
@@ -470,7 +461,8 @@ def _ignore_detail(_r):
         if dp[len(_r):].count(os.sep) >= 3:
             dn[:] = []
         for f in fn:
-            if any(fnmatch.fnmatch(f, p) for p in pats) and not f.endswith((".example", ".sample", ".template")):
+            if any(fnmatch.fnmatch(f.lower(), p) for p in pats) and not f.endswith((".example", ".sample", ".template",
+                    ".swift", ".py", ".ts", ".tsx", ".js", ".kt", ".java", ".md", ".sh")):
                 found.append(os.path.relpath(os.path.join(dp, f), _r))
         if len(found) > 40:
             break

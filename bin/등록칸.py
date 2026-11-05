@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-"""`ledger.sh 등록` 이 부른다 — 서버에서 읽은 이용권 칸(JSON)을 보고 등록할 때 알려 드릴 말을 찍는다.
-
-받는 것: 환경값 KAN(서버 답 · `열쇠.sh 칸읽기`) · BID(이 제품 번호) · KEYSH(열쇠.sh 자리).
-2026-10-27: 제품등록은 설계 단계부터다(등록은 막지 않는다) · 모자라면 미리 알리고 플랜 안내 주소를 준다.
-"""
+"""`ledger.sh 등록` 이 부른다 — 서버에서 읽은 이용권 칸(JSON)을 보고 등록할 때 알려 드릴 말을 찍는다."""
 import json, os
 주소 = "https://www.lovolve.app/nightflight/#price"
 열쇠 = os.environ["KEYSH"]

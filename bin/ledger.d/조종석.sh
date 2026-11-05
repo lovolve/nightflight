@@ -14,13 +14,26 @@ case "$KIND" in
 
   조종석)
     if [ -n "${2:-}" ]; then
+      if ! python3 -I "$NF_PYDIR/믿는글.py" 꼴 "$2"; then
+        echo "  ⛔ 조종석 주소 꼴이 아닙니다. Artifact 게시 결과로 받은 claude.ai 주소를 그대로 적으십시오." >&2
+        exit 1
+      fi
       printf '%s\n' "$2" > "$BOARD"; echo "  · 조종석 주소를 기억했습니다: $2"
-    elif [ -f "$BOARD" ]; then
-      echo "  조종석: $(head -1 "$BOARD")"
+    elif [ -n "$(nf_board_url)" ]; then
+      echo "  조종석: $(nf_board_url)"
       board_nudge 단계 || true
     else
       echo "  아직 조종석이 없습니다.  「조종석」에 주소를 한 번 등록하면 됩니다."
     fi
+    ;;
+
+  조종석동의)
+    case "${2:-}" in
+      네|아니오) mkdir -p "$NF_HOME" 2>/dev/null; printf '%s\n' "$2" > "$NF_HOME/조종석동의"
+                 if [ "$2" = 네 ]; then echo "  조종석에 기록 사본을 올립니다."
+                 else echo "  조종석에 올리지 않습니다. 파일로 된 조종석을 씁니다. 바꾸시려면 「조종석 올려」라고 말씀해 주십시오."; fi ;;
+      *) echo "  ⛔ 네 또는 아니오로 적으십시오." >&2; exit 1 ;;
+    esac
     ;;
 
   조종석반영)
@@ -38,9 +51,13 @@ case "$KIND" in
 
   조종석지금)
     bash "$NF_PYDIR/ledger.sh" 조종석준비 >/dev/null 2>&1 || true
-    _url="$(cat "$BOARD" 2>/dev/null || true)"
+    _url="$(nf_board_url)"
     _bd="$(dirname "$STATE")/board"
     if [ -z "$_url" ]; then
+      if [ "$(head -1 "$NF_HOME/조종석동의" 2>/dev/null)" = "아니오" ]; then
+        echo "  조종석에 올리지 않기로 하셨습니다. 파일로 된 조종석을 씁니다."
+        exit 0
+      fi
       echo "  조종석이 아직 없습니다 — 이번 턴이 끝나면 만들라는 안내가 뜹니다(그때 지금까지 채운 칸이 함께 올라갑니다)."
       exit 0
     fi
@@ -82,7 +99,7 @@ case "$KIND" in
       echo "     그 사이 조종석은 낡은 값을 그대로 들고 있습니다." >&2
       exit 1
     fi
-    echo "  · JSON $(ls "$OUT"/*.json 2>/dev/null | wc -l | tr -d ' ')개 만듦$([ -f "$BOARD" ] && echo " → $(head -1 "$BOARD")") · 올린 뒤 「조종석반영」(통계: --자세히)"
+    echo "  · JSON $(ls "$OUT"/*.json 2>/dev/null | wc -l | tr -d ' ')개 만듦$(_u="$(nf_board_url)"; [ -n "$_u" ] && echo " → $_u") · 올린 뒤 「조종석반영」(통계: --자세히)"
     ;;
 
   카드)

@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """구글 플레이 도구 — 연결(서비스 계정 열쇠) · 스토어 정보(제목 · 짧은 설명 · 긴 설명) 보기 · 바꾸기.
 
-⭐ 대표님 2026-11-03 «야간비행이 대신 해주려면 권한을 먼저 가져야 하잖아» · «가부터 진행해, 계정 있어».
-   출시 레드팀 🔴3: 구글 플레이 도구가 0개였다.
 ⛔ 열쇠 파일(.json)은 이 컴퓨터의 ~/.googleplay/ 에만 둔다 — 작업 중인 앱 폴더에 두면 코드와 같이 올라간다. 대화창에 붙여 넣지 않는다.
 ⛔ 바꾸기는 --confirm 이 있어야 한다 · 구글은 바꾼 스토어 정보를 «검토 뒤» 내보낸다(바로 바뀌지 않는다).
-⚠️ 화면 이름(«API 및 서비스» · «사용자 및 권한»)은 2026-11-03 기준 기억으로 적었다 — 실제 화면과 대조는 아직 안 했다.
 
   준비                                   연결 — 열쇠가 없으면 사람이 할 차례를 찍고, 있으면 붙는지 확인한다
   meta [--pkg <패키지 이름>]                스토어 정보 보기(언어마다)
@@ -41,7 +38,6 @@ def _b64(b: bytes) -> str:
 
 
 def 서명(j: dict, now: int = None) -> str:
-    """RS256 JWT — 서비스 계정 열쇠로 서명한다(openssl). 열쇠는 잠깐 600 파일로 두고 바로 지운다."""
     now = now or int(time.time())
     h = _b64(json.dumps({"alg": "RS256", "typ": "JWT"}).encode())
     p = _b64(json.dumps({"iss": j["client_email"], "scope": "https://www.googleapis.com/auth/androidpublisher",
@@ -85,7 +81,6 @@ def req(j, method, path, body=None):
 
 
 def 이폴더패키지() -> str:
-    """이 폴더(작업 중인 앱)의 안드로이드 패키지 이름 — build.gradle 의 applicationId · app.json 의 android.package."""
     for p in list(Path.cwd().glob("android/app/build.gradle*"))[:2]:
         m = re.search(r'applicationId\s*[= ]\s*["\']([\w.]+)["\']', p.read_text(errors="replace"))
         if m:

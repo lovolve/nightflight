@@ -1,27 +1,19 @@
 #!/usr/bin/env python3
-"""「정리해줘」를 알아듣고 모델에게 무엇을 돌릴지 알린다.
-
-⭐ `bin/정리듣기.sh` 가 부른다. 받는 것은 그 셸이 넘기는 환경변수(와 선 글)다.
-⛔ **`-I` 로 부른다** — 받는 분 폴더에 `json.py` 가 심겨 있어도 파이썬의 것을 읽는다
-  (`tools/lint_python_isolated.py` 가 그것을 본다).
-
-🔴 **왜 파일로 빼냈나** (2026-10-25, ):
-   전에는 이 37줄이 셸 파일 안에 들어 있었다.
-   ⛔ 그 자리에는 **아무 도구도 닿지 않는다** — 린터·형식 검사·시험이 다 비껴간다.
-   ⛔ 어디서 틀렸는지도 셸 줄 번호로만 나와, 수천 줄 파일에서 사람이 찾지 못한다.
-   ⛔ `-c` 꼴이면 **파이썬 코드에 홑따옴표를 한 글자도 쓸 수 없다**(셸이 그것으로 감싼다).
-   ⭐ 파일로 빼면 그 뒤로는 **도구가 대신 잡는다.**
-"""
+"""「정리해줘」를 알아듣고 모델에게 무엇을 돌릴지 알린다."""
 import json, os, re, sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from 믿는글 import 사용자가_쓴_말, 조종석주소
+
 try:
-    prompt = (json.load(sys.stdin) or {}).get("prompt", "") or ""
+    prompt = 사용자가_쓴_말((json.load(sys.stdin) or {}).get("prompt", "") or "")
 except Exception:
     prompt = ""
 here = os.environ["HERE"]
 tools = os.path.join(os.path.dirname(here), "tools")
 
-정리말 = re.search(r"(정리|치워|치우|비워|지워)", prompt)
+안함 = re.search(r"(하지\s*(마|말)|말아|말고|안\s*해도|않아도|하면\s*안|안\s*돼)", prompt)
+정리말 = None if 안함 else re.search(r"(정리|치워|치우|비워|지워)", prompt)
 시뮬 = re.search(r"(시뮬레이터|시뮬|가짜 ?전화기)", prompt)
 공간 = re.search(r"(저장공간|저장 공간|디스크|용량|빈 ?용량)", prompt)
 메모리 = re.search(r"(메모리|램|RAM|스왑)", prompt)
@@ -30,15 +22,15 @@ tools = os.path.join(os.path.dirname(here), "tools")
 say = []
 if 정리말 and (시뮬 or 맨말):
     say.append(
-        "야간비행: 대표님이 시뮬레이터를 정리해 달라고 하셨습니다. "
+        "야간비행: 사용자가 시뮬레이터를 정리해 달라고 하셨습니다. "
         "`" + here + "/resources.sh --정리` 를 돌리고, 나온 줄을 그대로 전하십시오. "
         "⭐ 이것은 되돌릴 수 있는 일입니다(다시 켜면 됩니다) — 따로 여쭙지 않아도 됩니다. "
         "⛔ 다만 돌린 «뒤»에 무엇이 꺼졌는지 수로 말씀드리십시오. 「정리했습니다」만 말하지 마십시오.")
 if 정리말 and (공간 or 맨말):
     say.append(
-        "야간비행: 대표님이 저장공간을 정리해 달라고 하셨습니다. "
+        "야간비행: 사용자가 저장공간을 정리해 달라고 하셨습니다. "
         "⛔ 바로 지우지 마십시오. 먼저 `" + tools + "/clean_disk.sh` 를 **그대로**(인자 없이) 돌리면 "
-        "무엇을 얼마나 지울지 **보여만** 줍니다. 그 목록을 대표님께 그대로 전하고, "
+        "무엇을 얼마나 지울지 **보여만** 줍니다. 그 목록을 사용자에게 그대로 전하고, "
         "«예»를 받은 뒤에만 같은 명령에 `--apply` 를 붙여 돌리십시오. "
         "⛔ 지운 «뒤»에 실제로 줄었는지 확인하고, 실패한 것은 실패라고 적으십시오 "
         "(그 도구 머리에 적힌 사고 이력입니다 — 실패를 성공으로 찍은 적이 있습니다).")
@@ -60,23 +52,26 @@ if 정리말 and (메모리 or 맨말):
 조종석말 = len(prompt) <= 80 and re.search(r"조종석\s*(을|를|좀|창|화면)?\s*(좀\s*)?(열어|열기|열자|열 ?수|띄워|보여 ?줘|켜 ?줘)", prompt)
 if 조종석말:
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
-    주소 = ""
-    for d in (".nightflight", ".claude"):
-        try:
-            주소 = open(os.path.join(root, d, "board.url"), encoding="utf-8").read().strip()
-        except OSError:
-            continue
-        if 주소:
-            break
-    if 주소.startswith("https://claude.ai/"):
+    주소 = 조종석주소(os.path.join(root, ".nightflight")) or 조종석주소(os.path.join(root, ".claude"))
+    if 주소:
         say.append("야간비행: 사용자가 조종석을 열어 달라고 하셨습니다. Artifact 도구를 action \"open\" · url " + 주소 + " 로 한 번만 부르십시오 — "
                    "대화창에 «열림» 버튼이 있는 조종석 창이 뜹니다. 사용자에게는 «아래 조종석 창의 ‹열림›을 누르시면 됩니다» 한 줄만 말하십시오. "
                    "⛔ 조종석열기 · 브라우저 · 크롬 · 다른 창은 쓰지 마십시오(로그인을 또 하게 됩니다).")
     else:
         say.append("야간비행: 사용자가 조종석을 열어 달라고 하셨는데 이 프로젝트의 조종석 주소가 아직 없습니다. "
-                   "⛔ 조종석열기 · 브라우저 · 다른 창으로 열지 마십시오. 조종석을 올리는 안내(턴 끝 자동 점검)를 따라 먼저 올리고, 그다음 Artifact action \"open\" 으로 여십시오.")
+                   "⛔ 조종석열기 · 브라우저 · 다른 창으로 열지 마십시오. 조종석을 올리는 안내(턴 끝 자동 점검)를 따라 먼저 올리고, 그다음 Artifact action \"open\" 으로 여십시오. "
+                   "전에 올리지 않기로 했다면 다시 올릴지 먼저 묻고, 그렇다고 하면 `" + os.path.join(here, "ledger.sh") + " 조종석동의 네` 를 돌리십시오.")
 
-if re.search(r"(야간비행|조종석|플러그인)[^.\n]{0,12}(업데이트|최신 ?판|새 ?판)", prompt):
+if len(prompt) <= 80 and re.search(r"조종석\s*(을|를|좀)?\s*(좀\s*)?(올려|올리자)", prompt):
+    try:
+        동의 = open(os.path.join(os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight"), "조종석동의"), encoding="utf-8").read().strip()
+    except OSError:
+        동의 = ""
+    if 동의 == "아니오":
+        say.append("야간비행: 사용자가 조종석에 올려 달라고 하셨습니다. `" + os.path.join(here, "ledger.sh") + " 조종석동의 네` 를 돌리십시오. "
+                   "그러면 이번 턴 끝 안내가 올리는 차례를 알려 줍니다.")
+
+if re.search(r"(야간비행|플러그인)[^.\n?]{0,8}(업데이트|최신 ?판으로|새 ?판으로)[^.\n?]{0,4}(해 ?줘|해 ?주세요|해 ?주십시오|하자|합시다|부탁|해$|해\.)", prompt.strip()):
     say.append(
         "야간비행: 사용자가 야간비행 업데이트를 요청하셨습니다. 차례대로 하십시오. "
         "클로드 코드: `claude plugin marketplace update lovolve` 뒤 `claude plugin update nightflight@lovolve -y`. "

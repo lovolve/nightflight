@@ -25,6 +25,11 @@ case "$KIND" in
       mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
       printf '%s\t프로젝트\t%s\t\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" >> "$NF_PERSON" 2>/dev/null
       echo "  이 폴더를 야간비행 프로젝트로 등록했습니다."
+      if [ -f "$BOARD" ]; then
+        git -c core.fsmonitor=false -C "$NF_ROOT" rm --cached -q --ignore-unmatch -- "$BOARD" >/dev/null 2>&1 || true
+        rm -f "$BOARD"
+        echo "  이 폴더에 들어 있던 조종석 주소를 지웠습니다. 이 제품의 조종석을 새로 만듭니다."
+      fi
       if [ -n "$(nf_conv_id)" ]; then
         nf_conv_add "$NF_ROOT" "$(nf_conv_id)" 2>/dev/null || true
         echo "  야간비행은 이 대화에서만 움직입니다. 같은 폴더의 다른 대화(메일 · 조사 같은 것)에는 끼어들지 않습니다."

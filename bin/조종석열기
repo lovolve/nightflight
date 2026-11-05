@@ -18,7 +18,7 @@ esac
 W="${1:-530}"
 case "${1:-}" in
   *) _st="$( . "$(dirname "$0")/project-root.sh" >/dev/null 2>&1 && printf '%s' "${NF_STATE:-}")"
-     URL="${2:-$(cat "${_st:-${CLAUDE_PROJECT_DIR:-$PWD}/.nightflight}/board.url" 2>/dev/null)}" ;;
+     URL="${2:-$(python3 -I "$(dirname "$0")/믿는글.py" 주소 "${_st:-${CLAUDE_PROJECT_DIR:-$PWD}/.nightflight}" 2>/dev/null)}" ;;
 esac
 [ -n "$URL" ] || { echo "조종석 주소가 없습니다. ledger.sh 조종석 \"<주소>\" 로 등록하십시오." >&2; exit 1; }
 

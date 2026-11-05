@@ -26,6 +26,7 @@ if not isinstance(d, dict): d = {}
 sid = str(d.get("session_id") or "")
 cwd = str(d.get("cwd") or "")
 tr = str(d.get("transcript_path") or "")
+if d.get("stop_hook_active") is True: print("export NF_STOP_AGAIN=1")
 if sid: print("export NF_SESSION=" + shlex.quote(sid))
 if cwd: print("export NIGHTFLIGHT_PROJECT_DIR=" + shlex.quote(cwd))
 if tr: print("export NF_TRANSCRIPT=" + shlex.quote(tr))
@@ -170,6 +171,7 @@ RS="$("$(dirname "$0")/resources.sh" 2>/dev/null || true)"
 
 
 if [ "$ALL" != "--전부" ]; then
+  if [ "${NF_STOP_AGAIN:-}" = 1 ] && [ -n "$MSG_MODEL" ]; then MSG_NOTE="${MSG_MODEL}${MSG_NOTE}"; MSG_MODEL=""; fi
   if [ -n "$MSG_MODEL" ]; then MSG_MODEL="${MSG_MODEL}${MSG_NOTE}"
   elif [ -n "$MSG_NOTE" ]; then
     _nf_nh="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}"

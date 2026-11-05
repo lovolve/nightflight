@@ -7,7 +7,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/session_start.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/session_start.sh",
+            "timeout": 60
           }
         ]
       }
@@ -18,7 +19,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/word_rise.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/word_rise.sh",
+            "timeout": 10
           }
         ]
       },
@@ -27,7 +29,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "env -u BASH_ENV -u ENV \"${CLAUDE_PLUGIN_ROOT}\"/bin/key_paste.sh"
+            "command": "env -u BASH_ENV -u ENV \"${CLAUDE_PLUGIN_ROOT}\"/bin/key_paste.sh",
+            "timeout": 30
           }
         ]
       },
@@ -36,7 +39,18 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/정리듣기.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/정리듣기.sh",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/조종석다음말.sh",
+            "timeout": 10
           }
         ]
       }
@@ -47,7 +61,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/repeat_guard.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/repeat_guard.sh",
+            "timeout": 10
           }
         ]
       }
@@ -58,7 +73,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/check_touched.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/check_touched.sh",
+            "timeout": 120
           }
         ]
       },
@@ -67,7 +83,8 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/board_push.sh"
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/board_push.sh",
+            "timeout": 60
           }
         ]
       }
