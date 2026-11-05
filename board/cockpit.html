@@ -1758,7 +1758,7 @@ header, .n-meta{padding-inline:16px}
         +(막?'<p class="bad'+시킴(막말(k))+'>실패했을 때 사용자가 멈출 수 있는 곳이 있습니다 · <span class="n-see">확인 요청 말 복사</span></p>':'')
         +(미정?'<p class="bad'+시킴(지시(['설계 단계','상태머신 구현',k],'아직 정하지 않은 다음 동작을 고를 수 있는 답과 함께 물어봐 주세요.'))+'>아직 정하지 않은 다음 동작이 있습니다.</p>':'')+'</div>';
     }).join('');
-    return '<div class="sv-fsm"><b>상태머신(기능이 꼬이지 않게 순서를 정해 둔 것) 구현</b><span class="m">기능마다 어떤 일이 안 생기게 했는지 적었습니다</span>'+몸+'</div>';
+    return '<div class="sv-fsm"><b>상태머신(기능의 진행 순서를 정한 설계) 구현</b><span class="m">기능별로 방지한 문제</span>'+몸+'</div>';
   }
   var 고른화면=null;
   function 기능상태(이름){
@@ -1937,8 +1937,8 @@ header, .n-meta{padding-inline:16px}
     var dc=((last.features||{})['설계점검'])||{};
     var 구=dc['구조내용']||[], g구=dc['구조'];
     var 아요약=g구?('부품 '+g구['부품'].length+' · 흐름 '+g구['흐름'].length):(dc['구조문서']?'문서 있음 — 그림 틀 없음':(dc['gitignore']==null?'못 봄':'아직 없음'));
-    t+=카드('arch','쓰신 내용이 어디로 가나', (g구||dc['구조문서'])?'':아요약, !g구 && !dc['구조문서'],
-      '<p class="pc-ex">제품이 어떤 부분으로 나뉘고, 사용자가 무언가 할 때 어디를 거치는지</p>'
+    t+=카드('arch','사용자 데이터 처리 흐름', (g구||dc['구조문서'])?'':아요약, !g구 && !dc['구조문서'],
+      '<p class="pc-ex">제품 구성과 사용자 데이터 처리 흐름</p>'
       +(g구?아키그림(g구)
         :(구.length?'<p class="pc-ex">설계 문서에 «부품» 절과 «흐름» 절이 없어 그림으로 못 그립니다.</p>'
           :'<p class="pc-ex">아직 문서가 없습니다 — 설계 단계에서 코드를 읽고 만듭니다.</p>')));
@@ -1955,8 +1955,8 @@ header, .n-meta{padding-inline:16px}
     var 깃요약='';
     var 깃몸='';
     if(비.length) 깃몸+='<div class="pc-g">'+비.map(function(f){ var 번호만=(f['키이름']||[]).length>0 && f['키이름'].every(function(k){ return /(^|_)(ID|IDS)$/i.test(k); });
-      var st=f['올라감']?(번호만?['nw','이미 올라감 — 든 것은 번호뿐 · 저장소에서 빼면 됨']:['bad','이미 올라감 — 지우고 키를 바꿔야 함']):(f['막힘']?['','올라가지 않음']:['nw','막혀 있지 않음']);
-      var 할=f['올라감']?(번호만?'이 파일을 저장소에서 빼 주세요.':'이 파일의 키를 새로 바꾸고 저장소 기록에서 지워 주세요.\n바꾸는 차례를 먼저 보여 주세요.'):(f['막힘']?'':'이 파일이 깃허브로 안 나가게 막아 주세요.');
+      var st=f['올라감']?(번호만?['nw','깃허브에 공개됨 — 번호만 들어 있음 · 저장소에서 제거 필요']:['bad','깃허브에 공개됨 — 삭제하고 키 교체 필요']):(f['막힘']?['','올라가지 않음']:['nw','막혀 있지 않음']);
+      var 할=f['올라감']?(번호만?'이 파일을 저장소에서 빼 주세요.':'이 파일의 키를 새로 바꿔 주세요.\n저장소 기록에서 이 파일을 지워 주세요.\n바꾸는 차례를 먼저 보여 주세요.'):(f['막힘']?'':'이 파일이 깃허브로 안 나가게 막아 주세요.');
       return '<span class="n'+(할?시킴(지시(['컴퓨터 상태','비밀값 파일',f['파일']],할,st[1])):'"')+'>'+esc(안올림이름(f['파일']))+'</span><span class="d '+st[0]+'">'+st[1]
         +(f['올라감']&&!번호만&&(f['키이름']||[]).length?' · 바꿀 열쇠: '+f['키이름'].map(esc).join(' · '):'')+'</span>'; }).join('')+'</div>';
     if(샘>0||열>0||!dc['gitignore']) t+=카드('git', 깃제목, 깃요약, true, 깃몸||'<p class="pc-ex">깃허브로 안 올릴 목록을 만들어야 합니다.</p>');
@@ -2010,7 +2010,7 @@ header, .n-meta{padding-inline:16px}
     [/\.env|secret|비밀/i, '비밀값 모음 파일', '나가면 남이 내 결제·메일·서버를 씁니다'],
     [/\.p8|\.p12|\.pem|\.key$|\.keystore|\.jks|\.mobileprovision|\.cer/i, '인증서·서명 열쇠', '나가면 남이 내 이름으로 제품을 냅니다'],
     [/google-services|GoogleService-Info|service-account|credentials/i, '서비스 계정 열쇠', '나가면 남이 그 서비스에 나인 척 들어갑니다'],
-    [/\.claude|\.nightflight|\.said-/i, '야간비행 작업 기록', '나가면 정하신 것과 하신 말씀을 누구나 봅니다'],
+    [/\.claude|\.nightflight|\.said-/i, '야간비행 작업 기록', '공개되면 정하신 내용과 대화 기록을 누구나 열람할 수 있습니다'],
     [/supabase/i, '서버 설정 폴더', '서버를 다루는 도구가 만든 설정입니다'],
     [/pycache|\.pyc|node_modules|build|DerivedData|dist|\.next|Pods|\.gradle|\.dart_tool|\.swiftpm|xcuserdata/i, '저절로 생기는 파일', '올릴 필요가 없습니다 · 지워도 다시 생깁니다'],
     [/\.xcodeproj|\.xcworkspace|\.entitlements/i, '제품 프로젝트 파일', '올릴 필요가 없습니다 · 설정에서 다시 만들어집니다'],
@@ -2023,10 +2023,10 @@ header, .n-meta{padding-inline:16px}
     return '목록에 적어 둔 파일';
   }
   function 안올림사유(이름){
-    if(/machine\.json$/.test(이름)) return '나가면 누구나 봅니다';
+    if(/machine\.json$/.test(이름)) return '공개되면 누구나 열람할 수 있습니다';
     if(/\.nightflight-dev$/.test(이름)) return '받는 분 컴퓨터에는 없어야 합니다';
     for(var i=0;i<안올림표.length;i++){ if(안올림표[i][0].test(이름)) return 안올림표[i][2]; }
-    return '올리지 않도록 적어 두었습니다';
+    return '업로드 제외 목록에 등록했습니다';
   }
   function 안올림무게(이름){
     if(/machine\.json$/.test(이름)) return 3.1;
@@ -2046,7 +2046,7 @@ header, .n-meta{padding-inline:16px}
   var 단계틀={
     5:{제목:'확인', 뜻:'만든 것이 실제로 되는지 확인하는 단계입니다. 아직 적은 확인 결과가 없습니다.'},
     7:{제목:'수정', 뜻:'출시 뒤 들어온 문제를 고치는 단계입니다. 아직 적은 문제가 없습니다.'},
-    8:{제목:'출시 후', 뜻:'출시 뒤 판매와 사용자 반응을 보는 단계입니다. 아직 적은 내용이 없습니다.'}
+    8:{제목:'출시후', 뜻:'출시 뒤 판매와 사용자 반응을 보는 단계입니다. 아직 적은 내용이 없습니다.'}
   };
   function 빈모양(j){
     var d=단계틀[j]; if(!d) return '';
@@ -2059,7 +2059,7 @@ header, .n-meta{padding-inline:16px}
       f['세부'].forEach(function(z){ var 된=z['상태']==='완료', 중=z['상태']==='진행 중';
         t+='<div class="sv-row'+(된?'"':시킴(지시(['출시 단계',f['기능'],z['이름']],중?'이 일을 마무리해 주세요.':'이 일을 시작해 주세요.',z['상태'])))+'><i class="'+(된?'ok':(중?'nw':'dim'))+'">●</i><span class="nm'+(된||중?'':' dim')+'">'+esc(z['이름'])+'</span><span class="r">'+(된?'끝':(중?'진행 중':'아직'))+'</span></div>'; }); });
     var 걸=[].concat(g['걸림']||[], g['제출뒤']||[]);
-    t+='<p class="sv-group">출시 절차</p>'+(걸.length?걸.map(function(x){ return '<div class="sv-row'+시킴(지시(['출시 단계','출시 절차',x['이름']],'이 출시 절차를 진행해 주세요.\n제가 직접 해야 하는 일이면 차례를 적어 보여 주세요.',''))+'><i class="nw">●</i><span class="nm">'+esc(x['이름'])+'</span><span class="r">'+(/^[0-9]+$/.test(String(x['최대']||''))?'최대 '+esc(x['최대'])+'일':'걸리는 기간 발표 없음')+'</span></div>'; }).join('')
+    t+='<p class="sv-group">출시 절차</p>'+(걸.length?걸.map(function(x){ return '<div class="sv-row'+시킴(지시(['출시 단계','출시 절차',x['이름']],'이 출시 절차를 진행해 주세요.\n제가 직접 해야 하는 일이면 차례를 적어 보여 주세요.',''))+'><i class="nw">●</i><span class="nm">'+esc(x['이름'])+'</span><span class="r">'+(/^[0-9]+$/.test(String(x['최대']||''))?'최대 '+esc(x['최대'])+'일':'소요 기간 미발표')+'</span></div>'; }).join('')
       :'<div class="sv-row"><i class="ok">●</i><span class="nm">해당하는 출시 절차 없음</span><span class="r">'+(g['총']||0)+'개 중 0</span></div>');
     return t;
   }
@@ -2126,7 +2126,7 @@ header, .n-meta{padding-inline:16px}
     return '남은 '+말+' '+(전-끝)+'개 · '+퍼센트(끝,전);
   }
   var 완료뜻말=['','완료는 정한 내용을 기록했다는 뜻입니다.','완료는 조사하고 근거를 적었다는 뜻입니다.','완료는 정한 내용을 기록했다는 뜻입니다.',
-    '완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 확인 단계에 따로 있습니다. 줄 옆에 어떻게 확인했는지 적었습니다.','완료는 실제로 돌려 보고 결과를 적었다는 뜻입니다.',
+    '완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 확인 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다.','완료는 실제로 돌려 보고 결과를 적었다는 뜻입니다.',
     '완료는 신청이나 제출을 끝냈다는 뜻입니다.','완료는 고치고 결과를 적었다는 뜻입니다.','완료는 숫자를 보고 결과를 적었다는 뜻입니다.'];
   function 완료뜻(j, p){
     if(!완료뜻말[j]||!p||!(p['기능들']||[]).length) return '';
@@ -2158,7 +2158,7 @@ header, .n-meta{padding-inline:16px}
         +'<i class="'+(남?'nw':(c['상태']==='없음'?'dim':'ok'))+'">'+(남?'!':(c['상태']==='없음'?'–':'✓'))+'</i>'
         +'<span class="nm'+(c['상태']==='없음'?' dim':'')+'">'+esc(c['이름'])+'</span><span class="r'+(남?' nw':' dim')+'">'+esc(말)+'</span></div>'; }).join('');
     return '<details class="n-zone sv-later"><summary><h2 class="n-zt">'+칸채우기+'</h2><span class="sv-badge">'+esc(g['끝'])+' / '+esc(g['전체'])+'</span></summary>'
-      +'<p class="n-zs">이미 만들던 제품의 내용을 조종석으로 옮기는 중입니다 · 남은 칸 '+esc(g['남'])+'개를 누르면 채울 지시문이 복사됩니다</p>'+줄+'</details>';
+      +'<p class="n-zs">기존 제품 정보를 조종석으로 이전하는 중입니다 · 남은 칸 '+esc(g['남'])+'개를 누르면 채울 지시문이 복사됩니다</p>'+줄+'</details>';
   }
   function 따라잡기카드(d){
     if(!d || !d['보일까']) return '';
@@ -2171,7 +2171,7 @@ header, .n-meta{padding-inline:16px}
         +'<span class="pill lead'+(하는중?' nw':'')+'">'+(하는중?'하는 중':'시작하기')+'</span>'
         +'<span class="nm cu-nm"><b class="tt">'+esc(x['이름'])+(x['권장']?' · 권장':'')+'</b>'
         +'<span class="ln">'+esc(단계들이름(x['단계']))+' 단계 · '+esc(x['지금'])+'</span><span class="ln">'+esc(x['까닭'])+'</span></span></div>'; }).join('');
-    return '<p class="sv-group">지나간 단계에서 비어 있는 일 · 안 하실 일은 그냥 두십시오</p>'+줄;
+    return '<p class="sv-group">이전 단계의 미완료 항목 · 선택 사항입니다</p>'+줄;
   }
   function 단계들이름(n){ return /^[0-8]$/.test(String(n))?STAGES[+n][1]:String(n||''); }
   function 때가되면(){
@@ -2283,7 +2283,7 @@ header, .n-meta{padding-inline:16px}
     if(!n && Object.keys(last).some(function(k){ return k!=='now' && k!=='pressed' && k!=='machine' && last[k]!=null && !(Array.isArray(last[k])&&!last[k].length); })) n={};
     if(!n){
       if(들음.now) 박.innerHTML=리소스줄(last.machine)
-        +구역상자('지금 어디쯤인가','전체 9단계 중 지금 단계와 남은 기능',
+        +구역상자('진행 상황','전체 9단계 중 지금 단계와 남은 기능',
           칸들([['기록','아직 없음'],['할 것','클로드 코드 창에서 첫 대화를 하면 여기가 채워집니다']],'top'));
       return;
     }
@@ -2316,7 +2316,7 @@ header, .n-meta{padding-inline:16px}
     h+=가져오기줄(n['가져오기']);
 
     if(cur===null){
-      h+=구역상자('지금 어디쯤인가','전체 9단계 중 지금 단계와 남은 기능',
+      h+=구역상자('진행 상황','전체 9단계 중 지금 단계와 남은 기능',
         칸들([['단계','아직 모름'],['할 것','«지금 기획 중이야»처럼 말씀해 주세요']],'top'));
       박.innerHTML=h; return;
     }
@@ -2338,7 +2338,7 @@ header, .n-meta{padding-inline:16px}
     위치+='<div class="n-nine">'+막대+'</div><div class="n-ninelab">'+이름줄+'</div>'
       +'<p class="n-pick">막대를 누르면 그 단계의 기능이 아래에 열립니다'
       +((본다!=null&&본다!==cur)?' · <button type="button" class="n-back" data-stg="'+cur+'">지금 단계('+esc(STAGES[cur][1])+')로 돌아가기</button>':'')+'</p>';
-    h+=구역상자('지금 어디쯤인가','',위치);
+    h+=구역상자('진행 상황','',위치);
     var 단계속='';
 
     function 단계칩(p, 지난){
@@ -2525,7 +2525,7 @@ header, .n-meta{padding-inline:16px}
     if(!개발기능.length) return '';
     function 든수(xs){ return Array.isArray(xs)?String(개발기능.filter(function(f){ return xs.indexOf(f)>=0; }).length):'아직 못 잼'; }
     var 상=last.states;
-    return '<p class="n-seeh">개발 기능 '+개발기능.length+'개 중 표준방식 확인 '+든수(법수['표준확인기능'])+' · 실패경로 확인 '+든수(법수['실패확인기능'])+' · 상태머신(꼬이지 않게 순서를 정해 둔 것) 구현 '+든수(상&&!상['못쟀다']&&상['기능별']?Object.keys(상['기능별']):null)+'</p>';
+    return '<p class="n-seeh">개발 기능 '+개발기능.length+'개 중 표준방식 확인 '+든수(법수['표준확인기능'])+' · 실패경로 확인 '+든수(법수['실패확인기능'])+' · 상태머신(기능의 진행 순서를 정한 설계) 구현 '+든수(상&&!상['못쟀다']&&상['기능별']?Object.keys(상['기능별']):null)+'</p>';
   }
   var 확인열림=false;
   function 확인한것(기능){
@@ -2676,7 +2676,7 @@ header, .n-meta{padding-inline:16px}
     단추.disabled=true;
     DB.doc('state/pressed').set(이제).then(function(){
       last.pressed = 이제; 그리기();
-      눌림말('적어 두었습니다 — 다음 대화에서 기록으로 옮깁니다');
+      눌림말('임시 저장했습니다 — 다음 대화에서 기록에 반영합니다');
     }).catch(function(x){
       단추.disabled=false;
       눌림말('적지 못했습니다 — 말씀해 주시면 제가 적겠습니다'+((x&&x.code)?' ('+x.code+')':''));

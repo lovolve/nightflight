@@ -1,7 +1,7 @@
 {
   "name": "nightflight",
   "displayName": "야간비행",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계",
   "author": {
     "name": "Lovolve",
@@ -10,5 +10,6 @@
   "license": "SEE LICENSE IN LICENSE",
   "homepage": "https://lovolve.app/nightflight",
   "repository": "https://github.com/lovolve/nightflight",
-  "hooks": "./hooks/클로드전용.json"
+  "hooks": "./hooks/클로드전용.json",
+  "types": "./types/사용량표시.d.ts"
 }

@@ -122,7 +122,6 @@ case "$PAINT" in
   ctx) [ "${PCT:-0}" -ge 85 ] && RIGHT="${HIC} ${CTX} ${R}" || RIGHT="${HIW} ${CTX} ${R}" ;;
   *)   RIGHT="${M}이 대화${R} ${F}$(bar "${PCT:-0}")${R} ${M}${PCT:-0}%${R}" ;;
 esac
-[ "${COST:-0}" != "0" ] && [ "${COST:-0}" != "0.0" ] && RIGHT="$RIGHT  ${M}\$${COST}${R}"
 if [ "${F5:--1}" -ge 0 ] 2>/dev/null; then
   LIM="5시간 ${F5}%"
   if [ "${R5:--1}" -ge 0 ] 2>/dev/null; then

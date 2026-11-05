@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""사용자가 허락하면 터미널 상태줄을 켠다 — 대화 용량 · 비용 · 한도."""
+"""사용자가 허락하면 대화 용량 · 한도를 표시한다 — 터미널은 상태줄, 앱은 입력창 위."""
 import json
 import os
 import sys
@@ -10,6 +10,7 @@ from pathlib import Path
 설정길 = 집 / ".claude" / "settings.json"
 다리길 = 집 / ".nightflight" / "상태줄.sh"
 우리명령 = f'"{다리길}"'
+앱표시길 = Path(os.environ.get("NIGHTFLIGHT_HOME") or (집 / ".nightflight")) / "앱표시켬"
 다리글 = """#!/bin/sh
 f=$(ls -d "$HOME"/.claude/plugins/cache/*/nightflight/*/bin/statusline.sh 2>/dev/null | sort -V | tail -1)
 [ -n "$f" ] && exec "$f"
@@ -39,21 +40,26 @@ except (OSError, ValueError):
 우리것 = isinstance(지금, dict) and 지금.get("command") == 우리명령
 
 if 명령 == "켜기":
+    앱표시길.parent.mkdir(parents=True, exist_ok=True)
+    앱표시길.touch()
     if 지금 and not 우리것:
-        print("이미 다른 상태줄을 쓰고 계셔서 바꾸지 않았습니다.")
+        print("앱 표시를 켰습니다. 터미널에서는 이미 다른 상태줄을 쓰고 계셔서 바꾸지 않았습니다. 끄려면 «상태줄 꺼줘»라고 말씀해 주십시오.")
         sys.exit(0)
     다리길.parent.mkdir(parents=True, exist_ok=True)
     다리길.write_text(다리글, encoding="utf-8")
     다리길.chmod(0o755)
     설정["statusLine"] = {"type": "command", "command": 우리명령, "padding": 0}
     적기(설정)
-    print("상태줄을 켰습니다. 다음 응답부터 화면 아래에 보입니다. 끄려면 «상태줄 꺼줘»라고 말씀해 주십시오.")
+    print("켰습니다. 앱에서는 입력창 위, 터미널에서는 화면 아래에 표시됩니다. 앱은 다음 응답부터, 터미널은 다음 실행부터 적용됩니다. 끄려면 «상태줄 꺼줘»라고 말씀해 주십시오.")
 elif 명령 == "끄기":
+    앱켜짐 = 앱표시길.exists()
+    if 앱켜짐:
+        앱표시길.unlink()
     if not 우리것:
-        print("야간비행 상태줄이 켜져 있지 않습니다.")
+        print("앱 표시를 껐습니다." if 앱켜짐 else "야간비행 표시가 켜져 있지 않습니다.")
         sys.exit(0)
     del 설정["statusLine"]
     적기(설정)
-    print("상태줄을 껐습니다.")
+    print("껐습니다. 앱과 터미널 모두 표시하지 않습니다.")
 else:
     print("켜짐" if 우리것 else ("다른 상태줄" if 지금 else "꺼짐"))
