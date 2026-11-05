@@ -74,7 +74,9 @@ def 조건(idx, lp=None):
     내것 = [r for r in 표줄 if str(r["단계"]).strip() == str(idx)]
     if 내것:
         끝 = sum(1 for r in 내것 if r["상태"] == "완료")
-        out.append({"이름": "%s 표의 항목" % 단계들[idx], "됨": 끝 == len(내것), "지금": "%d/%d 완료" % (끝, len(내것))})
+        넘 = sum(1 for r in 내것 if r["상태"] == "넘어감")
+        out.append({"이름": "%s 표의 항목" % 단계들[idx], "됨": 끝 + 넘 == len(내것),
+                    "지금": "%d/%d 완료" % (끝, len(내것) - 넘) + (" · 넘어감 %d" % 넘 if 넘 else "")})
     if idx == 1:
         빈 = [k for k in ("한줄", "누구", "문제")
              if not any(len(c) > 3 and c[1] == "제품소개" and c[2] == k and c[3].strip() for c in 줄)]
@@ -86,6 +88,7 @@ def 조건(idx, lp=None):
         out.append({"이름": "검증 기록", "됨": n > 0, "지금": "%d개" % n})
     if idx == 5:
         n = sum(1 for c in 줄 if len(c) > 5 and c[1] == "단계확인" and c[5].strip() == "5" and c[4].strip() == "봤음")
+        n += sum(1 for r in 내것 if r["상태"] == "완료" and str(r.get("이름표") or "").startswith("직접 확인"))
         out.append({"이름": "직접 써 보고 확인한 것", "됨": n > 0, "지금": "%d개" % n})
     if idx == 3:
         scr = lp.parent / "screens.tsv"

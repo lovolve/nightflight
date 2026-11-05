@@ -926,6 +926,9 @@ header, .n-meta{padding-inline:16px}
 .n-zone .n-chip.g{border-color:var(--live-rule)}
 .n-pf .ph .ring .rd{fill:var(--live)}
 .n-pf .ph .ring .rk{fill:none; stroke:#0A0B0C; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.n-sl li .mks{flex:none; display:inline-flex; gap:4px; margin-left:auto}
+.n-sl li .cf + .mks, .n-sl li .cf + em + .mks{margin-left:8px}
+@media (max-width:600px){ .n-sl li:has(.mks){flex-wrap:wrap} .n-sl li:has(.mks) .nm{flex:1 1 calc(100% - 24px)} .n-sl li .mks, .n-sl li .cf + .mks, .n-sl li .cf + em + .mks{margin-left:20px; flex-basis:100%} }
 .n-sl li .cf{margin-left:auto; padding-left:12px; font-size:var(--fs-5); color:var(--faint); max-width:55%;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
@@ -1369,38 +1372,50 @@ header, .n-meta{padding-inline:16px}
   function 짧게(v){ return String(v||'').split(/ \(| — /)[0]; }
 
   var 본다 = null;
-  var 상태칩={'시작 전':'','진행 중':'y','완료':'w','확인 필요':'af','방법 찾는 중':'r'};
+  var 상태칩={'시작 전':'','진행 중':'y','완료':'w','확인 필요':'af','방법 찾는 중':'r','넘어감':''};
   function 남음(끝, 전){
     if(!전) return '–';
     var r = 전 - 끝;
     return r === 0 ? '다 됐습니다' : (r + '개 남음');
   }
-  function 기능끝(f){ return f['세부'].length>0 && f['수']['완료']===f['세부'].length; }
-  var 상태상자={'시작 전':'b0','진행 중':'b1','완료':'b2','확인 필요':'b3','방법 찾는 중':'b4'};
-  var 세부표시={'완료':'✓','진행 중':'◐','확인 필요':'!','방법 찾는 중':'×','시작 전':'○'};
-  var 세부칸={'완료':'s2','진행 중':'s1','확인 필요':'s3','방법 찾는 중':'s4','시작 전':'s0'};
+  function 기능끝(f){ return f['세부'].length>0 && (f['수']['완료']+(f['수']['넘어감']||0))===f['세부'].length; }
+  var 상태상자={'시작 전':'b0','진행 중':'b1','완료':'b2','확인 필요':'b3','방법 찾는 중':'b4','넘어감':'b0'};
+  var 세부표시={'완료':'✓','진행 중':'◐','확인 필요':'!','방법 찾는 중':'×','시작 전':'○','넘어감':'–'};
+  var 세부칸={'완료':'s2','진행 중':'s1','확인 필요':'s3','방법 찾는 중':'s4','시작 전':'s0','넘어감':'s0'};
   var 움직임={'진행 중':1,'확인 필요':1,'방법 찾는 중':1};
   function 줄세우기(xs, 끝인가, 지금인가){
     return xs.filter(끝인가).concat(xs.filter(function(x){return !끝인가(x)&&지금인가(x);}),
                                  xs.filter(function(x){return !끝인가(x)&&!지금인가(x);}));
   }
   function 세부순서(f){
-    return 줄세우기(f['세부'], function(z){return z['상태']==='완료';}, function(z){return !!움직임[z['상태']];});
+    return 줄세우기(f['세부'], function(z){return z['상태']==='완료'||z['상태']==='넘어감';}, function(z){return !!움직임[z['상태']];});
   }
-  function 세부줄(z){
-    var 지금=(z===지금세부), 끝=z['상태']==='완료', 손=(z['상태']==='확인 필요'||z['상태']==='방법 찾는 중');
-    return '<li class="'+(지금?'cur':끝?'dn':'td')+(손?' hand '+세부칸[z['상태']]:'')+'"><i>'+(지금?'●':손?세부표시[z['상태']]:끝?'✓':'○')+'</i>'
+  var 직접확인말='직접 확인 (조종석)';
+  function 확인단계기능(f){ var p=(((last.features||{})['설계표']||{})['단계']||{})['5']; return !!p && (p['기능들']||[]).indexOf(f)>=0; }
+  function 표시버튼(f, z){
+    if(!확인단계기능(f)) return '';
+    var 뜻=function(값,글){ return '<button type="button" class="n-dd n-mk" data-mk="'+값+'" data-mk-f="'+esc(f['기능'])+'" data-mk-z="'+esc(z['이름'])+'">'+글+'</button>'; };
+    var 내표시=z['상태']==='넘어감'||(z['상태']==='완료'&&String(z['확인']||'').indexOf('직접 확인')===0);
+    if(내표시) return '<span class="mks">'+뜻('되돌리기','되돌리기')+'</span>';
+    if(z['상태']==='완료') return '';
+    return '<span class="mks">'+뜻('완료','완료')+뜻('넘어감','넘어가기')+'</span>';
+  }
+  function 세부줄(z, f){
+    var 지금=(z===지금세부), 넘=z['상태']==='넘어감', 끝=z['상태']==='완료'||넘, 손=(z['상태']==='확인 필요'||z['상태']==='방법 찾는 중');
+    return '<li class="'+(지금?'cur':끝?'dn':'td')+(손?' hand '+세부칸[z['상태']]:'')+'"><i>'+(지금?'●':손||넘?세부표시[z['상태']]:끝?'✓':'○')+'</i>'
       +'<span class="nm">'+esc(z['이름'])+'</span>'
-      +(손?'<span class="sst">'+esc(z['상태'])+'</span>':'')
+      +(손||넘?'<span class="sst">'+esc(z['상태'])+'</span>':'')
       +(z['이름표']?'<em>'+esc(z['이름표'])+'</em>':'')
-      +(z['확인']?'<span class="cf" title="'+esc(z['확인'])+'">'+esc(z['확인'])+'</span>':'')+'</li>';
+      +(z['확인']?'<span class="cf" title="'+esc(z['확인'])+'">'+esc(z['확인'])+'</span>':'')
+      +(z['대기']?'<em>기록 반영 전</em>':'')
+      +표시버튼(f, z)+'</li>';
   }
   function 퍼센트(끝수, 전){ return 전?Math.round(끝수/전*100)+'%':'–'; }
   var 지금세부=null, 지금기능=null;
   function 계획기능(f){
     var 수=f['수'], 끝=기능끝(f), 지금=(f===지금기능);
     var 손=수['방법 찾는 중']?칩('방법 찾는 중 '+수['방법 찾는 중'],'r'):(수['확인 필요']?칩('확인 필요 '+수['확인 필요'],'af'):'');
-    var 목록='<ul class="n-sl">'+세부순서(f).map(세부줄).join('')+'</ul>';
+    var 목록='<ul class="n-sl">'+세부순서(f).map(function(z){ return 세부줄(z, f); }).join('')+'</ul>';
     if(지금) return '<div class="n-pf cur"><div class="ph"><i>●</i><b>'+esc(f['기능'])+'</b>'
       +'<span class="mono">'+퍼센트(수['완료'], f['세부'].length)+'</span>'+손+'</div>'+목록+'</div>';
     return '<details class="n-pf '+(끝?'dn':'td')+'"><summary class="ph"><i>'+(끝?'✓':'○')+'</i><b>'+esc(f['기능'])+'</b>'+손+'</summary>'+목록+'</details>';
@@ -1449,7 +1464,7 @@ header, .n-meta{padding-inline:16px}
     var fs=p['기능들'];
     var 순=줄세우기(fs, 기능끝, function(f){ return 지금단계 && f['세부'].some(function(z){return z['상태']==='진행 중';}); });
     지금기능 = 지금단계 ? (순.filter(function(f){return !기능끝(f);})[0]||null) : null;
-    if(지금기능){ var ss=세부순서(지금기능).filter(function(z){return z['상태']!=='완료';}); 지금세부=ss.filter(function(z){return z['상태']==='진행 중';})[0]||ss[0]||null; }
+    if(지금기능){ var ss=세부순서(지금기능).filter(function(z){return z['상태']!=='완료'&&z['상태']!=='넘어감';}); 지금세부=ss.filter(function(z){return z['상태']==='진행 중';})[0]||ss[0]||null; }
     var t='<div class="n-feats">'+순.map(계획기능).join('')+'</div>';
     지금기능=null; 지금세부=null;
     return t;
@@ -1785,6 +1800,7 @@ header, .n-meta{padding-inline:16px}
     Object.keys(단).forEach(function(k){ (단[k]['기능들']||[]).forEach(function(f){ if(f['기능']===기능&&f['세부'].length) v=(f['수']['완료']||0)/f['세부'].length; }); }); return v; }
   function 근거글(z){ var 확=String((z&&z['확인'])||'').trim(), 출=String((z&&z['출처'])||'').trim(); return /^설치 전/.test(출)?(확+' '+출).trim():확; }
   function 확인종류(z){ var t=근거글(z); if(!t) return '확인 기록 없음';
+    if(/^직접 확인/.test(t)) return '직접 확인';
     if(/실기기|휴대폰|아이폰에서|폰에서|진짜 폰/.test(t)) return '휴대폰에서 확인';
     if(/프로덕션|운영|서버에|배포/.test(t)) return '실제 서버에서 확인';
     if(/눈으로|시뮬레이터|화면을|찍어|스크린샷/.test(t)) return '화면을 보고 확인';
@@ -2121,9 +2137,9 @@ header, .n-meta{padding-inline:16px}
     var 전=p['세부전체'], 끝=p['세부완료'], 말=단위[j]||'항목';
     if(j===2){ var 뒤=0; (p['기능들']||[]).forEach(function(f){ f['세부'].forEach(function(z){ if(z['상태']!=='완료'&&판매뒤인가(z)) 뒤++; }); });
       return '확인한 것 '+끝+' / '+전+(뒤?' · '+뒤+'개는 판매 뒤에 확인':'')+(전-끝-뒤>0?' · 확인 중 '+(전-끝-뒤)+'개':''); }
-    var c=말.charCodeAt(말.length-1), 을=(c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28)?'을':'를';
-    if(끝===전) return '<span class="n-ok">✓</span> '+말+을+' 모두 끝냈습니다';
-    return '남은 '+말+' '+(전-끝)+'개 · '+퍼센트(끝,전);
+    var c=말.charCodeAt(말.length-1), 을=(c>=0xAC00&&c<=0xD7A3&&(c-0xAC00)%28)?'을':'를', 넘=p['세부넘어감']?' · 넘어감 '+esc(p['세부넘어감'])+'개':'';
+    if(끝===전) return '<span class="n-ok">✓</span> '+말+을+' 모두 끝냈습니다'+넘;
+    return '남은 '+말+' '+(전-끝)+'개 · '+퍼센트(끝,전)+넘;
   }
   var 완료뜻말=['','완료는 정한 내용을 기록했다는 뜻입니다.','완료는 조사하고 근거를 적었다는 뜻입니다.','완료는 정한 내용을 기록했다는 뜻입니다.',
     '완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 확인 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다.','완료는 실제로 돌려 보고 결과를 적었다는 뜻입니다.',
@@ -2132,7 +2148,9 @@ header, .n-meta{padding-inline:16px}
     if(!완료뜻말[j]||!p||!(p['기능들']||[]).length) return '';
     var 된=[]; p['기능들'].forEach(function(f){ f['세부'].forEach(function(z){ if(z['상태']==='완료') 된.push(z); }); });
     var 빈=된.filter(function(z){ return !근거글(z); }).length;
-    return '<p class="sv-meta">'+완료뜻말[j]+(빈?' 완료 '+된.length+'개 중 '+빈+'개는 어떻게 확인했는지 적혀 있지 않습니다.':'')+'</p>';
+    var 기록없음=0; p['기능들'].forEach(function(f){ f['세부'].forEach(function(z){ if(z['상태']==='확인 필요'&&/확인 기록 없음|확인 안 함/.test(z['이름표']||'')) 기록없음++; }); });
+    return '<p class="sv-meta">'+완료뜻말[j]+(빈?' 완료 '+된.length+'개 중 '+빈+'개는 어떻게 확인했는지 적혀 있지 않습니다.':'')
+      +(기록없음?' 확인 필요 '+기록없음+'개는 완료로 적혔지만 확인 기록이 없는 항목입니다. 아직 안 만들었다는 뜻이 아닙니다.':'')+'</p>';
   }
   function 단계모양(j, p, 지금단계){ return 완료뜻(j,p)+단계속모양(j,p,지금단계); }
   function 단계속모양(j, p, 지금단계){
@@ -2280,7 +2298,7 @@ header, .n-meta{padding-inline:16px}
     var n=last.now, g=last.gates, fe=last.features, bs=last.bystage, pl=last.piled, fd=last.feed||[];
     var 박=$('first'); if(!박) return;
     var 판자리=$('판자리'); if(판자리) 판자리.innerHTML=판칸(last.machine);
-    if(!n && Object.keys(last).some(function(k){ return k!=='now' && k!=='pressed' && k!=='machine' && last[k]!=null && !(Array.isArray(last[k])&&!last[k].length); })) n={};
+    if(!n && Object.keys(last).some(function(k){ return k!=='now' && k!=='pressed' && k!=='marked' && k!=='machine' && last[k]!=null && !(Array.isArray(last[k])&&!last[k].length); })) n={};
     if(!n){
       if(들음.now) 박.innerHTML=리소스줄(last.machine)
         +구역상자('진행 상황','전체 9단계 중 지금 단계와 남은 기능',
@@ -2328,7 +2346,7 @@ header, .n-meta{padding-inline:16px}
       var 기록=(bs&&bs[String(k)]&&bs[String(k)]['있나'])||!!단계표(k);
       var 칸 = (k<cur?(기록?'d':'s'):(k===cur?'c':''));
       var 표k=단계표(k), 끝k=표k?(표k['세부완료']+(k===0?((표k['기능들']||[]).reduce(function(a,f){ return a+((f['수']||{})['확인 필요']||0); },0)):0)):0;
-      var 율=표k?(표k['세부전체']?Math.round(끝k/표k['세부전체']*100):0):(칸==='d'?100:(칸==='s'?null:0));
+      var 율=표k?(표k['세부전체']?Math.round(끝k/표k['세부전체']*100):(표k['세부넘어감']?100:0)):(칸==='d'?100:(칸==='s'?null:0));
       var 높=Math.max(3, Math.round(84*(율||0)/100)), 글=(율==null?'–':율+'%');
       var 숫=(높>84-18)?'<b class="in" style="bottom:'+(높-18)+'px">'+글+'</b>':'<b style="bottom:'+(높+6)+'px">'+글+'</b>';
       막대+='<button type="button" class="'+칸+(k===볼것?' sel':'')+'" data-stg="'+k+'"'
@@ -2352,7 +2370,7 @@ header, .n-meta{padding-inline:16px}
       var 있나=bs&&bs[String(볼것)]&&bs[String(볼것)]['있나'], p=단계표(볼것);
       if(볼것===cur){
         var lf=남기능[0]||null, sub=null;
-        if(lf){ sub=lf['세부'].filter(function(z){return z['상태']==='진행 중';})[0]||lf['세부'].filter(function(z){return z['상태']!=='완료';})[0]||null; }
+        if(lf){ sub=lf['세부'].filter(function(z){return z['상태']==='진행 중';})[0]||lf['세부'].filter(function(z){return z['상태']!=='완료'&&z['상태']!=='넘어감';})[0]||null; }
         var dg=last.doing||{}, 작업=null, 작업상태='';
         if(dg['있나']){ 작업=dg['화면']?esc(dg['화면']):esc(dg['무엇']);  작업상태=dg['오늘인가']?'오늘 진행 중':('마지막으로 한 작업 · '+날(dg['언제'])); }
         var 다음=dg['다음']?(dg['다음']['화면']?esc(dg['다음']['화면']):esc(dg['다음']['무엇'])):null;
@@ -2683,6 +2701,21 @@ header, .n-meta{padding-inline:16px}
     });
   }
   function 소리알림(t){ var e=$('알림'); if(e){ e.textContent=''; setTimeout(function(){ e.textContent=t; }, 50); } }
+  function 표시눌렀다(버튼){
+    var 값=버튼.getAttribute('data-mk'), 기능=버튼.getAttribute('data-mk-f'), 세부=버튼.getAttribute('data-mk-z');
+    var 말={'완료':'완료로 표시해','넘어감':'넘어감으로 표시해','되돌리기':'표시를 되돌려'}[값];
+    if(!DB){ var 글='확인 단계 «'+기능+' / '+세부+'» '+말, 칸=버튼.parentNode;
+      var 알림=function(t){ if(칸) 칸.textContent=t; };
+      var 됨=function(){ 알림('복사했습니다. 대화창에 붙여 넣어 주세요.'); }, 안됨=function(){ 알림('대화창에 적어 주세요: '+글); };
+      try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(글).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
+      return; }
+    var 지금=((last.marked||{}).items||[]).slice(), 옛=지금.filter(function(x){ return x['기능']===기능&&x['세부']===세부; })[0];
+    var 새=지금.filter(function(x){ return x!==옛; });
+    if(!(값==='되돌리기'&&옛)) 새.push({'기능':기능,'세부':세부,'상태':값,'때':new Date().toISOString()});
+    버튼.disabled=true;
+    DB.doc('state/marked').set({items:새}).then(function(){ last.marked={items:새}; 그리기(); 눌림말('임시 저장했습니다 — 다음 대화에서 기록에 반영합니다'); })
+      .catch(function(x){ 버튼.disabled=false; 눌림말('적지 못했습니다 — 말씀해 주시면 제가 적겠습니다'+((x&&x.code)?' ('+x.code+')':'')); });
+  }
   function 눌림말(t){ var e=document.querySelector('.n-didmsg'); if(e) e.textContent=t; 소리알림(t); }
 
   function setLive(on,t){var e=$('live'); e.className=on?'on':''; $('live-t').textContent=t; e.style.display=on?'none':'';}
@@ -2699,8 +2732,26 @@ header, .n-meta{padding-inline:16px}
       return v; }
     return v;
   }
+  function 표시입히기(p, 표시들){
+    if(!p||!p['기능들']) return;
+    var 표=(표시들&&표시들.items)||[], 전=0, 끝=0, 넘=0;
+    p['기능들'].forEach(function(f){ var 수={};
+      (f['세부']||[]).forEach(function(z){
+        if(z['_본']){ z['상태']=z['_본'][0]; z['확인']=z['_본'][1]; z['이름표']=z['_본'][2]; delete z['_본']; delete z['대기']; }
+        var m=표.filter(function(x){ return x&&x['기능']===f['기능']&&x['세부']===z['이름']; })[0];
+        if(m){ z['_본']=[z['상태'],z['확인'],z['이름표']]; z['대기']=1;
+          z['상태']=m['상태']==='되돌리기'?'시작 전':m['상태']; z['확인']=m['상태']==='완료'?직접확인말:''; z['이름표']=''; }
+        수[z['상태']]=(수[z['상태']]||0)+1;
+        if(z['상태']==='넘어감') 넘++; else { 전++; if(z['상태']==='완료') 끝++; }
+      });
+      ['시작 전','진행 중','완료','확인 필요','방법 찾는 중','넘어감'].forEach(function(k){ 수[k]=수[k]||0; });
+      f['수']=수;
+    });
+    p['세부전체']=전; p['세부완료']=끝; p['세부넘어감']=넘;
+  }
   function 다듬기(){
     Object.keys(꼴표).forEach(function(k){ if(k==='pressed' || last[k]==null) return; var f=(k==='feed' && 상자(꼴표.feed))?(꼴표.feed.items||'A'):꼴표[k]; last[k]=맞추기(last[k],f); });
+    표시입히기(((상자(last.features)&&last.features['설계표'])||{})['단계']?last.features['설계표']['단계']['5']:null, last.marked);
     var 설점=상자(last.features)&&last.features['설계점검'];
     if(상자(설점) && 설점['구조']!=null){ var gg=설점['구조'];
       if(!상자(gg)||!Array.isArray(gg['부품'])||!Array.isArray(gg['흐름'])) 설점['구조']=null;
@@ -2730,6 +2781,8 @@ header, .n-meta{padding-inline:16px}
     판.addEventListener('click', function(ev){
       var b=ev.target.closest && ev.target.closest('.n-dd[data-did]');
       if(b){ 눌렀다(b.getAttribute('data-did'), b); return; }
+      var 표=ev.target.closest && ev.target.closest('.n-mk[data-mk]');
+      if(표){ 표시눌렀다(표); return; }
       var g=ev.target.closest && ev.target.closest('.n-nine button[data-stg], .n-back[data-stg]');
       if(g){ var k=+g.getAttribute('data-stg'); 본다=(본다===k)?null:k; 첫화면(); }
     });
@@ -2799,6 +2852,7 @@ header, .n-meta{padding-inline:16px}
     db.doc('state/machine').onSnapshot(받기('machine'),er);
     db.doc('state/states').onSnapshot(받기('states'),er);
     db.doc('state/pressed').onSnapshot(받기('pressed'),function(){});
+    db.doc('state/marked').onSnapshot(받기('marked'),function(){});
   }).catch(function(){ setLive(false,'연결 안 됨'); });
   }
   function 복사알림(칸, 글, 좋나){

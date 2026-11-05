@@ -311,7 +311,7 @@ else:
     if _cur:
         say("📐 **설계표 — 지금 단계 세부기능 %d/%d 완료**" % (수(_cur.get("세부완료")), 수(_cur.get("세부전체"))))
         for f in _cur.get("기능들") or []:
-            열린 = [z for z in f.get("세부") or [] if z.get("상태") != "완료"]
+            열린 = [z for z in f.get("세부") or [] if z.get("상태") not in ("완료", "넘어감")]
             if not 열린:
                 continue
             say("   · %s — %s" % (적음(f["기능"], 80), " · ".join(
