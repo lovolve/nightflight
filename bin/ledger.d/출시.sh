@@ -245,9 +245,14 @@ PYEOF
     echo "  보통 ${U}에 오는데 아직 소식이 없습니다."
     echo
     echo "  [모델] 초안은 두뇌.sh 6 출시-처방/문의-초안 의 창구별 틀(애플 지원 · 반려 답장 · 이의 제기 · 구글 지원 · 구글 정책 이의 제기)로 쓰십시오."
-    echo "  문의하실 때가 됐습니다. 영어로 쓰실 필요 없습니다 —"
-    echo "  초안을 써서 여기에 뒀습니다: $DRAFT"
-    echo "  읽어 보시고 보내시면 됩니다."
+    if [ "$(nf_lang)" = en ]; then
+      echo "  It is time to contact them. A draft is saved here: $DRAFT"
+      echo "  Read it, then send it."
+    else
+      echo "  문의하실 때가 됐습니다. 영어로 쓰실 필요 없습니다 —"
+      echo "  초안을 써서 여기에 뒀습니다: $DRAFT"
+      echo "  읽어 보시고 보내시면 됩니다."
+    fi
     echo "  제가 넣어 둔 것: $FILLED"
     echo
     echo "  ⛔ 보내는 것은 사용자가 하십니다 — 제가 누르지 않습니다."

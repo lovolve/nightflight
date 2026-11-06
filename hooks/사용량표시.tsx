@@ -129,7 +129,7 @@ export const register: Register = on => {
       <Box>
         <Text dimColor={!곧참} weight={곧참 ? 'semibold' : 'regular'} size="footnote">
           {글}
-          {곧참 ? ' — 곧 새 대화로 시작해야 합니다' : ''}
+          {곧참 ? ' — 곧 새 대화로 시작해야 합니다. 새 대화의 첫 말로 «야간비행 시작하자»라고 하십시오' : ''}
         </Text>
       </Box>
     )

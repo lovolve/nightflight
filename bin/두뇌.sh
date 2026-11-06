@@ -32,7 +32,7 @@ PERSONID="$(nf_personid | tr -d '[:space:]')"
 MACPRINT="$(nf_macprint 2>/dev/null | tr -d '[:space:]')"
 BUNDLEID="$(nf_productid 2>/dev/null | tr -d '[:space:]')"
 
-BODY="$(NF_B_PID="$PERSONID" NF_B_STAGE="$STAGE" NF_B_KIND="$KIND" NF_B_MAC="$MACPRINT" NF_B_BUNDLE="$BUNDLEID" python3 -I -c 'import json,os; e=os.environ; print(json.dumps({"사람id":e["NF_B_PID"],"어느단계":int(e["NF_B_STAGE"]),"무엇을물었나":e["NF_B_KIND"][:40],"맥지문":e["NF_B_MAC"],"번들id":e["NF_B_BUNDLE"]}, ensure_ascii=False))')"
+BODY="$(NF_B_LANG="$(nf_lang 2>/dev/null)" NF_B_PID="$PERSONID" NF_B_STAGE="$STAGE" NF_B_KIND="$KIND" NF_B_MAC="$MACPRINT" NF_B_BUNDLE="$BUNDLEID" python3 -I -c 'import json,os; e=os.environ; print(json.dumps({"언어":e.get("NF_B_LANG") or "ko","사람id":e["NF_B_PID"],"어느단계":int(e["NF_B_STAGE"]),"무엇을물었나":e["NF_B_KIND"][:40],"맥지문":e["NF_B_MAC"],"번들id":e["NF_B_BUNDLE"]}, ensure_ascii=False))')"
 
 if nf_dev 2>/dev/null && [ -n "${NF_TRACE:-}" ]; then :; else NF_TRACE="${NF_STATE:-$NF_HOME}/처방받음.tsv"; fi
 export NF_TRACE NF_STAGE_ARG="$STAGE" NF_KIND_ARG="$KIND"
@@ -48,7 +48,7 @@ KEYLINE_EXPIRED="$(nf_keyline 만료)"
 NF_LANG_NOW="$(nf_lang)"
 export KEYLINE_DEFAULT KEYLINE_EXPIRED NF_LANG_NOW
 
-ANSWER="$(nf_post "$BRAIN" "$BODY" -H "Authorization: Bearer $DOORKEY" 2>/dev/null)" || ANSWER=""
+ANSWER="$(nf_post "$BRAIN" "$BODY" -H "apikey: $DOORKEY" 2>/dev/null)" || ANSWER=""
 
 if [ -n "$LISTONLY" ]; then
   [ -n "$ANSWER" ] || { echo "  (이 단계의 안내 목록을 서버에서 못 받았습니다 — 아는 것만으로 진행합니다)"; exit 0; }

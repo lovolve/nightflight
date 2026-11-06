@@ -39,6 +39,7 @@ fi
 STATE="$NF_STATE/ledger.tsv"
 _nf_cmd="${1:-show}"
 _nf_was_reg=""; nf_registered && _nf_was_reg=1
+[ -z "${NIGHTFLIGHT_PROJECT_DIR:-}" ] && [ -n "$_nf_was_reg" ] && nf_conv_drop_next "$NF_ROOT" 2>/dev/null || true
 if [ -n "$_nf_was_reg" ] || { [ "$_nf_cmd" = 등록 ] && ! nf_not_product_root; }; then
   nf_state_make 2>/dev/null || mkdir -p "$(dirname "$STATE")"
 else

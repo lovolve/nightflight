@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 """같은 증상이 몇 번째인지 세어 모델에게 알린다 — 되풀이를 끊는 자리."""
-import json, sys
+import json, os, sys
 base, n, first = sys.argv[1], sys.argv[2], sys.argv[3] == "1"
 
 
 seen = f"🔴 같은 자리를 {n}번째 고치고 있습니다."
+try:
+    with open(os.path.join(os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight"), "언어"), encoding="utf-8") as _언어파일:
+        if _언어파일.read(2) == "en":
+            seen = f"🔴 The same place has now been changed {n} times."
+except OSError:
+    pass
 
 _꼬리 = (
     "⭐ 사용자 화면에는 「같은 자리를 N번째 고치고 있습니다」 한 줄만 갔습니다.\n"

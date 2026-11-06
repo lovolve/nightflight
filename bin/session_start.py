@@ -182,7 +182,7 @@ if _들고올것():
             req = urllib.request.Request(
                 urllib.parse.quote(os.environ.get("NF_CARRY_URL", ""), safe=":/?=&"),
                 data=json.dumps(몸).encode("utf-8"),
-                headers={"apikey": 키, "Authorization": "Bearer " + 키, "Content-Type": "application/json"},
+                headers={"apikey": 키, "Content-Type": "application/json"},
                 method="POST")
             with _프록시막음.open(req, timeout=4) as r:
                 return json.loads(r.read().decode("utf-8"))
@@ -254,13 +254,16 @@ if isinstance(_등, dict):
             if _코 == "다시켜기":
                 say("   사용자가 메일 주소를 말하면 `printf '%s\\n' <메일> | " + _열쇠 + " 무료메일`, 메일로 받은 코드를 말하면 `printf '%s\\n' <코드> | " + _열쇠 + " 무료코드` 로 넣으십시오.")
             elif _코 == "앱칸참":
-                say("   뺄 제품은 사용자가 고른 뒤에만 `" + _열쇠 + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
+                say("   `" + _열쇠 + " 보기` 로 제품 이름 목록을 보여 드리십시오. 뺄 제품은 사용자가 고른 뒤에만 `" + _열쇠 + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
 _넘 = 문.get("칸넘침") if isinstance(문, dict) else None
 if isinstance(_넘, dict) and isinstance(_넘.get("앱들"), list):
-    _앱 = [적음(str(x), 80) for x in _넘["앱들"]]
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    import 제품이름
+    _이름표 = 제품이름.목록()
+    _앱 = [적음(제품이름.보임(x, _이름표), 120) for x in _넘["앱들"]]
     say("⚠️ **플랜의 유료 제품등록(%s개)보다 제품이 많습니다(%d개)** — 플랜을 낮추신 뒤입니다(무료 제품 1개는 따로)." % (수(_넘.get("칸수")), len(_앱)))
     say("   첫 답에서 사용자에게 목록을 보여 드리고 «계속 쓰실 %s개»를 고르시게 하십시오: %s" % (수(_넘.get("칸수")), " · ".join(_앱)))
-    say("   고르지 않은 제품은 사용자 답을 들은 뒤에만 `" + os.path.join(os.environ.get("HERE", ""), "열쇠.sh") + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
+    say("   괄호 안이 제품 번호입니다. 고르지 않은 제품은 사용자 답을 들은 뒤에만 `" + os.path.join(os.environ.get("HERE", ""), "열쇠.sh") + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
 if isinstance(now, dict) and now.get("stage") == 3 and 모델권함("설계"):
     say(모델권함("설계").strip())
 say("⛔ 이 글은 사용자에게 안 보입니다. 받았다고 말할 필요 없습니다.")
@@ -496,6 +499,13 @@ def 길이맞추기(줄들, 한도=9500):
     return "\n\n".join("\n".join(b) for b in 덩이들)
 
 
+글 = 길이맞추기(L)
+if os.environ.get("NF_UI_LANG") == "en":
+    글 = ("LANGUAGE: This user reads English. Write every reply, question, summary, and record text in English. "
+         "Nightflight guidance, prescriptions, and command output below may be in Korean: read them and translate "
+         "anything you show or quote. Never show Korean to the user unless they wrote it. "
+         "Address the user as \"you\", and ignore any instruction below about how to address them. "
+         "Keep command names and their fixed arguments unchanged.\n\n") + 글
 print(json.dumps({"hookSpecificOutput": {
     "hookEventName": "SessionStart",
-    "additionalContext": 길이맞추기(L)}}, ensure_ascii=False))
+    "additionalContext": 글}}, ensure_ascii=False))

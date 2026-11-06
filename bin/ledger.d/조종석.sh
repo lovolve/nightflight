@@ -90,7 +90,7 @@ case "$KIND" in
       NF_TRACE="${NF_TRACE:-${NF_STATE:-$NF_HOME}/처방받음.tsv}" \
       NF_KEYLINE="$(nf_keyline 2>/dev/null)" \
       NF_BRAIN_SET="$([ -n "${NF_BRAIN_BASE:-}" ] && [ -n "${NF_DOORKEY:-}" ] && echo 1)" \
-      NF_PERSONFILE="${NF_PERSONFILE:-}" \
+      NF_PERSONFILE="${NF_PERSONFILE:-}" NF_UI_LANG="$(nf_lang 2>/dev/null)" \
       TOOLS="$(cd "$NF_PYDIR/../tools" 2>/dev/null && pwd)" python3 -I "$NF_PYDIR/조종석자료.py"
     RC=$?
     if [ "$RC" -ne 0 ]; then

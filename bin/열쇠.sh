@@ -71,7 +71,7 @@ if [ -z "$MACPRINT" ]; then
 fi
 
 서버() {
-  nf_post "$NF_BRAIN_BASE/rest/v1/rpc/$1" "$2" -H "apikey: $NF_DOORKEY" -H "Authorization: Bearer $NF_DOORKEY" 2>/dev/null
+  nf_post "$NF_BRAIN_BASE/rest/v1/rpc/$1" "$2" -H "apikey: $NF_DOORKEY" 2>/dev/null
 }
 결제() { NF_BRAIN_TIMEOUT=20 nf_post "$NF_BRAIN_BASE/functions/v1/gyeolje/$1" "$2" -H "apikey: $NF_DOORKEY" 2>/dev/null; }
 몸() { local v; for v in "$@"; do case "$v" in *$'\x1f'*) echo "{}"; return 1 ;; esac; done
@@ -144,8 +144,9 @@ sys.exit(0 if ("확인번호" in d or re.search(r"(?<!\d)\d{6}(?!\d)", 글)) els
     ANSWER="$(서버 내이용권 "$(몸 p_사람id "$PERSONID" p_맥지문 "$MACPRINT")")" || 못닿음
     [ -n "$ANSWER" ] || 못닿음
     정상답 "$ANSWER" || 못닿음
-    ANSWER="$ANSWER" NFL="$NFL" python3 -I - <<'PY'
-import json, os
+    ANSWER="$ANSWER" NFL="$NFL" NF_PYDIR="$NF_PYDIR" NF_HOME="$NF_HOME" python3 -I - <<'PY'
+import json, os, sys
+sys.path.insert(0, os.environ["NF_PYDIR"]); import 제품이름; 표 = 제품이름.목록()
 d = json.loads(os.environ["ANSWER"])
 en = os.environ.get("NFL") == "en"
 if not d.get("있나"):
@@ -167,10 +168,9 @@ else:
     print(f"  등록된 컴퓨터  {d.get('맥수')}/3")
     print(f"  제품등록     {수}/{(칸 + 1) if 칸 else '제한 없음'}" + (f"  (무료 1 + 유료 {칸} · 설계 단계부터)" if 칸 else "  (설계 단계부터)"))
 if 무료:
-    보임 = ("no app id" if en else "앱 번호를 못 읽은 제품") if 무료 in ("(번호없음)", "no-bundle-id") else 무료
-    print(f"    · {보임}  " + ("(free product)" if en else "(무료 제품)"))
+    print(f"    · {제품이름.보임(무료, 표, en)}  " + ("(free product)" if en else "(무료 제품)"))
 for a in 앱 + 접은:
-    print(f"    · {a}" + (("  (번호 없는 프로젝트 — no app id)" if en else "  (앱 번호를 못 읽은 프로젝트들)") if a == "no-bundle-id" else ("  (folded — still counts)" if en else "  (접음 — 제품등록은 그대로 남습니다)") if a in 접은 else ""))
+    print(f"    · {제품이름.보임(a, 표, en)}" + (("  (folded — still counts)" if en else "  (접음 — 제품등록은 그대로 남습니다)") if a in 접은 else ""))
 PY
     exit 0 ;;
   등급)
@@ -193,6 +193,7 @@ PY
     [ -n "$ANSWER" ] || 못닿음
     서버말 "$ANSWER"
     if printf '%s' "$ANSWER" | grep -q '"앱들"' && printf '%s' "$ANSWER" | grep -q '"된다" *: *false'; then
+      ANSWER="$ANSWER" NFL="$NFL" NF_HOME="$NF_HOME" python3 -I "$NF_PYDIR/제품이름.py" --서버답 2>/dev/null | sed 's/^/    · /'
       echo "  [모델] 위 목록을 사용자에게 보여 드리고 «계속 쓰실 유료 제품 2개까지»(무료 제품 1개는 따로 그대로)를 고르시게 하십시오. 답을 들은 뒤에만:"
       echo "  [모델]  $0 등급 라이트 남길 <고른 제품>[,<고른 제품>] — 고르지 않은 제품은 기다림 없이 빠집니다(하나씩 풀면 다시 넣을 때 30일을 기다립니다)."
     fi
@@ -200,7 +201,8 @@ PY
   앱빼기)
     BID="${2:?비울 제품 번호를 적어 주십시오 — 「열쇠.sh 보기」에 나옵니다}"
     if [ "${3-}" != "확인" ]; then
-      echo "  $(두말 "이 제품의 제품등록을 풀려고 합니다: $BID" "About to remove this product from your plan's product count: $BID")"
+      _nf_name="$(NFL="$NFL" NF_HOME="$NF_HOME" python3 -I "$NF_PYDIR/제품이름.py" "$BID" 2>/dev/null)"
+      echo "  $(두말 "이 제품의 제품등록을 풀려고 합니다: ${_nf_name:-$BID}" "About to remove this product from your plan's product count: ${_nf_name:-$BID}")"
       echo "  $(두말 "풀면 그 자리가 바로 돌아옵니다. 같은 제품을 다시 넣는 것은 30일 뒤입니다(한 달에 한 번은 바로 됩니다). 무료 제품은 30일에 한 번 바꿀 수 있습니다. 푸시겠습니까?" "The slot comes back right away. Re-adding the same product waits 30 days (once a month it's immediate). The free product can be switched once every 30 days. Release it?")"
       echo "  [모델] 사람이 그러라고 하면: 열쇠.sh 앱빼기 $BID 확인 — 사람이 답하기 전에는 부르지 마십시오"
       exit 0

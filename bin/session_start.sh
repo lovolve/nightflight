@@ -34,6 +34,7 @@ print(str((d if isinstance(d,dict) else {}).get("session_id") or ""))' 2>/dev/nu
 export NF_SESSION
 
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
+case "$IN" in *'"source":"startup"'*|*'"source": "startup"'*) nf_conv_take_next "$NF_ROOT" 2>/dev/null || true ;; esac
 nf_registered || { printf '%s' "$IN" >/dev/null; exit 0; }
 _nf_kan="$NF_HOME/이용권.json"
 if [ ! -f "$_nf_kan" ] || [ -n "$(find "$_nf_kan" -mmin +60 2>/dev/null)" ]; then
@@ -64,7 +65,8 @@ NF_MPRINT="$(nf_macprint 2>/dev/null | tr -d "[:space:]")"
 NF_BID="$(nf_productid 2>/dev/null | tr -d "[:space:]")"
 NF_DEV="$(nf_dev 2>/dev/null && printf 1 || printf 0)"
 NF_CALL="$(awk -F'\t' '$2=="호칭"{v=$3; s=1} END{if (s) print v}' "$NF_PERSON" 2>/dev/null | tr -d '\000-\037\177')"
-printf '%s' "$IN" | NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/열쇠상태" \
+NF_UI_LANG="$(nf_lang 2>/dev/null)"; printf '%s\n' "$NF_UI_LANG" > "$NF_HOME/언어" 2>/dev/null
+printf '%s' "$IN" | NF_UI_LANG="$NF_UI_LANG" NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/열쇠상태" \
   NF_MPRINT="$NF_MPRINT" NF_BID="$NF_BID" NF_DEV="$NF_DEV" NF_CALL="$NF_CALL" \
   NF_HOME="$NF_HOME" NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
 if [ -f "$NF_HOME/이용권.새로" ]; then

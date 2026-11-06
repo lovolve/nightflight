@@ -180,7 +180,7 @@ sys.exit(0 if os.environ["NFF"] in D.설계표기능() else 1)'; then
     GO="${4:?갈 수 있는 곳 — 쉼표로 여럿. 더 갈 곳이 없으면: 끝}"
     SRC="${5:-내판단}"
     case "$SRC" in
-      대표님|리서치|표준|깨졌다|내판단|코드) ;;
+      대표님|user|리서치|표준|깨졌다|내판단|코드) ;;
       *) echo "  ⛔ 출처는 «대표님·리서치·표준·깨졌다·내판단·코드» 중 하나여야 합니다: $SRC" >&2; exit 1 ;;
     esac
     _TOOLS="$(cd "$NF_PYDIR/../tools" 2>/dev/null && pwd)"

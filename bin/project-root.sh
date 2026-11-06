@@ -98,6 +98,17 @@ nf_conv_add() {
   awk -F'\t' -v r="$1" -v s="$2" '$1==r&&$2==s{f=1} END{exit !f}' "$f" 2>/dev/null && return 0
   printf '%s\t%s\n' "$1" "$2" >> "$f"
 }
+nf_conv_take_next() {
+  local s; s="$(nf_conv_id)"
+  [ -n "$s" ] || return 0
+  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null || return 0
+  nf_conv_drop_next "$1" && nf_conv_add "$1" "$s"
+}
+nf_conv_drop_next() {
+  local f="$NF_HOME/대화.tsv"
+  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
+  awk -F'\t' -v r="$1" '!($1==r&&$2=="다음대화")' "$f" > "$f.$$" 2>/dev/null && mv -f "$f.$$" "$f"
+}
 nf_conv_scope() {
   awk -F'\t' -v r="$1" '$1==r&&$2=="*"{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 폴더; return; }
   awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 대화; return; }
@@ -107,14 +118,28 @@ nf_registered() { nf_registered_at "$NF_ROOT" && nf_conv_ok_at "$NF_ROOT"; }
 
 nf_productid() {
   if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi
-  local p="$NF_HOME/사람.tsv" v n
+  local p="$NF_HOME/사람.tsv" f="$NF_ROOT/.nightflight-product" v w n ok='^[a-z0-9][a-z0-9.-]{1,154}$'
   nf_registered || return 0
   v="$(awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{v=$4} END{print v}' "$p" 2>/dev/null | tr -d '[:space:]')"
-  if printf '%s' "$v" | grep -qE '^[a-z0-9][a-z0-9.-]{1,154}$'; then printf '%s' "$v"; return; fi
-  n="p-$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
-  [ "${#n}" -eq 18 ] || return 0
-  awk -F'\t' -v OFS='\t' -v r="$NF_ROOT" -v n="$n" '$2=="프로젝트"&&$3==r{$4=n; while (NF<6) $(NF+1)=""} {print}' "$p" > "$p.$$" 2>/dev/null \
-    && mv -f "$p.$$" "$p" && printf '%s' "$n"
+  printf '%s' "$v" | grep -qE "$ok" || v=""
+  w=""
+  if [ -f "$f" ] && [ ! -L "$f" ]; then
+    w="$(head -c 160 "$f" 2>/dev/null | tr -d '[:space:]')"
+    printf '%s' "$w" | grep -qE "$ok" || w=""
+  fi
+  n="${w:-$v}"
+  if [ -z "$n" ]; then
+    n="p-$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+    [ "${#n}" -eq 18 ] || return 0
+  fi
+  if [ "$n" != "$v" ]; then
+    awk -F'\t' -v OFS='\t' -v r="$NF_ROOT" -v n="$n" '$2=="프로젝트"&&$3==r{$4=n; while (NF<6) $(NF+1)=""} {print}' "$p" > "$p.$$" 2>/dev/null \
+      && mv -f "$p.$$" "$p" || return 0
+  fi
+  if [ -z "$w" ] && [ ! -L "$f" ]; then
+    printf '%s\n' "$n" > "$f.$$" 2>/dev/null && mv -f "$f.$$" "$f" 2>/dev/null
+  fi
+  printf '%s' "$n"
 }
 
 NF_GI_MARK="야간비행이 더한 줄"
@@ -209,12 +234,13 @@ NF_BRAIN_BUILTIN="https://tmrivrgrtgsjevikwagr.supabase.co"
 NF_BRAIN_BASE="${NF_BRAIN_BASE:-$NF_BRAIN_BUILTIN}"
 if [ -n "${NF_BRAIN_ANON:-}" ] && ! nf_dev; then
   case "$NF_BRAIN_ANON" in
+    sb_publishable_*) : ;;
     eyJ*.*.*) : ;;
     *) echo "  ⚠️ 저희 서버로 들어가는 열쇠가 이 컴퓨터 바깥에서 바뀌어 있어 **쓰지 않았습니다** — 원래 것으로 갑니다." >&2
        unset NF_BRAIN_ANON ;;
   esac
 fi
-NF_DOORKEY="${NF_BRAIN_ANON:-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRtcml2cmdydGdzamV2aWt3YWdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTEwOTE2ODgsImV4cCI6MjEwNjY2NzY4OH0.xIwOjKZX0OgkKsD9aKE3jh7-9E42mSW_Ld7iabOx9wA}"
+NF_DOORKEY="${NF_BRAIN_ANON:-sb_publishable_4GO9uKMl-NyWnh42vAPHDQ_9NMZPGUO}"
 
 nf_addr_ok() {
   case "${1:-}" in

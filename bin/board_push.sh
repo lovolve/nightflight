@@ -196,12 +196,11 @@ nf_told_set() {
     && mv -f "$TOLD.$$" "$TOLD"
 }
 nf_warn_once() {
-  python3 -I -c '
-import json
-print(json.dumps({"systemMessage":
-  "  ⚠️ 조종석이 기록보다 오래됐습니다 — 이번에는 못 올렸습니다. 「조종석 올려」라고 말씀해 주시면 올립니다."},
-  ensure_ascii=False))
-'
+  if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)" = "en" ]; then
+    printf '%s\n' '{"systemMessage": "  ⚠️ The cockpit is older than your records and was not updated this time. Say \"update the cockpit\" to update it."}'
+  else
+    printf '%s\n' '{"systemMessage": "  ⚠️ 조종석이 기록보다 오래됐습니다 — 이번에는 못 올렸습니다. 「조종석 올려」라고 말씀해 주시면 올립니다."}'
+  fi
 }
 if [ -n "$SID" ]; then
   _nf_line="$(awk -F'\t' -v s="$SID" '$1==s{l=$0} END{print l}' "$TOLD" 2>/dev/null)"

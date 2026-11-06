@@ -1568,7 +1568,6 @@ header, .n-meta{padding-inline:16px}
       +'<rect x="2" y="4" width="36" height="16" rx="2.5" class="mcb"/><rect x="7" y="8" width="6" height="8" rx="1" class="mcf"/><rect x="17" y="8" width="6" height="8" rx="1" class="mcf"/><rect x="27" y="8" width="6" height="8" rx="1" class="mcf"/><line x1="6" y1="20" x2="6" y2="26" class="mcp"/><line x1="12" y1="20" x2="12" y2="26" class="mcp"/><line x1="18" y1="20" x2="18" y2="26" class="mcp"/><line x1="24" y1="20" x2="24" y2="26" class="mcp"/><line x1="30" y1="20" x2="30" y2="26" class="mcp"/><line x1="36" y1="20" x2="36" y2="26" class="mcp"/></g></svg></div>';
 
     var 스왑말=(md['스왑쓴M']==null)?'스왑을 측정하지 못했습니다':('스왑 '+(md['스왑쓴M']/1024).toFixed(1)+'GB');
-    스왑말=({0:'메모리 여유가 있습니다',1:'메모리 여유가 부족합니다 · 속도가 느려질 수 있습니다',2:'메모리가 부족합니다 · 속도가 느려집니다'}[단]||'맥에서만 측정합니다')+(md['스왑쓴M']==null?'':' · '+스왑말);
     var 메정리=(md['압박']||1)>=2, 메말=((md['할말']||{})['메모리'])||'메모리를 정리해 주세요';
     var 메모리='<div class="cell'+(메정리?' act':'')+'"'+(메정리?(' role="button" tabindex="0" data-say="'+esc(메말)+'" aria-label="눌러서 복사 — '+esc(메말)+'"'):'')+'><span class="ck">메모리 상태</span>'
       +'<div class="mid"><span class="slot">'+신호등+'</span>'
@@ -2577,7 +2576,7 @@ header, .n-meta{padding-inline:16px}
     var 열림={}; 박.querySelectorAll('details[open]').forEach(function(e){ var s=e.querySelector('summary'); if(s) 열림[s.textContent]=1; });
     박.innerHTML=h;
     setName(n['앱이름'], n['폴더']);
-    박.querySelectorAll('details').forEach(function(e){ var s=e.querySelector('summary'); if(s&&열림[s.textContent]) e.open=true; });
+    박.querySelectorAll('details').forEach(function(e){ var s=e.querySelector('summary'); if(s&&열림[번역글(s.textContent)]) e.open=true; });
   }
 
 
@@ -2744,7 +2743,7 @@ header, .n-meta{padding-inline:16px}
   function 눌렀다(값, 단추){
     if(!DB){ var 말=(단추.firstChild&&단추.firstChild.textContent||값).trim(), 글='«'+말+'» 이미 완료했습니다';
       var 됨=function(){ 눌림말(복사됨말+' 붙여 넣으시면 기록에 옮깁니다.', 단추); }, 안됨=function(){ 눌림말(복사막힘말+글, 단추); };
-      try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(글).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
+      try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(번역글(글)).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
       return; }
     var 이제=누른것(); 이제[값]=new Date().toISOString();
     단추.disabled=true;
@@ -2761,7 +2760,7 @@ header, .n-meta{padding-inline:16px}
     var 값=버튼.getAttribute('data-mk'), 기능=버튼.getAttribute('data-mk-f'), 세부=버튼.getAttribute('data-mk-z');
     var 말={'완료':'완료로 표시해','넘어감':'넘어감으로 표시해','되돌리기':'표시를 되돌려'}[값];
     if(!DB){ var 글='테스트 단계 «'+기능+' / '+세부+'» '+말, 됨=function(){ 눌림말(복사됨말+' 붙여 넣으시면 기록에 옮깁니다.', 버튼); }, 안됨=function(){ 눌림말(복사막힘말+글, 버튼); };
-      try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(글).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
+      try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(번역글(글)).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
       return; }
     var 지금=((last.marked||{}).items||[]).slice(), 옛=지금.filter(function(x){ return x['기능']===기능&&x['세부']===세부; })[0];
     var 새=지금.filter(function(x){ return x!==옛; });
@@ -2815,6 +2814,7 @@ header, .n-meta{padding-inline:16px}
       if('stage' in n && !(typeof n.stage==='number' && n.stage>=0 && n.stage<STAGES.length && Math.floor(n.stage)===n.stage)) n.stage=null; }
   }
   function 그리기(){
+    번역살피기();
     다듬기();
     try { 첫화면그림(); 할일고르기(); }
     catch(e){ var 박=$('first'), 못그림='기록 한 건의 형식 오류로 화면을 모두 표시하지 못했습니다 — 대화창에 «조종석이 표시되지 않습니다»라고 입력해 주십시오';
@@ -2844,10 +2844,57 @@ header, .n-meta{padding-inline:16px}
 
   var 들음={};
   var last={now:null,stages:null,stuck:null,features:null,gates:null,deps:null,attempts:null,standards:null,
-            readdates:null,feed:null,piled:null,bound:null,doing:null,bystage:null,brain:null,machine:null,states:null,
+            en:null,readdates:null,feed:null,piled:null,bound:null,doing:null,bystage:null,brain:null,machine:null,states:null,
             plan:null,
             pressed:null};
-  var 박힌자료 = null;
+  var 번역표=null, 번역틀들=[], 번역기억={}, 번역감시=null, 한글글=/[가-힣]/;
+  function 번역준비(표){
+    번역표=표; 번역기억={}; 번역틀들=[];
+    Object.keys(표).forEach(function(k){
+      if(k.indexOf('{q}')<0) return;
+      var 칸=[], 식=k.replace(/[.*+?^$()|[\]\\]/g,'\\$&').replace(/\{(n|q)\}/g,function(_,t){ 칸.push(t); return t==='n'?'(\\d+(?:[.,]\\d+)*)':'(.+?)'; });
+      번역틀들.push({식:new RegExp('^'+식+'$'),칸:칸,글:표[k],길이:k.replace(/\{[nq]\}/g,'').length});
+    });
+    번역틀들.sort(function(a,b){ return b.길이-a.길이; });
+  }
+  function 번역넣기(글,값){ var 차례={n:0,q:0}; return 글.replace(/\{(n|q)\}/g,function(_,t){ return 값[t][차례[t]++]; }); }
+  function 번역줄(줄){
+    if(!한글글.test(줄)) return 줄;
+    if(번역기억[줄]!=null) return 번역기억[줄];
+    var 앞=줄.match(/^\s*/)[0], 뒤=줄.match(/\s*$/)[0], 몸=줄.trim(), 수=[], i, 답=null;
+    var 틀=몸.replace(/\d+(?:[.,]\d+)*/g,function(x){ 수.push(x); return '{n}'; });
+    if(번역표[틀]!=null) 답=번역넣기(번역표[틀],{n:수,q:[]});
+    for(i=0;답==null&&i<번역틀들.length;i++){
+      var 맞=몸.match(번역틀들[i].식); if(!맞) continue;
+      var 값={n:[],q:[]}; 번역틀들[i].칸.forEach(function(t,j){ 값[t].push(t==='q'?번역줄(맞[j+1]):맞[j+1]); });
+      답=번역넣기(번역틀들[i].글,값);
+    }
+    return 번역기억[줄]=앞+(답==null?몸:답)+뒤;
+  }
+  function 번역글(글){
+    if(!번역표||!글||!한글글.test(글)) return 글;
+    return String(글).split('\n').map(번역줄).join('\n');
+  }
+  function 번역칠(뿌리){
+    var 걷기=document.createTreeWalker(뿌리,NodeFilter.SHOW_TEXT), n, 묶음=[];
+    while((n=걷기.nextNode())){ var 위=n.parentNode&&n.parentNode.nodeName; if(위!=='SCRIPT'&&위!=='STYLE'&&한글글.test(n.nodeValue)) 묶음.push(n); }
+    묶음.forEach(function(t){ t.nodeValue=번역글(t.nodeValue); });
+    if(뿌리.querySelectorAll) 뿌리.querySelectorAll('[title],[placeholder],[aria-label],[data-say]').forEach(function(e){
+      ['title','placeholder','aria-label','data-say'].forEach(function(a){ var v=e.getAttribute(a); if(v&&한글글.test(v)) e.setAttribute(a,번역글(v)); }); });
+  }
+  function 번역살피기(){
+    var 표=last.now&&last.now['언어']==='en'&&last.en&&last.en['표'];
+    if(!표||번역표===표) return;
+    번역준비(표);
+    document.documentElement.lang='en';
+    document.title=번역글(document.title);
+    if(번역감시) return;
+    번역감시=new MutationObserver(function(){ 번역감시.disconnect(); 번역칠(document.body); 번역감시켬(); });
+    function 번역감시켬(){ 번역감시.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['title','placeholder','aria-label','data-say']}); }
+    번역칠(document.body); 번역감시켬();
+  }
+  var 박힌자료 = "__BOARD__";
+  if(typeof 박힌자료==='string') 박힌자료=null;
 
   function 박힌것으로(){
     if(!박힌자료){ setLive(false,'연결되지 않음');
@@ -2905,6 +2952,7 @@ header, .n-meta{padding-inline:16px}
     db.doc('state/plan').onSnapshot(받기('plan'),er);
     db.doc('state/machine').onSnapshot(받기('machine'),er);
     db.doc('state/states').onSnapshot(받기('states'),er);
+    db.doc('state/en').onSnapshot(받기('en'),er);
     db.doc('state/pressed').onSnapshot(받기('pressed'),function(){});
     db.doc('state/marked').onSnapshot(받기('marked'),function(){});
   }).catch(function(){ setLive(false,'연결되지 않음'); });
@@ -2930,7 +2978,7 @@ header, .n-meta{padding-inline:16px}
   }
   function 복사누름(칸){
     var 말=칸.getAttribute('data-say'), 막힘=function(){ 안내띄움(복사막힘말+말, 칸); };
-    try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(말).then(function(){ 안내띄움(복사됨말, 칸); }, 막힘); else 막힘(); } catch(e){ 막힘(); }
+    try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(번역글(말)).then(function(){ 안내띄움(복사됨말, 칸); }, 막힘); else 막힘(); } catch(e){ 막힘(); }
   }
   document.addEventListener('click', function(ev){ var 칸=ev.target.closest ? ev.target.closest('.cp-say[data-say]') : null; if(!칸) return; ev.preventDefault(); ev.stopPropagation(); 복사누름(칸); }, true);
   document.addEventListener('keydown', function(ev){ if(ev.key!=='Enter'&&ev.key!==' ') return; var 칸=ev.target.closest ? ev.target.closest('.cp-say[data-say]') : null; if(!칸) return; ev.preventDefault(); ev.stopPropagation(); 복사누름(칸); }, true);

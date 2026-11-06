@@ -97,7 +97,7 @@ print(json.dumps({
     "플랜": (보임.get(권.get("등급"), 권.get("등급")) if 있나 else None),
     "제품수": len(앱들) + len(접은) + (1 if 무료 else 0),
     "한도": ((int(칸) + 1) if 칸 is not None else None) if 있나 else 1,
-    "무료제품": (무료이름 or ("앱 번호를 못 읽은 제품" if 무료 in 번호없음 else 무료)) if 무료 else None,
+    "무료제품": (무료이름 or ("앱 번호를 못 읽은 제품" if 무료 in 번호없음 else ("A product registered on another computer" if os.environ.get("NF_UI_LANG") == "en" else "다른 컴퓨터에서 등록한 제품"))) if 무료 else None,
     "등록수": len(목록), "프로젝트": 프로젝트, "받은때": 받은때,
     "무료끝": _한국날(권.get("무료끝")) if 권.get("무료끝") else None,
 }, ensure_ascii=False))

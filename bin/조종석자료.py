@@ -584,7 +584,22 @@ try:
     _스토어연결 = _sc.compute()
 except Exception:
     _스토어연결 = None
-w("now.json", {"stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
+_언어 = "en" if os.environ.get("NF_UI_LANG") == "en" else "ko"
+_번역자리 = os.path.join(os.environ["OUT"], "en.json")
+if _언어 == "en":
+    try:
+        _표 = {}
+        with open(os.path.join(os.environ["TOOLS"], "..", "data", "조종석영어.tsv"), encoding="utf-8") as _f:
+            for _줄 in _f:
+                if "\t" in _줄 and not _줄.startswith("#"):
+                    _k, _v = _줄.rstrip("\n").split("\t", 1)
+                    _표[_k] = _v
+        w("en.json", {"표": _표})
+    except OSError:
+        _언어 = "ko"
+elif os.path.exists(_번역자리):
+    os.remove(_번역자리)
+w("now.json", {"언어": _언어, "stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
                  .isoformat(timespec="seconds").replace("+00:00", "Z"),
                "앱이름": _appname, "폴더": _folder,
                "가져오기": _가져오기,

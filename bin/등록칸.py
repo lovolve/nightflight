@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """`ledger.sh 등록` 이 부른다 — 서버에서 읽은 이용권 칸(JSON)을 보고 등록할 때 알려 드릴 말을 찍는다."""
-import json, os
+import json, os, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import 제품이름
 주소 = "https://www.lovolve.app/nightflight/#price"
 열쇠 = os.environ["KEYSH"]
 try:
@@ -8,9 +10,9 @@ try:
 except ValueError:
     d = None
 bid = os.environ.get("BID") or ""
-번호없음 = ("(번호없음)", "no-bundle-id")
+이름표 = 제품이름.목록()
 def 보임(b):
-    return "앱 번호를 못 읽은 제품" if b in 번호없음 else b
+    return 제품이름.보임(b, 이름표)
 if not isinstance(d, dict):
     print("  플랜의 제품등록은 지금 확인하지 못했습니다 — 아이디어 · 검증 단계는 그대로 쓰실 수 있습니다.")
 else:
@@ -39,7 +41,7 @@ else:
         print("  ⚠️ 플랜의 제품등록 %d개를 이미 다 쓰셨습니다(무료 제품 %s · 유료 %s)." % (int(칸) + 1, 보임(무료), ", ".join([보임(a) for a in 앱들] + [보임(a) + "(접음)" for a in 접은])))
         print("     아이디어 · 검증 단계는 그대로 쓰실 수 있습니다. 제품등록은 설계 단계부터라, 그때 이 제품도 1개가 됩니다.")
         print("     플러스 플랜으로 바꾸시거나, 다른 제품의 제품등록을 푸시면 그 자리가 바로 돌아옵니다(같은 제품을 다시 넣는 것은 30일 뒤입니다). 플랜 안내: " + 주소)
-        print("  [모델] 풀려면 사용자가 고른 제품으로 " + 열쇠 + " 앱빼기 <제품 번호> 확인 · 플러스로 바꾸려면 " + 열쇠 + " 등급 플러스 (라이선스 키는 필요 없습니다 · 결제한 메일로 확인 링크가 갑니다)")
+        print("  [모델] 괄호 안이 제품 번호입니다. 풀려면 사용자가 고른 제품으로 " + 열쇠 + " 앱빼기 <제품 번호> 확인 · 플러스로 바꾸려면 " + 열쇠 + " 등급 플러스 (라이선스 키는 필요 없습니다 · 결제한 메일로 확인 링크가 갑니다)")
     else:
         남 = "제한 없음" if 칸 is None else "%d개 중 %d개 사용 중(무료 1 + 유료 %d/%d)" % (int(칸) + 1, len(앱들) + len(접은) + 1, len(앱들) + len(접은), int(칸))
         print("  플랜의 제품등록: " + 남 + " — 설계 단계에 들어가면 이 제품도 1개가 됩니다.")

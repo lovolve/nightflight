@@ -46,6 +46,12 @@ if [ -d "$DIR/.nightflight" ]; then ST="$DIR/.nightflight"; fi
 CACHE_OK=""; grep -qF "야간비행이 더한 줄" "$ST/.gitignore" 2>/dev/null && CACHE_OK=1
 n() { [ -f "$L" ] && awk -F'\t' -v k="$1" '$2==k' "$L" 2>/dev/null | wc -l | tr -d ' ' || echo 0; }
 BLK=$(n 막음); DEC=$(n 결정)
+W_BLOCK="막음"; W_DEC="결정"; W_NONE="아직 기록 없음"; W_CONV="이 대화"; W_SOON="곧 새로 시작해야 해요"; W_5="5시간"; W_7="7일"; W_NAME="야간비행"
+W_H="시간 뒤 초기화"; W_M="분 뒤 초기화"
+if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)" = "en" ]; then
+  W_BLOCK="Blocked"; W_DEC="Decisions"; W_NONE="no records yet"; W_CONV="This conversation"; W_SOON="start a new one soon"; W_5="5-hour"; W_7="7-day"; W_NAME="Nightflight"
+  W_H="h to reset"; W_M="m to reset"
+fi
 
 UNSHOWN=0
 [ -f "$L" ] && UNSHOWN=$(awk -F'\t' '$2=="카드"{c=0; next} $2=="막음"{c++} END{print c+0}' "$L" 2>/dev/null)
@@ -93,16 +99,16 @@ elif [ "${PCT:-0}" -ge 60 ]; then PAINT=ctx
 fi
 
 if [ $((BLK + DEC)) -eq 0 ]; then
-  if [ -n "$STAGE" ]; then LEFT="${M}${STAGE} · 아직 기록 없음${R}"
-  else LEFT="${M}야간비행 · 아직 기록 없음${R}"; fi
+  if [ -n "$STAGE" ]; then LEFT="${M}${STAGE} · ${W_NONE}${R}"
+  else LEFT="${M}${W_NAME} · ${W_NONE}${R}"; fi
 else
   if [ "$PAINT" = gate ]; then
-    LEFT="${HI} 막음 ${BLK} (+$((BLK - B0))) ${R}"
+    LEFT="${HI} ${W_BLOCK} ${BLK} (+$((BLK - B0))) ${R}"
   else
-    LEFT="${M}막음 ${BLK}${R}$(d "$BLK" "$B0")"
+    LEFT="${M}${W_BLOCK} ${BLK}${R}$(d "$BLK" "$B0")"
   fi
   [ "$UNSHOWN" -gt 0 ] && LEFT="${LEFT} ${M}(안 보여드림 ${UNSHOWN})${R}"
-  DECPART="${M}결정 ${DEC}${R}$(d "$DEC" "$D0")"
+  DECPART="${M}${W_DEC} ${DEC}${R}$(d "$DEC" "$D0")"
   [ "$PAINT" = broken ] && DECPART="${HIW} 전제 ${BROKEN}건 다시 봐야 함 ${R}"
   if [ "$PAINT" = unlogged ]; then DECPART="${HIW} 커밋 ${UNLOGGED}건이 «됐다» 없이 지나갔어요 ${R}"
   elif [ "$UNLOGGED" -gt 0 ]; then DECPART="${DECPART}  ${M}기록 없는 커밋 ${UNLOGGED}${R}"; fi
@@ -119,18 +125,18 @@ bar() {
   done
   printf '%s' "$out"
 }
-CTX="이 대화 $(bar "${PCT:-0}") ${PCT:-0}%"
-[ "${PCT:-0}" -ge 85 ] && CTX="$CTX — 곧 새로 시작해야 해요"
+CTX="${W_CONV} $(bar "${PCT:-0}") ${PCT:-0}%"
+[ "${PCT:-0}" -ge 85 ] && CTX="$CTX — ${W_SOON}"
 case "$PAINT" in
   ctx) [ "${PCT:-0}" -ge 85 ] && RIGHT="${HIC} ${CTX} ${R}" || RIGHT="${HIW} ${CTX} ${R}" ;;
-  *)   RIGHT="${M}이 대화${R} ${F}$(bar "${PCT:-0}")${R} ${M}${PCT:-0}%${R}" ;;
+  *)   RIGHT="${M}${W_CONV}${R} ${F}$(bar "${PCT:-0}")${R} ${M}${PCT:-0}%${R}" ;;
 esac
 if [ "${F5:--1}" -ge 0 ] 2>/dev/null; then
-  LIM="5시간 ${F5}%"
+  LIM="${W_5} ${F5}%"
   if [ "${R5:--1}" -ge 0 ] 2>/dev/null; then
-    if [ "$R5" -ge 60 ]; then LIM="$LIM · $((R5 / 60))시간 뒤 초기화"; else LIM="$LIM · ${R5}분 뒤 초기화"; fi
+    if [ "$R5" -ge 60 ]; then LIM="$LIM · $((R5 / 60))${W_H}"; else LIM="$LIM · ${R5}${W_M}"; fi
   fi
-  [ "${F7:--1}" -ge 0 ] 2>/dev/null && LIM="$LIM · 7일 ${F7}%"
+  [ "${F7:--1}" -ge 0 ] 2>/dev/null && LIM="$LIM · ${W_7} ${F7}%"
   RIGHT="$RIGHT  ${M}${LIM}${R}"
 fi
 
