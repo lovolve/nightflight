@@ -582,6 +582,7 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 .n-st{display:flex; align-items:center; gap:12px; font-size:var(--fs-4); color:var(--alert)}
 .n-mini{display:flex; gap:3px; align-items:flex-end; height:14px} .n-mini i{width:9px; height:4px; border-radius:2px; background:var(--rule)} .n-mini i.d{height:14px; background:var(--done-b)} .n-mini i.c{height:14px; background:var(--alert)}
 .n-bar .c{font-size:var(--fs-5); padding:2px 12px; border-radius:999px; border:1px solid var(--live-rule); color:var(--ink-2); white-space:nowrap} .n-bar .c.stale{border-color:var(--alert-rule); color:var(--alert)}
+.n-bar button.c{font:inherit; font-size:var(--fs-5); background:transparent; cursor:pointer} .n-bar button.c:hover{border-color:var(--rail); color:var(--ink)} .n-bar button.c .rf{margin-left:8px; vertical-align:-2px}
 .n-bar .c i{display:inline-block; width:6px; height:6px; border-radius:50%; background:#7FBF8F; margin-right:8px; vertical-align:1px} .n-bar .c.stale i{background:var(--alert)}
 .n-ic{flex:none; width:48px; height:48px; border-radius:12px; background:var(--rule); color:#F8F5EA; font-size:var(--fs-3); font-weight:600; display:flex; align-items:center; justify-content:center; letter-spacing:-.02em}
 .n-ht{flex:1; min-width:0} .n-ht h1{margin:0; font-size:var(--fs-1); line-height:1.3; font-weight:600; color:var(--ink)} .n-ht h1 b{font-weight:600; color:var(--ink)}
@@ -820,6 +821,11 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 
 .n-res .rrow{display:flex; background:var(--panel); border:1px solid var(--rule);
       border-radius:6px; overflow:hidden}
+.n-lim{margin-top:12px; padding-top:12px; border-top:1px solid var(--rule); font-size:var(--fs-5)}
+.n-lim .lim{display:flex; gap:12px; line-height:1.6}
+.n-lim .lk{flex:none; width:80px; color:var(--muted)}
+.n-lim .lv{color:var(--ink); min-width:0}
+.n-lim .lt{margin:4px 0 0; color:var(--faint)}
 .n-res .cell{flex:1 1 0; min-width:0; padding:12px 12px; border-left:1px solid var(--rule);
       display:flex; flex-direction:column}
 .n-res .cell:first-child{border-left:none}
@@ -926,9 +932,17 @@ header, .n-meta{padding-inline:16px}
 .n-zone .n-chip.g{border-color:var(--live-rule)}
 .n-pf .ph .ring .rd{fill:var(--live)}
 .n-pf .ph .ring .rk{fill:none; stroke:#0A0B0C; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
-.n-sl li .mks{flex:none; display:inline-flex; gap:4px; margin-left:auto}
-.n-sl li .cf + .mks, .n-sl li .cf + em + .mks{margin-left:8px}
-@media (max-width:600px){ .n-sl li:has(.mks){flex-wrap:wrap} .n-sl li:has(.mks) .nm{flex:1 1 calc(100% - 24px)} .n-sl li .mks, .n-sl li .cf + .mks, .n-sl li .cf + em + .mks{margin-left:20px; flex-basis:100%} }
+.n-sl li.grp{display:block; margin:8px 0 4px; font-size:var(--fs-5); color:var(--muted)}
+.n-sl li .nm{min-width:0}
+.n-sl li .mks{flex:none; margin-left:auto; position:relative; font-size:var(--fs-5); font-weight:400; color:var(--ink-2)}
+.n-sl li .cf + .mks{margin-left:8px}
+.n-feats .n-sl li .mks > summary{display:block; list-style:none; cursor:pointer; white-space:nowrap; margin:0; padding:0; min-height:0; line-height:inherit; border:0; background:transparent; font-size:var(--fs-5); font-weight:400}
+.n-sl li .mks > summary::-webkit-details-marker{display:none}
+.n-sl li .mks > summary:hover{color:var(--ink)}
+.n-sl li .mks > summary span{color:var(--faint)}
+.n-sl li .mkm{position:absolute; right:0; top:100%; z-index:5; min-width:120px; margin-top:4px; padding:4px; background:var(--panel); border:1px solid var(--rule-2); border-radius:6px}
+.n-mk{display:block; width:100%; padding:4px 8px; font:inherit; font-size:var(--fs-5); text-align:left; color:var(--ink); background:transparent; border:0; border-radius:2px; cursor:pointer}
+.n-mk:hover{background:var(--rule)}
 .n-sl li .cf{margin-left:auto; padding-left:12px; font-size:var(--fs-5); color:var(--faint); max-width:55%;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 
@@ -1215,7 +1229,7 @@ header, .n-meta{padding-inline:16px}
 .jf-chip.todo{border-style:dashed; color:var(--ink-2)} .jf-chip.bad{border-color:var(--stop)} .jf-chip.bad::before{content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--stop); margin-right:4px; vertical-align:1px}
 .sv-fold{margin:8px 0 0} .sv-fold > summary{cursor:pointer; list-style:none; font-size:var(--fs-3); color:var(--ink); font-weight:600; padding:8px 0; display:flex!important; align-items:baseline; gap:8px; width:100%; white-space:nowrap}
 .sv-fold > summary .sub{white-space:normal; flex:1; min-width:0} .sv-fold > summary::-webkit-details-marker{display:none} .sv-fold .sub{font-size:var(--fs-5); font-weight:400; color:var(--muted); margin-left:8px}
-.cp-say{cursor:pointer} .cp-say:focus-visible{outline:2px solid var(--done-b); outline-offset:2px} .cp-toast{white-space:pre-line; position:fixed; left:16px; right:16px; bottom:16px; margin:0 auto; max-width:720px; padding:8px 12px; border-radius:6px; border:1px solid var(--faint); background:var(--panel); color:var(--ink); font-size:var(--fs-5); z-index:50} .cp-toast:empty{display:none}   
+.cp-say{cursor:pointer} .cp-say:focus-visible{outline:2px solid var(--done-b); outline-offset:2px} .cp-toast{white-space:pre-line; position:fixed; margin:0; width:max-content; max-width:min(720px, calc(100vw - 32px)); padding:8px 12px; border-radius:6px; border:1px solid var(--faint); background:var(--panel); color:var(--ink); font-size:var(--fs-5); z-index:50} .cp-toast:empty{display:none}   
 .jf-lg{display:flex; flex-wrap:wrap; gap:8px 16px; margin:2px 0 12px; font-size:var(--fs-5); color:var(--muted)}
 .jf-lg i{display:inline-block; width:14px; height:9px; border-radius:999px; margin-right:4px; vertical-align:0; border:1px solid var(--rule)} .jf-lg i.d{border-color:var(--done-b); background:var(--ground)} .jf-lg i.t{border-style:dashed; border-color:var(--faint)} .jf-lg i.b{width:7px; height:7px; border:0; background:var(--stop); border-radius:50%}
 .jf-sep{font-size:var(--fs-5); color:var(--faint)}
@@ -1314,6 +1328,11 @@ header, .n-meta{padding-inline:16px}
 .sv-path{display:flex; flex-wrap:wrap; gap:8px 12px; margin:0 0 12px; font-size:var(--fs-4); color:var(--ink-2)}
 .sv-path > span{border:1px solid var(--rule); border-radius:6px; padding:4px 12px} .sv-path i{font-style:normal; color:var(--faint); margin-right:8px} .sv-path b{font-weight:600; color:var(--ink)} .sv-path .dim{color:var(--muted)}
 .sv-key i.dsh{border-style:dashed}
+.sv-subs{display:flex; flex-wrap:wrap; gap:8px 16px; margin-top:12px; padding-top:12px; border-top:1px solid var(--rule)}
+.sv-subs.only{margin-top:16px; padding:12px 16px; border-top:1px solid var(--rule)}
+.sv-later{flex:1 1 200px; min-width:0}
+.sv-later[open]{flex-basis:100%}
+.sv-later > summary .n-zt{font-size:var(--fs-4); white-space:nowrap}
 .sv-later > summary{list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px}
 .sv-later > summary::-webkit-details-marker{display:none}
 .sv-later > summary .n-zt{margin:0}
@@ -1393,29 +1412,37 @@ header, .n-meta{padding-inline:16px}
   var 직접확인말='직접 확인 (조종석)';
   function 확인단계기능(f){ var p=(((last.features||{})['설계표']||{})['단계']||{})['5']; return !!p && (p['기능들']||[]).indexOf(f)>=0; }
   function 표시버튼(f, z){
-    if(!확인단계기능(f)) return '';
-    var 뜻=function(값,글){ return '<button type="button" class="n-dd n-mk" data-mk="'+값+'" data-mk-f="'+esc(f['기능'])+'" data-mk-z="'+esc(z['이름'])+'">'+글+'</button>'; };
     var 내표시=z['상태']==='넘어감'||(z['상태']==='완료'&&String(z['확인']||'').indexOf('직접 확인')===0);
-    if(내표시) return '<span class="mks">'+뜻('되돌리기','되돌리기')+'</span>';
-    if(z['상태']==='완료') return '';
-    return '<span class="mks">'+뜻('완료','완료')+뜻('넘어감','넘어가기')+'</span>';
+    if(z['상태']==='완료'&&!내표시) return '';
+    var 뜻=function(값,글){ return '<button type="button" class="n-mk" data-mk="'+값+'" data-mk-f="'+esc(f['기능'])+'" data-mk-z="'+esc(z['이름'])+'">'+글+'</button>'; };
+    return '<details class="mks"><summary>'+esc(z['상태'])+(z['대기']?' · 기록 전':'')+' <span aria-hidden="true">▾</span></summary><div class="mkm">'
+      +(내표시?뜻('되돌리기','되돌리기'):뜻('완료','완료')+뜻('넘어감','넘어가기'))+'</div></details>';
   }
-  function 세부줄(z, f){
-    var 지금=(z===지금세부), 넘=z['상태']==='넘어감', 끝=z['상태']==='완료'||넘, 손=(z['상태']==='확인 필요'||z['상태']==='방법 찾는 중');
+  function 세부줄(z, f, 묶임){
+    var 확인줄=확인단계기능(f), 지금=(z===지금세부), 넘=z['상태']==='넘어감', 끝=z['상태']==='완료'||넘, 손=(z['상태']==='확인 필요'||z['상태']==='방법 찾는 중');
+    var 표시=확인줄?표시버튼(f, z):'', 직접=String(z['확인']||'').indexOf('직접 확인')===0;
     return '<li class="'+(지금?'cur':끝?'dn':'td')+(손?' hand '+세부칸[z['상태']]:'')+'"><i>'+(지금?'●':손||넘?세부표시[z['상태']]:끝?'✓':'○')+'</i>'
       +'<span class="nm">'+esc(z['이름'])+'</span>'
-      +(손||넘?'<span class="sst">'+esc(z['상태'])+'</span>':'')
-      +(z['이름표']?'<em>'+esc(z['이름표'])+'</em>':'')
-      +(z['확인']?'<span class="cf" title="'+esc(z['확인'])+'">'+esc(z['확인'])+'</span>':'')
-      +(z['대기']?'<em>기록 반영 전</em>':'')
-      +표시버튼(f, z)+'</li>';
+      +(!표시&&(손||넘)?'<span class="sst">'+esc(z['상태'])+'</span>':'')
+      +(z['이름표']&&!묶임?'<em>'+esc(z['이름표'])+'</em>':'')
+      +(z['확인']&&!(확인줄&&직접)?'<span class="cf" title="'+esc(z['확인'])+'">'+esc(z['확인'])+'</span>':'')
+      +표시+'</li>';
+  }
+  function 확인목록(f){
+    var 순=세부순서(f), 수={}, 본={}, 글='';
+    순.forEach(function(z){ if(z['이름표']) 수[z['이름표']]=(수[z['이름표']]||0)+1; });
+    순.forEach(function(z){ var 표=z['이름표'];
+      if(표&&수[표]>1){ if(본[표]) return; 본[표]=1;
+        글+='<li class="grp">'+esc(표)+' '+수[표]+'개</li>'+순.filter(function(y){ return y['이름표']===표; }).map(function(y){ return 세부줄(y, f, true); }).join(''); }
+      else 글+=세부줄(z, f, false); });
+    return 글;
   }
   function 퍼센트(끝수, 전){ return 전?Math.round(끝수/전*100)+'%':'–'; }
   var 지금세부=null, 지금기능=null;
   function 계획기능(f){
     var 수=f['수'], 끝=기능끝(f), 지금=(f===지금기능);
     var 손=수['방법 찾는 중']?칩('방법 찾는 중 '+수['방법 찾는 중'],'r'):(수['확인 필요']?칩('확인 필요 '+수['확인 필요'],'af'):'');
-    var 목록='<ul class="n-sl">'+세부순서(f).map(function(z){ return 세부줄(z, f); }).join('')+'</ul>';
+    var 목록='<ul class="n-sl">'+(확인단계기능(f)?확인목록(f):세부순서(f).map(function(z){ return 세부줄(z, f, false); }).join(''))+'</ul>';
     if(지금) return '<div class="n-pf cur"><div class="ph"><i>●</i><b>'+esc(f['기능'])+'</b>'
       +'<span class="mono">'+퍼센트(수['완료'], f['세부'].length)+'</span>'+손+'</div>'+목록+'</div>';
     return '<details class="n-pf '+(끝?'dn':'td')+'"><summary class="ph"><i>'+(끝?'✓':'○')+'</i><b>'+esc(f['기능'])+'</b>'+손+'</summary>'+목록+'</details>';
@@ -1488,8 +1515,10 @@ header, .n-meta{padding-inline:16px}
       글='<span class="new">새 버전이 있습니다</span> · '+esc(판['지금'])+' → '+esc(판['최신']);
       버튼='<button type="button" class="cp-say" data-say="'+esc(판['할말']||'')+'" aria-label="눌러서 복사 — '+esc(판['할말']||'')+'">업데이트하기</button>';
     }
-    else if(판['상태']==='최신') 글='<span class="ok">최신 버전입니다</span> · '+esc(판['지금']);
-    else if(판['상태']==='앞섬') return '';
+    else if(판['상태']==='최신'){ var 잰=Number((md||{})['잰때']), 분=잰?Math.max(0,Math.round((Date.now()/1000-잰)/60)):NaN;
+      if(isNaN(분)||분<1) 글='<span class="ok">최신 버전입니다</span> · '+esc(판['지금']);
+      else 글='<span class="ok">확인 당시 최신 버전</span> · '+esc(판['지금'])+' · '+(분<60?분+'분 전':(분<1440?Math.round(분/60)+'시간 전':Math.round(분/1440)+'일 전'))+' 확인'; }
+    else if(판['상태']==='앞섬') 글='지금 '+esc(판['지금']);
     else 글='최신 버전을 확인하지 못했습니다 · 지금 '+esc(판['지금']);
     return '<div class="n-upd"><span>'+글+'</span>'+버튼+'</div>';
   }
@@ -1510,6 +1539,18 @@ header, .n-meta{padding-inline:16px}
       +'<circle cx="20" cy="20" r="15" class="'+바탕칸+'"/>'+호+'</svg>';
   }
 
+  function 지난말(분){ return 분<1?'방금':(분<60?분+'분 전':(분<1440?Math.round(분/60)+'시간 전':Math.round(분/1440)+'일 전')); }
+  function 남은말(분){ return 분<60?분+'분 뒤':(분<1440?Math.floor(분/60)+'시간 뒤':Math.floor(분/1440)+'일 뒤'); }
+  function 한도줄(md){
+    var 묶음=md&&md['한도'], 이름={five_hour:'5시간 한도',seven_day:'7일 한도'}, 지금=Date.now()/1000;
+    if(!묶음||!Array.isArray(묶음['한도'])) return '';
+    var 줄=묶음['한도'].filter(function(x){ return x&&이름[x['종류']]&&typeof x['사용']==='number'; }).map(function(x){
+      var 초=Number(x['초기화']), 지남=초&&초<=지금;
+      return '<div class="lim"><span class="lk">'+이름[x['종류']]+'</span><span class="lv">'+(지남?'초기화됨':esc(x['사용'])+'% 사용'+(초?' · '+남은말(Math.floor((초-지금)/60))+' 초기화':''))+'</span></div>'; }).join('');
+    if(!줄) return '';
+    var 잰=Number(묶음['잰때']);
+    return '<div class="n-lim">'+줄+(잰?'<p class="lt">'+지난말(Math.max(0,Math.round((지금-잰)/60)))+' 확인</p>':'')+'</div>';
+  }
   function 리소스줄(md){
     if(!md) return '';
     if(md['못쟀다']) return 구역상자('이 컴퓨터 상태','','<div class="n-res"><p class="rh hot">이 컴퓨터의 상태를 못 쟀습니다</p></div>');
@@ -1590,7 +1631,7 @@ header, .n-meta{padding-inline:16px}
 
     var 스왑설명='<p class="n-info"><i class="ii" aria-hidden="true">i</i><span><b>스왑</b>: 메모리가 모자랄 때 저장 공간을 메모리처럼 빌려 쓴 양입니다. 많을수록 느려집니다.</span></p>';
     var 메있나=(md['압박']!=null);
-    return 구역상자('이 컴퓨터 상태',설명줄,'<div class="n-res">'+머리+'<div class="rrow">'+(메있나?메모리:'')+용량+시뮬+치움+'</div>'+(메있나?스왑설명:'')+'</div>');
+    return 구역상자('이 컴퓨터 상태',설명줄,'<div class="n-res">'+머리+'<div class="rrow">'+(메있나?메모리:'')+용량+시뮬+치움+'</div>'+한도줄(md)+(메있나?스왑설명:'')+'</div>');
   }
 
   function 이미했어요(g){
@@ -2163,7 +2204,7 @@ header, .n-meta{padding-inline:16px}
     if(j===5||j===7||j===8) return 계획단계(p, 지금단계)||빈모양(j);
     return 계획단계(p, 지금단계);
   }
-  var 칸채우기='기존 코드·문서에서 조종석 칸 채우기';
+  var 칸채우기='조종석 칸 채우기';
   function 가져오기줄(g){
     if(!g || !g['보일까'] || !Array.isArray(g['칸'])) return '';
     var 줄=g['칸'].filter(function(c){ return c['상태']==='아직'||c['상태']==='일부만'; }).map(function(c){
@@ -2175,7 +2216,7 @@ header, .n-meta{padding-inline:16px}
       return '<div class="sv-row'+(남?시킴(지시([칸채우기,c['이름']],c['상태']==='일부만'?'코드에서 빠진 것을 더 찾아 이 칸을 마저 채워 주세요.':'이 칸을 코드에서 찾아 근거와 함께 채워 주세요.\n이 제품에 없으면 «없음»과 이유를 적어 주세요.',말)):'"')+'>'
         +'<i class="'+(남?'nw':(c['상태']==='없음'?'dim':'ok'))+'">'+(남?'!':(c['상태']==='없음'?'–':'✓'))+'</i>'
         +'<span class="nm'+(c['상태']==='없음'?' dim':'')+'">'+esc(c['이름'])+'</span><span class="r'+(남?' nw':' dim')+'">'+esc(말)+'</span></div>'; }).join('');
-    return '<details class="n-zone sv-later"><summary><h2 class="n-zt">'+칸채우기+'</h2><span class="sv-badge">'+esc(g['끝'])+' / '+esc(g['전체'])+'</span></summary>'
+    return '<details class="sv-later"><summary><h3 class="n-zt">'+칸채우기+'</h3><span class="sv-badge">'+esc(g['끝'])+' / '+esc(g['전체'])+'</span></summary>'
       +'<p class="n-zs">기존 제품 정보를 조종석으로 이전하는 중입니다 · 남은 칸 '+esc(g['남'])+'개를 누르면 채울 지시문이 복사됩니다</p>'+줄+'</details>';
   }
   function 따라잡기카드(d){
@@ -2196,7 +2237,7 @@ header, .n-meta{padding-inline:16px}
     var 표=(((last.features||{})['설계표'])||{})['단계']||{}, xs=[];
     Object.keys(표).forEach(function(k){ (표[k]['기능들']||[]).forEach(function(f){ f['세부'].forEach(function(z){ if(z['때']) xs.push(z); }); }); });
     if(!xs.length) return '';
-    return '<details class="n-zone sv-later"><summary><h2 class="n-zt">나중에 확인할 것</h2><span class="sv-badge">'+xs.length+'</span></summary>'
+    return '<details class="sv-later"><summary><h3 class="n-zt">나중에 확인할 것</h3><span class="sv-badge">'+xs.length+'</span></summary>'
       +'<p class="n-zs">지금은 할 수 없고, 먼저 일어나야 할 일이 있는 것</p>'
       +xs.map(function(z){ var d=z['때']; return '<div class="sv-wait"><b>'+esc(d['물음']||z['이름'])+'</b>'
         +'<p><span class="k">언제</span>'+esc(d['언제'])+'</p>'+(d['지금까지']?'<p><span class="k">지금까지</span>'+esc(d['지금까지'])+'</p>':'')+'</div>'; }).join('')+'</details>';
@@ -2216,7 +2257,7 @@ header, .n-meta{padding-inline:16px}
   document.addEventListener('change', function(ev){ var v=ev.target.getAttribute&&ev.target.getAttribute('data-pick'); if(v==null) return;
     if(ev.target.checked) 고른일[v]=1; else delete 고른일[v];
     var 막=$('고른막대'); if(막) 막.innerHTML=고른막대글(); });
-  function 사용자차례(cur, 앞줄){
+  function 사용자차례(cur, 앞줄, 덧칸){
     var pl=last.piled||{}, n=last.now||{}, g=last.gates||{}, 줄=[];
     var 끝=n['단계끝']; if(끝 && 끝['끝'] && 끝['다음이름']) 줄.push(['ok','→',esc(끝['이름'])+' 단계가 끝났습니다 — 다음은 '+esc(끝['다음이름'])+' 단계입니다','다음 단계']);
     var 연결=n['스토어연결']; if(연결 && 연결['보일까']) 줄.push(['nw','!','앱스토어 연결하기 — 스토어 정보 · 사진 · 심사 메모를 AI가 대신 넣으려면 먼저 연결해야 합니다 — 지금: '+esc(연결['애플']),'연결하기']);
@@ -2262,8 +2303,10 @@ header, .n-meta{padding-inline:16px}
       var 최=gx?parseInt(gx['최대'],10):NaN, 일수=w.days||0;
       t+='<div class="sv-row"><i class="dim">◷</i><span class="nm">'+esc(w.what)+'</span><span class="r">'+(isNaN(최)?'신청한 지 '+일(일수):일수+' / 최대 '+최+'일')+'</span></div>'
         +(isNaN(최)?'':'<div class="sv-bar thin"><span style="width:'+Math.min(100,Math.round(일수/최*100))+'%"></span></div>'); });
-    if(!t) return '';
-    return 구역상자('지금 하실 일','',t);
+    덧칸=덧칸||'';
+    if(!t && !덧칸) return '';
+    if(!t) return '<section class="n-zone sv-subs only">'+덧칸+'</section>';
+    return 구역상자('지금 하실 일','',t+(덧칸?'<div class="sv-subs">'+덧칸+'</div>':''));
   }
   function 플랜이름(pn){ return pn&&pn['플랜']?String(pn['플랜']):''; }
   function 플랜글(pn){
@@ -2321,17 +2364,15 @@ header, .n-meta{padding-inline:16px}
       if(!한줄 && k==='1' && /컨셉|한 줄|한줄|소개/.test(z['이름']) && v) 한줄=v.replace(/\s*\([^()]*\)\s*$/,'');
       if(!포인트 && /색/.test(z['이름'])){ var mm=v.match(/포인트[^#]*(#[0-9A-Fa-f]{6})/); if(mm) 포인트=mm[1]; } }); }); });
     var 이름=(n['앱이름']||'').trim()||n['폴더']||'', 다프=[];
-    var 새=(m>=1440?' stale':'');
     var 작은막대=''; if(cur!=null){ for(var q=0;q<STAGES.length;q++) 작은막대+='<i class="'+(q<cur?'d':(q===cur?'c':''))+'"></i>'; }
     h+='<div class="n-hero"><div class="n-top"><div class="n-ic"'+(포인트?' style="background:'+esc(포인트)+'"':'')+'>'+esc(이름.replace(/\s/g,'').slice(0,2))+'</div>'
       +'<div class="n-ht"><h1><b id="appname"></b><span id="folder"></span></h1>'+(한줄?'<p>'+esc(한줄)+'</p>':'')+'</div></div>'
       +'<div class="n-bar">'+(cur!=null?'<span class="n-st"><span class="n-mini" aria-hidden="true">'+작은막대+'</span>지금 '+esc(STAGES[cur][1])+' 단계 · '+(cur+1)+'/9</span>':'<span></span>')
-      +'<span class="c'+새+'"><i></i>'+esc(언제||'–')+' 새로 고침</span></div>'
+      +'<button type="button" class="c cp-say" data-say="조종석 자료를 지금 기록에서 다시 만들어 올려 주세요." aria-label="눌러서 복사 — 조종석 새로 고침 요청"><i></i>'+esc(언제||'–')+' 새로 고침<svg class="rf" viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M13 3v3.5H9.5M13 6.5A5.5 5.5 0 1 0 13.5 9" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>'
       +'<div class="n-plb"><button type="button" class="n-pj" data-pj-menu aria-expanded="'+프로젝트열림+'">'+(last.plan&&last.plan['등록수']!=null?'등록한 프로젝트 '+esc(String(last.plan['등록수']))+'개':'등록한 프로젝트 보기')+' '+(프로젝트열림?'▴':'▾')+'</button><span class="n-plx">'+esc(플랜글(last.plan))+'</span>'+(프로젝트열림?플랜목록(last.plan):'')+'</div></div>';
 
     h+=리소스줄(last.machine);
-    h+=사용자차례(cur, 따라잡기카드(n['따라잡기']))+때가되면();
-    h+=가져오기줄(n['가져오기']);
+    h+=사용자차례(cur, 따라잡기카드(n['따라잡기']), 때가되면()+가져오기줄(n['가져오기']));
 
     if(cur===null){
       h+=구역상자('진행 상황','전체 9단계 중 지금 단계와 남은 기능',
@@ -2733,25 +2774,23 @@ header, .n-meta{padding-inline:16px}
     return v;
   }
   function 표시입히기(p, 표시들){
-    if(!p||!p['기능들']) return;
-    var 표=(표시들&&표시들.items)||[], 전=0, 끝=0, 넘=0;
-    p['기능들'].forEach(function(f){ var 수={};
-      (f['세부']||[]).forEach(function(z){
-        if(z['_본']){ z['상태']=z['_본'][0]; z['확인']=z['_본'][1]; z['이름표']=z['_본'][2]; delete z['_본']; delete z['대기']; }
-        var m=표.filter(function(x){ return x&&x['기능']===f['기능']&&x['세부']===z['이름']; })[0];
-        if(m){ z['_본']=[z['상태'],z['확인'],z['이름표']]; z['대기']=1;
-          z['상태']=m['상태']==='되돌리기'?'시작 전':m['상태']; z['확인']=m['상태']==='완료'?직접확인말:''; z['이름표']=''; }
-        수[z['상태']]=(수[z['상태']]||0)+1;
-        if(z['상태']==='넘어감') 넘++; else { 전++; if(z['상태']==='완료') 끝++; }
-      });
+    if(!p||!p['기능들']) return p;
+    var 바탕=p['_원본']||p, 표=(표시들&&표시들.items)||[], 전=0, 끝=0, 넘=0;
+    var 새기능=바탕['기능들'].map(function(f){ var 수={};
+      var 새세부=(f['세부']||[]).map(function(z){
+        var m=표.filter(function(x){ return x&&x['기능']===f['기능']&&x['세부']===z['이름']; })[0], 새=Object.assign({}, z);
+        if(m){ 새['대기']=1; 새['상태']=m['상태']==='되돌리기'?'시작 전':m['상태']; 새['확인']=m['상태']==='완료'?직접확인말:''; 새['이름표']=''; }
+        수[새['상태']]=(수[새['상태']]||0)+1;
+        if(새['상태']==='넘어감') 넘++; else { 전++; if(새['상태']==='완료') 끝++; }
+        return 새; });
       ['시작 전','진행 중','완료','확인 필요','방법 찾는 중','넘어감'].forEach(function(k){ 수[k]=수[k]||0; });
-      f['수']=수;
-    });
-    p['세부전체']=전; p['세부완료']=끝; p['세부넘어감']=넘;
+      return Object.assign({}, f, {'세부':새세부,'수':수}); });
+    return Object.assign({}, 바탕, {'_원본':바탕,'기능들':새기능,'세부전체':전,'세부완료':끝,'세부넘어감':넘});
   }
   function 다듬기(){
     Object.keys(꼴표).forEach(function(k){ if(k==='pressed' || last[k]==null) return; var f=(k==='feed' && 상자(꼴표.feed))?(꼴표.feed.items||'A'):꼴표[k]; last[k]=맞추기(last[k],f); });
-    표시입히기(((상자(last.features)&&last.features['설계표'])||{})['단계']?last.features['설계표']['단계']['5']:null, last.marked);
+    var 표자리=(상자(last.features)&&last.features['설계표'])||null, 단자리=표자리&&표자리['단계'];
+    if(단자리&&단자리['5']) last.features=Object.assign({}, last.features, {'설계표':Object.assign({}, 표자리, {'단계':Object.assign({}, 단자리, {'5':표시입히기(단자리['5'], last.marked)})})});
     var 설점=상자(last.features)&&last.features['설계점검'];
     if(상자(설점) && 설점['구조']!=null){ var gg=설점['구조'];
       if(!상자(gg)||!Array.isArray(gg['부품'])||!Array.isArray(gg['흐름'])) 설점['구조']=null;
@@ -2777,6 +2816,7 @@ header, .n-meta{padding-inline:16px}
   document.addEventListener('click', function(ev){ var g=ev.target.closest ? ev.target.closest('[data-feat]') : null; if(!g) return; var 이름=g.getAttribute('data-feat'); 고른기능=(g.classList.contains('sel') && g.classList.contains('sv-mx-row')) ? '\u0000접음' : 이름; 첫화면(); });
   document.addEventListener('keydown', function(ev){ if(ev.key!=='Enter'&&ev.key!==' ') return; var g=ev.target.closest ? ev.target.closest('[data-scr]') : null; if(!g) return; ev.preventDefault(); 고른화면=g.getAttribute('data-scr'); 첫화면(); });
 
+  document.addEventListener('click', function(ev){ document.querySelectorAll('.mks[open]').forEach(function(d){ if(!d.contains(ev.target)) d.open=false; }); });
   (function(){ var 판=$('first'); if(!판) return;
     판.addEventListener('click', function(ev){
       var b=ev.target.closest && ev.target.closest('.n-dd[data-did]');
@@ -2887,10 +2927,15 @@ header, .n-meta{padding-inline:16px}
           else 복사누름(칸); } catch(e){ 복사누름(칸); }
   }
   document.addEventListener('click', function(ev){ var 칸=ev.target.closest ? ev.target.closest('.sv-act[data-say]') : null; if(칸) 진행누름(칸); });
+  function 복사안내자리(줄, 칸){
+    var 곳=칸.getBoundingClientRect(), 크=줄.getBoundingClientRect(), 위=곳.bottom+8;
+    if(위+크.height>innerHeight-8) 위=Math.max(8, 곳.top-크.height-8);
+    줄.style.top=위+'px'; 줄.style.left=Math.max(16, Math.min(곳.left, innerWidth-크.width-16))+'px';
+  }
   function 복사누름(칸){
     var 말=칸.getAttribute('data-say'), 줄=document.querySelector('.cp-toast');
     if(!줄){ 줄=document.createElement('p'); 줄.className='cp-toast'; 줄.setAttribute('aria-live','polite'); document.body.appendChild(줄); }
-    function 보임(글){ if(줄) 줄.textContent=글; 소리알림(글); clearTimeout(복사누름._되); 복사누름._되=setTimeout(function(){ if(줄) 줄.textContent=''; }, 6000); }
+    function 보임(글){ if(줄){ 줄.textContent=글; 복사안내자리(줄, 칸); } 소리알림(글); clearTimeout(복사누름._되); 복사누름._되=setTimeout(function(){ if(줄) 줄.textContent=''; }, 6000); }
     try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(말).then(function(){ 보임('복사됐습니다 — 대화창에 붙여 넣으십시오'); }, function(){ 보임('대화창에 이렇게 적어 주십시오: '+말); });
           else 보임('대화창에 이렇게 적어 주십시오: '+말); } catch(e){ 보임('대화창에 이렇게 적어 주십시오: '+말); }
   }

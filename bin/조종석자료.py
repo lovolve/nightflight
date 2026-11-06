@@ -780,6 +780,14 @@ try:
     _md["판"] = _판확인.상태()
 except Exception:
     pass
+try:
+    _한도자리 = os.path.join(os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight"), "한도.json")
+    with open(_한도자리, encoding="utf-8") as _f:
+        _한도 = json.load(_f)
+    if isinstance(_한도, dict) and isinstance(_한도.get("한도"), list):
+        _md["한도"] = _한도
+except (OSError, ValueError):
+    pass
 w("machine.json", _md)
 
 try:

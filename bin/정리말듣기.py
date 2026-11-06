@@ -49,6 +49,17 @@ if 정리말 and (메모리 or 맨말):
         "⑤ «작은 화면 칸»: 이 대화가 연 내장 브라우저 탭이 남아 있으면(tabs_context 로 확인) 닫으십시오 — 숨은 채로 메모리를 씁니다. "
         "⛔ 닫은 «뒤»에 `machine.py --메모리` 를 다시 돌려 합계와 스왑이 얼마나 줄었는지 수로 말씀드리십시오.")
 
+if 정리말 and (시뮬 or 공간 or 메모리 or 맨말):
+    _root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()
+    for _폴더 in (".nightflight", ".claude"):
+        _자리 = os.path.join(_root, _폴더)
+        _주소 = 조종석주소(_자리)
+        if _주소:
+            say.append("⛔ 정리가 끝나면 이 답 안에서 조종석의 컴퓨터 상태를 바꾸십시오. `" + os.path.join(here, "ledger.sh") + " 조종석준비` 를 돌리고, "
+                       "ArtifactData list · url " + _주소 + " · collection \"state\" 로 machine 칸의 version 을 받아, "
+                       "ArtifactData set · doc_id \"machine\" · file_path \"" + os.path.join(_자리, "board", "machine.json") + "\" · if_version 으로 올리십시오.")
+            break
+
 조종석말 = len(prompt) <= 80 and re.search(r"조종석\s*(을|를|좀|창|화면)?\s*(좀\s*)?(열어|열기|열자|열 ?수|띄워|보여 ?줘|켜 ?줘)", prompt)
 if 조종석말:
     root = os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd()

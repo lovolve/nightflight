@@ -28,6 +28,7 @@ print(str(w.get("project_dir") or w.get("current_dir") or ".").replace("\t", " "
       "".join(ch for ch in str(d.get("session_id") or "none")[:16] if ch.isalnum() or ch in "-_") or "none", f5, r5, f7, sep="\t")
 ' 2>/dev/null)
 EOF
+printf '%s' "$IN" | python3 -I "$(dirname "$0")/한도남기기.py" 2>/dev/null || true
 [ -n "${DIR:-}" ] || exit 0
 
 if [ -n "${NO_COLOR:-}" ]; then

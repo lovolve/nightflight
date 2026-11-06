@@ -45,6 +45,30 @@ function 값으로(e: {
   }
 }
 
+// 조종석이 읽도록 5시간 · 7일 한도만 파일로 남긴다(사람 자리). 값이 그대로면 쓰지 않는다.
+export function 한도칸(값: Usage) {
+  return 값.limits
+    .filter(한도 => 한도이름[한도.kind])
+    .map(한도 => ({
+      종류: 한도.kind,
+      사용: Math.round(한도.percentUsed),
+      초기화: 한도.resetsAt ? Math.floor(Date.parse(한도.resetsAt) / 1000) : null,
+    }))
+}
+
+let 남긴값 = ''
+async function 한도남기기($: EngineInterface, 값: Usage) {
+  const 칸 = 한도칸(값)
+  if (칸.length === 0) return
+  const 글 = JSON.stringify(칸)
+  if (글 === 남긴값) return
+  남긴값 = 글
+  const 자리 = await $.env.get('NIGHTFLIGHT_HOME')
+  const 집 = await $.env.get('HOME')
+  const 잰때 = Math.floor((await $.clock.now()) / 1000)
+  await $.fs.write(`${자리 || `${집}/.nightflight`}/한도.json`, JSON.stringify({ 도구: '클로드 코드', 잰때, 한도: 칸 }))
+}
+
 async function 켬확인($: EngineInterface) {
   const 자리 = await $.env.get('NIGHTFLIGHT_HOME')
   const 집 = await $.env.get('HOME')
@@ -59,12 +83,14 @@ export const register: Register = on => {
     await 켬확인($)
     const 지금값 = await $.session.usage()
     await update($, usage, () => 값으로(지금값))
+    await 한도남기기($, 값으로(지금값))
     return 답
   })
 
   on('session.measure', async ($, e, next) => {
     await 켬확인($)
     await update($, usage, () => 값으로(e))
+    await 한도남기기($, 값으로(e))
     return next(e)
   })
 
