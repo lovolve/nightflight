@@ -2,7 +2,7 @@ LC_ALL=C; export LC_ALL
 case "$KIND" in
 
   단계)
-    NAME="${2:?단계 이름 — 0. 진단 · 1. 기획 · 2. 검증 · 3. 설계 · 4. 개발 · 5. 확인 · 6. 출시 · 7. 수정 · 8. 출시후 (가져오기 시험 2026-10-25: 이름 목록이 없어 짐작했다)}"
+    NAME="${2:?단계 이름 — 0. 진단 · 1. 기획 · 2. 검증 · 3. 설계 · 4. 개발 · 5. 테스트 · 6. 출시 · 7. 수정 · 8. 출시후 (가져오기 시험 2026-10-25: 이름 목록이 없어 짐작했다)}"
     _WHY=""; [ "${3:-}" = "--이유" ] && _WHY="${4:-}"
     _SN=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/단계끝.py" 번호 "$NAME" 2>/dev/null) || _SN=""
     NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/단계끝.py" 넘기 "$NAME" "$_WHY" || exit 1

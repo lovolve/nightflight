@@ -109,6 +109,12 @@ print("AGAIN=" + ("1" if d.get("stop_hook_active") else "0"))
 fi
 
 ROOT="${CLAUDE_PROJECT_DIR:-${CWD:-$(cd "$HERE/.." && pwd)}}"
+_nf_next_of() {
+  local _f
+  _f="$(NIGHTFLIGHT_PROJECT_DIR="$1" bash -c '. "$1" >/dev/null 2>&1; nf_next_file' _ "$HERE/project-root.sh")"
+  mkdir -p "$(dirname "$_f")" 2>/dev/null
+  printf '%s' "$_f"
+}
 ST="$(nf_state_of "$ROOT")"
 URL="$(python3 -I "$HERE/믿는글.py" 주소 "$ST" 2>/dev/null || true)"
 CONSENT="$(head -1 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/조종석동의" 2>/dev/null || true)"
@@ -121,6 +127,8 @@ if [ -n "$URL" ]; then
 fi
 
 if [ -z "$URL" ]; then
+  _NF_TRK="$(python3 -I "$HERE/믿는글.py" 저장소안내 "$ST" 2>/dev/null || true)"
+  if [ -n "$_NF_TRK" ]; then _nf_nx="$(_nf_next_of "$ROOT")"; printf '%s\n' "$_NF_TRK" > "$_nf_nx" 2>/dev/null; exit 0; fi
   PROOT="${CLAUDE_PROJECT_DIR:-$CWD}"
   [ -n "$PROOT" ] && [ -d "$PROOT" ] || exit 0
   PROOT="$(cd "$PROOT" && pwd)"
@@ -218,6 +226,6 @@ else
   : > "$MARK"
 fi
 
-_nf_nx="$ST/board.다음말"
+_nf_nx="$(_nf_next_of "$ROOT")"
 python3 -I "$HERE/조종석올림안내.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
 exit 0

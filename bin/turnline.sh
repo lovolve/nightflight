@@ -19,6 +19,8 @@ printf '%s\t%s\n' "$NOW" "$(date +'%F %T')" >> "$T" 2>/dev/null || exit 0
 FIRST=$(head -1 "$T" 2>/dev/null | cut -f1)
 PREV=$(tail -2 "$T" 2>/dev/null | head -1 | cut -f1)
 [ -n "${FIRST:-}" ] || exit 0
+case "$FIRST" in ''|*[!0-9]*|0[0-9]*) FIRST=$NOW ;; esac
+case "$PREV" in ''|*[!0-9]*|0[0-9]*) PREV="" ;; esac
 
 human() {
   local s=$1 d h m

@@ -33,10 +33,10 @@ def 단계(root):
         pass
     return v
 
-단계들 = "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()
+단계들 = "진단 기획 검증 설계 개발 테스트 출시 수정 출시후".split()
 def 단계번호(v):
     for i in range(len(단계들) - 1, -1, -1):
-        if v and 단계들[i] in v:
+        if v and 단계들[i] in v.replace("5. 확인", "5. 테스트").replace("5-확인", "5-테스트"):
             return i
     return None
 

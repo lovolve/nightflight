@@ -79,6 +79,7 @@ run_one() {
   if [ -n "$sig" ] && [ -f "$memo" ]; then
     prev_sig=$(cut -d' ' -f1 "$memo" 2>/dev/null)
     prev_at=$(cut -d' ' -f2 "$memo" 2>/dev/null)
+    case "$prev_at" in ''|*[!0-9]*|0[0-9]*) prev_at=0 ;; esac
     if [ "$prev_sig" = "$sig" ]; then
       age=$(( now - ${prev_at:-0} ))
       if [ "$age" -lt 86400 ]; then

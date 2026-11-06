@@ -78,6 +78,7 @@ NOW=$(date +%s)
 KEY=$(printf '%s' "$KINDS" | cksum | cut -d' ' -f1)
 if [ -f "$MARK" ]; then
   OLD_KEY=$(cut -f1 "$MARK" 2>/dev/null); OLD_AT=$(cut -f2 "$MARK" 2>/dev/null)
+  case "$OLD_AT" in ''|*[!0-9]*|0[0-9]*) OLD_AT=0 ;; esac
   if [ "${OLD_KEY:-}" = "$KEY" ] && [ $(( NOW - ${OLD_AT:-0} )) -lt 21600 ]; then
     exit 0
   fi

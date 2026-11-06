@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _root
 
-단계들 = "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()
+단계들 = "진단 기획 검증 설계 개발 테스트 출시 수정 출시후".split()
 
 
 def _애플(뿌리: Path) -> str:

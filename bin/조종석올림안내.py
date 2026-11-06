@@ -13,7 +13,7 @@ print(json.dumps({"hookSpecificOutput": {
     "이번 답에서 다른 도구를 부를 때 같은 메시지에 얹어 올리십시오. 따로 호출을 늘리지 않습니다. 다른 도구를 안 부르면 이 차례만 하십시오.\n"
     "  ① ArtifactData list · url " + url + " · collection \"state\" "
     "— 칸마다 version 을 받습니다(없는 칸은 새로 만드는 것이라 version 을 안 붙입니다)\n"
-    "  ①-1 ①의 목록에 \"marked\" 칸이 있으면 — 사용자가 확인 단계에서 누른 표시입니다. ArtifactData get 으로 열어 items 마다 "
+    "  ①-1 ①의 목록에 \"marked\" 칸이 있으면 — 사용자가 테스트 단계에서 누른 표시입니다. ArtifactData get 으로 열어 items 마다 "
     "`" + here + "/ledger.sh 조종석표시 <기능> <세부> <상태>` 를 돌리고 `" + here + "/ledger.sh 조종석준비` 를 돌리십시오. "
     "②에 features 칸을 더하고, 같은 묶음에 {op:\"delete\", collection:\"state\", doc_id:\"marked\"} 를 넣으십시오(화면이 옛 상태로 돌아가지 않게 함께 처리합니다).\n"
     "  ② ArtifactData batch · 같은 url · 달라진 칸마다 "

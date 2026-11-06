@@ -14,6 +14,7 @@ _nf_cwd="$(printf '%s' "$IN" | python3 -I "$HERE/조종석다음말.py" --폴더
 [ -n "$_nf_cwd" ] && export NIGHTFLIGHT_PROJECT_DIR="$_nf_cwd"
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
 nf_registered 2>/dev/null || exit 0
-[ -f "$NF_STATE/board.다음말" ] || exit 0
-printf '%s' "$NF_STATE" | python3 -I "$HERE/조종석다음말.py" 2>/dev/null || true
+_nf_f="$(nf_next_file)"
+[ -f "$_nf_f" ] || exit 0
+printf '%s' "$_nf_f" | python3 -I "$HERE/조종석다음말.py" 2>/dev/null || true
 exit 0

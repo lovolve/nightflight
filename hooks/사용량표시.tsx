@@ -56,17 +56,38 @@ export function 한도칸(값: Usage) {
     }))
 }
 
-let 남긴값 = ''
+type 한도한칸 = { 종류: string; 사용: number; 초기화: number | null }
+
+// 대화마다 마지막으로 받은 값이 달라 그대로 덮으면 낮은 값 · 빠진 칸이 남는다. 같은 기간이면 큰 값, 기간이 다르면 나중에 끝나는 쪽을 둔다.
+export function 한도합치기(옛: 한도한칸[], 새: 한도한칸[]): 한도한칸[] {
+  const 칸 = new Map(옛.map(x => [x.종류, x]))
+  for (const x of 새) {
+    const 전 = 칸.get(x.종류)
+    if (전 && 전.초기화 === x.초기화) 칸.set(x.종류, { ...x, 사용: Math.max(전.사용, x.사용) })
+    else if (!전 || (전.초기화 ?? 0) <= (x.초기화 ?? 0)) 칸.set(x.종류, x)
+  }
+  return ['five_hour', 'seven_day'].flatMap(k => {
+    const x = 칸.get(k)
+    return x ? [x] : []
+  })
+}
+
 async function 한도남기기($: EngineInterface, 값: Usage) {
   const 칸 = 한도칸(값)
   if (칸.length === 0) return
-  const 글 = JSON.stringify(칸)
-  if (글 === 남긴값) return
-  남긴값 = 글
   const 자리 = await $.env.get('NIGHTFLIGHT_HOME')
   const 집 = await $.env.get('HOME')
+  const 길 = `${자리 || `${집}/.nightflight`}/한도.json`
+  let 옛: 한도한칸[] = []
+  try {
+    옛 = JSON.parse(await $.fs.read(길)).한도 ?? []
+  } catch {
+    옛 = []
+  }
+  const 합 = 한도합치기(옛, 칸)
+  if (JSON.stringify(합) === JSON.stringify(옛)) return
   const 잰때 = Math.floor((await $.clock.now()) / 1000)
-  await $.fs.write(`${자리 || `${집}/.nightflight`}/한도.json`, JSON.stringify({ 도구: '클로드 코드', 잰때, 한도: 칸 }))
+  await $.fs.write(길, JSON.stringify({ 도구: '클로드 코드', 잰때, 한도: 합 }))
 }
 
 async function 켬확인($: EngineInterface) {

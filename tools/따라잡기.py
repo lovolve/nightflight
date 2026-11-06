@@ -6,13 +6,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _root
 
-단계들 = "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()
+단계들 = "진단 기획 검증 설계 개발 테스트 출시 수정 출시후".split()
 차례 = ["표준", "실패", "검증", "기획"]
 
 
 def _번호(이름):
     for i in range(len(단계들) - 1, -1, -1):
-        if 단계들[i] in (이름 or ""):
+        if 단계들[i] in (이름 or "").replace("5. 확인", "5. 테스트").replace("5-확인", "5-테스트"):
             return i
     return None
 

@@ -8,8 +8,7 @@ if sys.argv[1:] == ["--폴더"]:
     except (ValueError, AttributeError):
         pass
     sys.exit(0)
-자리 = sys.stdin.read().strip()
-파일 = os.path.join(자리, "board.다음말")
+파일 = sys.stdin.read().strip()
 try:
     with open(파일, encoding="utf-8") as f:
         글 = json.load(f)["hookSpecificOutput"]["additionalContext"]

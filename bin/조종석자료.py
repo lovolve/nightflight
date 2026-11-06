@@ -20,7 +20,7 @@ with open(os.environ["STATE"], encoding="utf-8", errors="replace") as f:
             if c[1] == "막음" and len(c) == 5: c = c[:4] + ["", c[4]]
             rows.append((c + ["", "", ""])[:7])
 
-NINE = ["진단","기획","검증","설계","개발","확인","출시","수정","출시후"]
+NINE = ["진단","기획","검증","설계","개발","테스트","출시","수정","출시후"]
 SMAP = {}
 _mp = os.path.join(os.path.dirname(os.environ["STATE"]), "stage-map.tsv")
 if os.path.exists(_mp):
@@ -46,6 +46,8 @@ def restage(kind, what, lbl):
 
 def label_to_idx(lbl, smap):
     if lbl in smap: return smap[lbl]
+    lbl = re.sub(r"^(\s*5\s*[-. ]\s*)확인", r"\1테스트", (lbl or "").strip())
+    lbl = "테스트" if lbl == "확인" else lbl
     _n = (lbl or "").strip().replace(" ", "")
     if _n in NINE: return NINE.index(_n)
     m = re.match(r"\s*(\d)\s*[-. ]\s*(\S+)", lbl or "")
@@ -480,7 +482,9 @@ def _ignore_detail(_r):
                 for l in open(os.path.join(_r, f), encoding="utf-8", errors="ignore"):
                     l = l.strip()
                     if l and not l.startswith("#") and "=" in l:
-                        keys.append(l.split("=", 1)[0].replace("export ", "").strip())
+                        이름 = l.split("=", 1)[0].replace("export ", "").strip()
+                        if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", 이름):
+                            keys.append(이름)
             except Exception:
                 pass
         files.append({"파일": f, "막힘": (ign.returncode == 0) if ign else None,

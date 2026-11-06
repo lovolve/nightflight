@@ -8,6 +8,23 @@ from pathlib import Path
 _HERE = Path(__file__).resolve().parent
 _PLUGIN = _HERE.parent
 _GATES = _PLUGIN / "data" / "관문.tsv"
+
+
+def _할일표():
+    out = {}
+    try:
+        for l in (_PLUGIN / "data" / "관문할일.tsv").read_text(encoding="utf-8").splitlines():
+            c = l.split("\t")
+            if l.startswith("#") or len(c) < 2:
+                continue
+            주소 = c[2].strip() if len(c) > 2 else ""
+            out[c[0]] = (c[1].strip(), 주소 if 주소.startswith("https://") else "")
+    except OSError:
+        pass
+    return out
+
+
+할일표 = _할일표()
 import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parent))
 try:
     import 관문기준값 as _기준값
@@ -154,6 +171,7 @@ def compute(state=None, person=None, gates=None, brain=None, 플랫폼필요=Tru
              "확인": c[4] if len(c) > 4 else "",
              "시작": c[5] if len(c) > 5 else "지금",
              "받으면": c[6] if len(c) > 6 else "",
+             "할일": 할일표.get(c[0], ("", ""))[0], "주소": 할일표.get(c[0], ("", ""))[1],
              "덧붙임": c[7] if len(c) > 7 else "",
              "덧붙임이름표": c[8] if len(c) > 8 else "",
              "출처": val.get(c[0], {}).get("src", "")}

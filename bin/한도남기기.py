@@ -14,19 +14,35 @@ def 칸들(입력: dict) -> list:
     return out
 
 
+def 합치기(옛: list, 새: list) -> list:
+    칸 = {x["종류"]: x for x in 옛 if isinstance(x, dict) and x.get("종류")}
+    for x in 새:
+        전 = 칸.get(x["종류"])
+        if 전 and 전.get("초기화") == x.get("초기화"):
+            칸[x["종류"]] = dict(x, 사용=max(전.get("사용", 0), x.get("사용", 0)))
+        elif 전 and (전.get("초기화") or 0) > (x.get("초기화") or 0):
+            continue
+        else:
+            칸[x["종류"]] = x
+    return [칸[k] for k in ("five_hour", "seven_day") if k in 칸]
+
+
 def 남기기(칸: list) -> None:
     집 = os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight")
     자리 = os.path.join(집, "한도.json")
+    옛 = []
     try:
         with open(자리, encoding="utf-8") as f:
-            if json.load(f).get("한도") == 칸:
-                return
+            옛 = json.load(f).get("한도") or []
     except (OSError, ValueError, AttributeError):
         pass
+    합 = 합치기(옛, 칸)
+    if 합 == 옛:
+        return
     os.makedirs(집, exist_ok=True)
     임시 = "%s.%d.tmp" % (자리, os.getpid())
     with open(임시, "w", encoding="utf-8") as f:
-        json.dump({"도구": "클로드 코드", "잰때": int(time.time()), "한도": 칸}, f, ensure_ascii=False)
+        json.dump({"도구": "클로드 코드", "잰때": int(time.time()), "한도": 합}, f, ensure_ascii=False)
     os.replace(임시, 자리)
 
 

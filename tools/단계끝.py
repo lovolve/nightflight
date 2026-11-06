@@ -6,7 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _root
 
-단계들 = "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()
+단계들 = "진단 기획 검증 설계 개발 테스트 출시 수정 출시후".split()
 
 
 def _기록():
@@ -27,7 +27,7 @@ def 번호(이름, lp=None):
     if m:
         return int(m.group(1))
     for i in range(len(단계들) - 1, -1, -1):
-        if t == 단계들[i] or t.endswith(" " + 단계들[i]):
+        if t == 단계들[i] or t.endswith(" " + 단계들[i]) or (i == 5 and (t == "확인" or t.endswith(" 확인"))):
             return i
     lp = Path(lp) if lp else _기록()
     mp = lp.parent / "stage-map.tsv"
@@ -88,7 +88,7 @@ def 조건(idx, lp=None):
         out.append({"이름": "검증 기록", "됨": n > 0, "지금": "%d개" % n})
     if idx == 5:
         n = sum(1 for c in 줄 if len(c) > 5 and c[1] == "단계확인" and c[5].strip() == "5" and c[4].strip() == "봤음")
-        n += sum(1 for r in 내것 if r["상태"] == "완료" and str(r.get("이름표") or "").startswith("직접 확인"))
+        n += sum(1 for r in 내것 if r["상태"] == "완료" and str(r.get("이름표") or "").startswith(("직접 확인", "직접 테스트")))
         out.append({"이름": "직접 써 보고 확인한 것", "됨": n > 0, "지금": "%d개" % n})
     if idx == 3:
         scr = lp.parent / "screens.tsv"

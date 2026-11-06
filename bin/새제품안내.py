@@ -7,12 +7,12 @@ import os, sys, time
 if 때 not in ("단계", "소개") or not 기록:
     sys.exit(0)
 
-단계들 = "진단 기획 검증 설계 개발 확인 출시 수정 출시후".split()
+단계들 = "진단 기획 검증 설계 개발 테스트 출시 수정 출시후".split()
 
 
 def 번호(이름):
     for i in range(len(단계들) - 1, -1, -1):
-        if 단계들[i] in 이름:
+        if 단계들[i] in 이름.replace("5. 확인", "5. 테스트").replace("5-확인", "5-테스트"):
             return i
     return None
 

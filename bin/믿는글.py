@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """받은 글 가운데 AI 지시나 사용자 말로 써도 되는 것만 골라 준다."""
-import os
+import json, os
 import re
 import subprocess
 import sys
@@ -53,6 +53,11 @@ if __name__ == "__main__":
         주소 = 조종석주소(값)
         if 주소:
             print(주소)
+    elif 명령 == "저장소안내":
+        파일 = os.path.join(값, "board.url")
+        if os.path.isfile(파일) and _저장소에_들어_있나(파일):
+            말 = "야간비행: 조종석 주소 파일이 저장소에 들어 있어 쓰지 않았습니다. 새 조종석을 만들지 말고, `git rm --cached -- " + 파일 + "` 로 저장소에서만 빼고 무시 목록에 넣은 뒤 사용자에게 보고하십시오."
+            print(json.dumps({"hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": 말}}, ensure_ascii=False))
     elif 명령 == "꼴":
         sys.exit(0 if 꼴맞는주소(값) else 1)
     else:

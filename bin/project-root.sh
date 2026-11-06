@@ -194,6 +194,9 @@ nf_state_make() {
 NF_HOME="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}"
 case "$NF_HOME" in /*) ;; *) NF_HOME="$HOME/.nightflight" ;; esac
 if [ -n "${NIGHTFLIGHT_HOME:-}" ] && [ -e "$NF_HOME" ] && [ ! -O "$NF_HOME" ]; then NF_HOME="$HOME/.nightflight"; fi
+nf_next_file() {
+  printf '%s/다음말/%s' "$NF_HOME" "$(cd "$NF_STATE" 2>/dev/null && pwd -P | shasum | cut -c1-16)"
+}
 NF_PERSON="$NF_HOME/사람.tsv"
 NF_PERSONFILE="$NF_HOME/사람id"
 export NF_ROOT NF_STATE NF_HOME NF_PERSON NF_PERSONFILE

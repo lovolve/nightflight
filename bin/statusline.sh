@@ -67,6 +67,8 @@ if [ -f "$SEEN" ]; then read -r B0 D0 < "$SEEN"; else
   [ -n "$CACHE_OK" ] && printf '%s %s\n' "$BLK" "$DEC" 2>/dev/null > "$SEEN"
   find "$(dirname "$SEEN")" -name '.ledger-seen-*' -mtime +2 -delete 2>/dev/null
 fi
+case "$B0" in ''|*[!0-9]*|0[0-9]*) B0=$BLK ;; esac
+case "$D0" in ''|*[!0-9]*|0[0-9]*) D0=$DEC ;; esac
 d() { [ "$1" -gt "$2" ] && printf ' %s(+%s)%s' "$B" "$(($1 - $2))" "$R"; }
 
 UNLOGGED=0
