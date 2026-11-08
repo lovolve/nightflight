@@ -3,6 +3,7 @@ name: 1-기획
 description: 기획 단계일 때 쓴다 — 무엇을 만들지, 누구를 위한 것인지, 무엇으로 돈을 받을지를 정할 때. 초안을 먼저 보여 주고, 사용자가 정할 것은 항목별 선택지로 고르게 한다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/1-기획/en.md` and follow it instead, and write to the user in English.
 
 # 1-기획
 

@@ -3,6 +3,7 @@ name: 7-수정
 description: 수정 단계일 때 쓴다 — 심사 반려나 사용자 문의로 고칠 것이 생겼을 때. 반려를 먼저 알고, 이 수정이 독립적인지 갈라 필요한 단계만 돈다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/7-수정/en.md` and follow it instead, and write to the user in English.
 
 # 7-수정
 

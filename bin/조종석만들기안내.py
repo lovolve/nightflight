@@ -1,14 +1,21 @@
 #!/usr/bin/env python3
 """조종석을 처음 만들라는 턴 끝 안내를 만든다. bin/board_push.sh 가 부른다."""
-import json, sys
+import json, os, sys
 root, here, st = sys.argv[1], sys.argv[2], sys.argv[3]
 동의 = sys.argv[4] if len(sys.argv) > 4 else ""
-물음 = "" if 동의 == "네" else (
-    "먼저 사용자에게 선택지로 한 번 물으십시오. 한 번 답하면 다시 묻지 않습니다.\n"
+영어 = os.environ.get("NFL") == "en"
+묻는글 = ("«If you use the cockpit page, a copy of your records is uploaded to a private page in your Claude account. "
+         "It includes your decisions, dead ends, feature progress, this computer's chip, operating system, memory and storage status, "
+         "the names and stages of other products registered on this computer, the names of files kept out of GitHub, "
+         "and the key names in your secrets file. Secret values are never uploaded. Upload it?» "
+         "(Ask in English. Options: Upload / Don't upload.)\n") if 영어 else (
     "«조종석 화면을 쓰면 기록 사본이 클로드 계정의 비공개 페이지에 올라갑니다. "
     "올라가는 것은 정한 것, 막힌 길, 기능 진척, 이 컴퓨터의 칩·운영체제·메모리·저장공간 상태, "
     "이 컴퓨터에 등록한 다른 제품의 이름과 단계, 깃허브에 안 올리는 파일 이름, 비밀값 파일의 키 이름입니다. "
-    "비밀값의 값은 올리지 않습니다. 올릴까요?»\n"
+    "비밀값의 값은 올리지 않습니다. 올릴까요?»\n")
+물음 = "" if 동의 == "네" else (
+    "먼저 사용자에게 선택지로 한 번 물으십시오. 한 번 답하면 다시 묻지 않습니다.\n"
+    + 묻는글 +
     "  · 올립니다 → `" + here + "/ledger.sh 조종석동의 네` 를 돌리고 아래 차례를 하십시오.\n"
     "  · 올리지 않습니다 → `" + here + "/ledger.sh 조종석동의 아니오` 를 돌리고, 파일로 된 조종석 "
     + st + "/조종석.html 을 알려 드리십시오. 아래 차례는 하지 않습니다.\n\n")
@@ -17,7 +24,7 @@ print(json.dumps({"hookSpecificOutput": {
   "additionalContext": 물음 + (
     "이 프로젝트에는 아직 조종석이 없습니다 — " + ("올려도 된다고 하면 " if 물음 else "지금 ") + "만들어 주십시오(첫 대화에서 한 번).\n"
     "  ① Artifact publish · file_path \"" + st + "/cockpit.html\" · icon \"gauge\" · "
-    "capabilities {\"db\":{}} · description \"이 제품의 단계와 남은 일을 보여 주는 조종석\"\n"
+    "capabilities {\"db\":{}} · description \"" + ("Cockpit showing this product's stage and remaining work" if 영어 else "이 제품의 단계와 남은 일을 보여 주는 조종석") + "\"\n"
     "  ② 받은 주소를 등록합니다: `" + here + "/ledger.sh 조종석 \"<받은 주소>\"` → `" + here + "/board_push.sh --화면올렸다 " + root + "`\n"
     "  ③ " + st + "/board/ 에 칸(*.json)이 있으면 ArtifactData batch · 같은 주소 · 칸마다 "
     "{op:\"set\", collection:\"state\", doc_id:<칸이름>, file_path:<그 json 의 절대경로>} "

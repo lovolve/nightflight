@@ -100,6 +100,8 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 시뮬레이터 기기 {n}GB 포함 · {q}	Includes simulator devices: {n} GB · measured {q}
 시뮬레이터 기기 측정하지 못했습니다 포함 · {q}	Includes simulator devices: not measured · measured {q}
 스왑	Swap
+출처 보기	Show source
+설명 보기	Show explanation
 스왑 {n}GB	Swap {n} GB
 : 메모리가 모자랄 때 저장 공간을 메모리처럼 빌려 쓴 양입니다. 많을수록 느려집니다.	: The amount of storage space used as extra memory when memory runs short. The more swap in use, the slower the computer.
 완료한 절차	Steps already done
@@ -334,7 +336,6 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 출시 절차	Launch steps
 소요 기간 미발표	Duration not announced
 해당하는 출시 절차 없음	No launch steps apply
-{n}개 중 0	0 of {n}
 이 일을 마무리해 주세요.	Please finish this task.
 이 일을 시작해 주세요.	Please start this task.
 이 출시 절차를 진행해 주세요.	Please carry out this launch step.
@@ -432,7 +433,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 직접 하실 일 {n}개	Things to do yourself: {n}
 직접 테스트할 일 {n}개	Things to test yourself: {n}
 확인 필요 {n}개	Needs check: {n}
-항목을 누르면 작업 요청문이 복사됩니다. 여러 항목을 요청하려면 체크박스를 선택한 뒤 화면 아래 버튼을 누르십시오.	Click an item to copy its request. To request several items at once, tick their checkboxes, then click the button at the bottom of the screen.
+항목을 누르면 작업 요청문이 복사됩니다. 여러 항목을 요청하려면 체크박스를 선택한 뒤 그 아래에 나오는 버튼을 누르십시오.	Click an item to copy its work request. To request several items, select their checkboxes and click the button that appears below them.
 신청한 지 {q}	Time since applying: {q}
 {n} / 최대 {n}일	{n} / up to {n} days
 플랜 확인 전	Plan not checked yet
@@ -487,33 +488,15 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 남은 지표 {n}개 · {q}	Metrics left: {n} · {q}
 남은 지표 {n}개 · {q} · 넘어감 {n}개	Metrics left: {n} · {q} · Skipped: {n}
 완료는 결정한 내용을 기록했다는 뜻입니다.	Done means the decision is recorded.
-완료는 결정한 내용을 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the decision is recorded. Of {n} Done items, {n} have no recorded check method.
-완료는 결정한 내용을 기록했다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the decision is recorded. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 결정한 내용을 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the decision is recorded. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
+완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Of {n} Done items, {n} have no recorded check method.
+확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	{n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
+완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 조사하고 근거를 적었다는 뜻입니다.	Done means the research is finished and the evidence is written down.
-완료는 조사하고 근거를 적었다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the research is finished and the evidence is written down. Of {n} Done items, {n} have no recorded check method.
-완료는 조사하고 근거를 적었다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the research is finished and the evidence is written down. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 조사하고 근거를 적었다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the research is finished and the evidence is written down. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 테스트 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다.	Done means the AI built it and recorded it. Tapping through it yourself on a phone is a separate task in the Test stage. Each row shows how it was checked.
-완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 테스트 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the AI built it and recorded it. Tapping through it yourself on a phone is a separate task in the Test stage. Each row shows how it was checked. Of {n} Done items, {n} have no recorded check method.
-완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 테스트 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the AI built it and recorded it. Tapping through it yourself on a phone is a separate task in the Test stage. Each row shows how it was checked. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 AI가 만들고 기록했다는 뜻입니다. 휴대폰에서 직접 눌러 볼 일은 테스트 단계에 따로 있습니다. 줄 옆에 확인 방법을 표시했습니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the AI built it and recorded it. Tapping through it yourself on a phone is a separate task in the Test stage. Each row shows how it was checked. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 실제로 실행해 보고 결과를 기록했다는 뜻입니다.	Done means it was run for real and the result was recorded.
-완료는 실제로 실행해 보고 결과를 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means it was run for real and the result was recorded. Of {n} Done items, {n} have no recorded check method.
-완료는 실제로 실행해 보고 결과를 기록했다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means it was run for real and the result was recorded. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 실제로 실행해 보고 결과를 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means it was run for real and the result was recorded. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 신청이나 제출을 끝냈다는 뜻입니다.	Done means the application or submission is finished.
-완료는 신청이나 제출을 끝냈다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the application or submission is finished. Of {n} Done items, {n} have no recorded check method.
-완료는 신청이나 제출을 끝냈다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the application or submission is finished. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 신청이나 제출을 끝냈다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the application or submission is finished. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 수정하고 결과를 기록했다는 뜻입니다.	Done means the fix was made and the result was recorded.
-완료는 수정하고 결과를 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the fix was made and the result was recorded. Of {n} Done items, {n} have no recorded check method.
-완료는 수정하고 결과를 기록했다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the fix was made and the result was recorded. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 수정하고 결과를 기록했다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the fix was made and the result was recorded. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 완료는 숫자를 보고 결과를 적었다는 뜻입니다.	Done means the numbers were reviewed and the result was written down.
-완료는 숫자를 보고 결과를 적었다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다.	Done means the numbers were reviewed and the result was written down. Of {n} Done items, {n} have no recorded check method.
-완료는 숫자를 보고 결과를 적었다는 뜻입니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the numbers were reviewed and the result was written down. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
-완료는 숫자를 보고 결과를 적었다는 뜻입니다. 완료 {n}개 중 {n}개는 확인 방법이 기록되어 있지 않습니다. 확인 필요 {n}개는 완료로 기록됐지만 확인 기록이 없는 항목입니다. 미개발이라는 뜻이 아닙니다.	Done means the numbers were reviewed and the result was written down. Of {n} Done items, {n} have no recorded check method. {n} items marked Needs check are recorded as Done but have no check record. This does not mean they are not built.
 진행 상황	Progress
 전체 {n}단계 중 지금 단계와 남은 기능	Current stage and remaining features, out of {n} stages
 기록	Records
@@ -951,3 +934,6 @@ AI 답하기	AI replies
 무엇 대비	Compared with
 무엇을 봤나	What was looked at
 누구에게서	Source
+{n}개 중 {n}	Out of {n}: {n}
+
+{n}-{n} {n}:{n} 판	Saved {n}-{n} {n}:{n}

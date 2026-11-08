@@ -3,6 +3,7 @@ name: 5-테스트
 description: 테스트 단계일 때 쓴다 — 만든 것을 실제 휴대폰이나 시뮬레이터에서 동작을 검증할 때. 빌드 성공은 수정 확인이 아니다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/5-테스트/en.md` and follow it instead, and write to the user in English.
 
 # 5-테스트
 

@@ -48,9 +48,13 @@ n() { [ -f "$L" ] && awk -F'\t' -v k="$1" '$2==k' "$L" 2>/dev/null | wc -l | tr 
 BLK=$(n 막음); DEC=$(n 결정)
 W_BLOCK="막음"; W_DEC="결정"; W_NONE="아직 기록 없음"; W_CONV="이 대화"; W_SOON="곧 새로 시작해야 해요"; W_5="5시간"; W_7="7일"; W_NAME="야간비행"
 W_H="시간 뒤 초기화"; W_M="분 뒤 초기화"
-if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)" = "en" ]; then
+W_UNSHOWN="안 보여드림"; W_BROKEN1="전제"; W_BROKEN2="건 다시 봐야 함"; W_UNLOG1="커밋"; W_UNLOG2="건이 «됐다» 없이 지나갔어요"; W_UNLOG3="기록 없는 커밋"
+LANG_UI="$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)"
+[ -n "$LANG_UI" ] || LANG_UI="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$(dirname "$0")/project-root.sh" 2>/dev/null)"
+if [ "$LANG_UI" = "en" ]; then
   W_BLOCK="Blocked"; W_DEC="Decisions"; W_NONE="no records yet"; W_CONV="This conversation"; W_SOON="start a new one soon"; W_5="5-hour"; W_7="7-day"; W_NAME="Nightflight"
   W_H="h to reset"; W_M="m to reset"
+  W_UNSHOWN="not shown yet"; W_BROKEN1="Premises to recheck:"; W_BROKEN2=""; W_UNLOG1="Commits without a done record:"; W_UNLOG2=""; W_UNLOG3="unrecorded commits"
 fi
 
 UNSHOWN=0
@@ -59,6 +63,13 @@ UNSHOWN=0
 
 STAGE=""
 [ -f "$L" ] && STAGE=$(awk -F'\t' '$2=="단계"{v=$3} END{print v}' "$L" 2>/dev/null | tr -d '\000-\037\177' | sed $'s/\xc2[\x80-\x9f]//g; s/\xe2\x80[\xaa-\xae]//g; s/\xe2\x81[\xa6-\xa9]//g')
+if [ "$LANG_UI" = "en" ]; then
+  case "$STAGE" in
+    "0. 진단") STAGE="0. Diagnose" ;; "1. 기획") STAGE="1. Plan" ;; "2. 검증") STAGE="2. Validate" ;;
+    "3. 설계") STAGE="3. Design" ;; "4. 개발") STAGE="4. Build" ;; "5. 테스트") STAGE="5. Test" ;;
+    "6. 출시") STAGE="6. Launch" ;; "7. 수정") STAGE="7. Fix" ;; "8. 출시후"|"8. 출시 후") STAGE="8. After launch" ;;
+  esac
+fi
 
 BROKEN=0
 [ -f "$L" ] && BROKEN=$(awk -F'\t' '
@@ -107,12 +118,12 @@ else
   else
     LEFT="${M}${W_BLOCK} ${BLK}${R}$(d "$BLK" "$B0")"
   fi
-  [ "$UNSHOWN" -gt 0 ] && LEFT="${LEFT} ${M}(안 보여드림 ${UNSHOWN})${R}"
+  [ "$UNSHOWN" -gt 0 ] && LEFT="${LEFT} ${M}(${W_UNSHOWN} ${UNSHOWN})${R}"
   DECPART="${M}${W_DEC} ${DEC}${R}$(d "$DEC" "$D0")"
-  [ "$PAINT" = broken ] && DECPART="${HIW} 전제 ${BROKEN}건 다시 봐야 함 ${R}"
-  if [ "$PAINT" = unlogged ]; then DECPART="${HIW} 커밋 ${UNLOGGED}건이 «됐다» 없이 지나갔어요 ${R}"
-  elif [ "$UNLOGGED" -gt 0 ]; then DECPART="${DECPART}  ${M}기록 없는 커밋 ${UNLOGGED}${R}"; fi
-  HEAD="${M}야간비행${R}"
+  [ "$PAINT" = broken ] && DECPART="${HIW} ${W_BROKEN1} ${BROKEN}${W_BROKEN2} ${R}"
+  if [ "$PAINT" = unlogged ]; then DECPART="${HIW} ${W_UNLOG1} ${UNLOGGED}${W_UNLOG2} ${R}"
+  elif [ "$UNLOGGED" -gt 0 ]; then DECPART="${DECPART}  ${M}${W_UNLOG3} ${UNLOGGED}${R}"; fi
+  HEAD="${M}${W_NAME}${R}"
   [ -n "$STAGE" ] && HEAD="${M}${STAGE}${R}"
   LEFT="${HEAD}  ${LEFT}  ${DECPART}"
 fi

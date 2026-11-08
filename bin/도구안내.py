@@ -20,6 +20,10 @@ if (폴더 / ".nightflight").exists() or (폴더 / ".claude" / "ledger.tsv").exi
         영어 = False
     if 영어:
         print(json.dumps({"hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext":
+            "LANGUAGE: English. This user reads English. Write every reply, question, and summary in English, "
+            "and address the user as \"you\" (no titles). For every Nightflight skill, read the en.md next to its SKILL.md "
+            "and follow it instead of the Korean SKILL.md. Command output and guidance may be in Korean: read it, "
+            "but never show Korean to the user unless they wrote it. "
             f"Nightflight: when asking the user a question, follow {뿌리}/data/묻는법.en.md. "
             f"For planning large changes, showing progress on long work, checking screens, and code review, follow {뿌리}/data/도구쓰는법.en.md. "
             "Run code review only after the user approves it."

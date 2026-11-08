@@ -3,6 +3,7 @@ name: 3-설계
 description: 설계 단계일 때 쓴다 — 기능 · 화면 · 화면 사이 이동 · 기능끼리의 연결을 정할 때. 레퍼런스를 먼저 모아 갈래로 내고, 고르는 것은 사람이 한다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/3-설계/en.md` and follow it instead, and write to the user in English.
 
 # 3-설계
 

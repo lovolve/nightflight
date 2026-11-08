@@ -3,6 +3,7 @@ name: 2-검증
 description: 검증 단계일 때 쓴다 — 시장과 경쟁 제품, 사용자 의견(VOC)을 조사해 상품성을 검증할 때. 레드팀 결과를 한 장으로 내고, 판정은 하지 않는다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/2-검증/en.md` and follow it instead, and write to the user in English.
 
 # 2-검증
 

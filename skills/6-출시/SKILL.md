@@ -3,6 +3,7 @@ name: 6-출시
 description: 출시 단계일 때 쓴다 — 앱스토어 · 구글 플레이 · 웹에 올리고 심사를 받을 때. 올리고, 올라갔는지 «따로» 확인한다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/6-출시/en.md` and follow it instead, and write to the user in English.
 
 # 6-출시
 

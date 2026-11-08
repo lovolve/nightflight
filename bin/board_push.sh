@@ -151,7 +151,7 @@ if [ -z "$URL" ]; then
   cp "$HERE/../board/cockpit.html" "$PST/cockpit.html" 2>/dev/null || exit 0
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
-  python3 -I "$HERE/조종석만들기안내.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
+  NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/조종석만들기안내.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
   exit 0
 fi
 

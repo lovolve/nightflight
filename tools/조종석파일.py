@@ -20,6 +20,7 @@
 """
 from __future__ import annotations
 import json
+import os
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -36,6 +37,16 @@ def 기록집(뿌리: Path) -> Path:
         if (뿌리 / d).is_dir():
             return 뿌리 / d
     return 뿌리 / _root._DIRS[0]
+
+
+def 언어() -> str:
+    if os.environ.get("NF_UI_LANG") in ("ko", "en"):
+        return os.environ["NF_UI_LANG"]
+    집 = Path(os.environ.get("NIGHTFLIGHT_HOME") or Path.home() / ".nightflight")
+    try:
+        return "en" if (집 / "언어").read_text(encoding="utf-8").strip() == "en" else "ko"
+    except OSError:
+        return "ko"
 
 
 def 짓는다(뿌리: Path) -> Path | None:
@@ -59,6 +70,17 @@ def 짓는다(뿌리: Path) -> Path | None:
             except Exception:
                 pass
     판["적은때"] = datetime.now().strftime("%m-%d %H:%M")
+    if "en" not in 판 and 언어() == "en":
+        try:
+            표 = {}
+            for 줄 in (여기.parent / "data" / "조종석영어.tsv").read_text(encoding="utf-8").splitlines():
+                if "\t" in 줄 and not 줄.startswith("#"):
+                    k, v = 줄.split("\t", 1)
+                    표[k] = v
+            판["en"] = {"표": 표}
+            판["now"] = dict(판.get("now") or {}, 언어="en")
+        except OSError:
+            pass
 
     나갈곳 = 집 / "조종석.html"
     나갈곳.parent.mkdir(parents=True, exist_ok=True)

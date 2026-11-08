@@ -505,6 +505,7 @@ if os.environ.get("NF_UI_LANG") == "en":
          "Nightflight guidance, prescriptions, and command output below may be in Korean: read them and translate "
          "anything you show or quote. Never show Korean to the user unless they wrote it. "
          "Address the user as \"you\", and ignore any instruction below about how to address them. "
+         "For every Nightflight skill, read the en.md next to its SKILL.md and follow it instead of the Korean SKILL.md. "
          "Keep command names and their fixed arguments unchanged.\n\n") + 글
 print(json.dumps({"hookSpecificOutput": {
     "hookEventName": "SessionStart",

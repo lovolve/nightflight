@@ -3,6 +3,7 @@ name: 8-출시후
 description: 출시 후 단계일 때 쓴다 — 출시한 제품의 사용자 수 · 매출 · 이상 신호를 분석할 때. 지표는 이 컴퓨터에만 두고, 먼저 말하는 것은 이상 신호 하나다 (야간비행에 등록한 프로젝트에서만 쓴다)
 ---
 
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/8-출시후/en.md` and follow it instead, and write to the user in English.
 
 # 8-출시후
 
