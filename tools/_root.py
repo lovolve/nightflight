@@ -63,7 +63,10 @@ def _링크걷기(집: Path) -> None:
             for l in 후보:
                 if not l.is_symlink() or l.parent.name == "tools" and l.parent.parent == 집:
                     continue
-                if os.readlink(l).startswith(plug + os.sep):
+                t = os.readlink(l)
+                if t.startswith(plug + os.sep):
+                    continue
+                if t not in ("", ".", "..") and "/" not in t and (l.parent / t).is_file() and not (l.parent / t).is_symlink():
                     continue
                 l.unlink()
     except OSError:

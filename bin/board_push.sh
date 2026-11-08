@@ -148,7 +148,7 @@ if [ -z "$URL" ]; then
     [ -n "$SID" ] && grep -qxF "$SID" "$ASKED" 2>/dev/null && exit 0
   fi
   mkdir -p "$PST" 2>/dev/null || exit 0
-  cp "$HERE/../board/cockpit.html" "$PST/cockpit.html" 2>/dev/null || exit 0
+  cp "$HERE/../board/cockpit.html" "$PST/board_page.html" 2>/dev/null || exit 0
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
   NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/cockpit_create_guide.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
@@ -167,7 +167,7 @@ WAS="$(cat "$ST/board.sent" 2>/dev/null || true)"
 PAGENOW="$(shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1)"
 PAGEWAS="$(cat "$ST/board.page" 2>/dev/null || true)"
 PAGENEW=0; [ -n "$PAGENOW" ] && [ "$PAGENOW" != "$PAGEWAS" ] && PAGENEW=1
-[ "$PAGENEW" = "1" ] && cp "$HERE/../board/cockpit.html" "$ST/cockpit.html" 2>/dev/null
+[ "$PAGENEW" = "1" ] && cp "$HERE/../board/cockpit.html" "$ST/board_page.html" 2>/dev/null
 [ "$NOWSUM" = "$WAS" ] && [ "$PAGENEW" = "0" ] && exit 0
 
 CHANGED="$(python3 -I -c '

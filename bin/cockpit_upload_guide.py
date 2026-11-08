@@ -3,7 +3,7 @@
 import json, sys
 url, changed, root, here, st, pagenew = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
 others = sys.argv[7] if len(sys.argv) > 7 else ""
-page = ("  ⓪ 조종석 «화면 판»이 새것입니다 — Artifact publish · url " + url + " · file_path \"" + st + "/cockpit.html\" "
+page = ("  ⓪ 조종석 «화면 판»이 새것입니다 — Artifact publish · url " + url + " · file_path \"" + st + "/board_page.html\" "
         "(그 대화에서 처음 올리면 거절되고 지금 판을 보여 줍니다 — 같은 플러그인의 옛 판이면 그대로 다시 올리면 됩니다) → "
         "`" + here + "/board_push.sh --화면올렸다 " + root + "`\n") if pagenew == "1" else ""
 print(json.dumps({"hookSpecificOutput": {

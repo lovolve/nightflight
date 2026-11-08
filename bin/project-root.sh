@@ -70,9 +70,11 @@ if [ -d "$NF_STATE" ]; then
   while IFS= read -r _nf_l; do
     case "$_nf_l" in "$NF_STATE"/tools/*) continue ;; esac
     case "$(readlink "$_nf_l" 2>/dev/null)" in "$_nf_plug"/*) continue ;; esac
+    _nf_t="$(readlink "$_nf_l" 2>/dev/null)"
+    case "$_nf_t" in ""|*/*|.|..) ;; *) [ -f "$(dirname "$_nf_l")/$_nf_t" ] && [ ! -L "$(dirname "$_nf_l")/$_nf_t" ] && continue ;; esac
     rm -f "$_nf_l" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더 안의 바로가기를 걷었습니다(저장소 밖에 쓰게 될 수 있었습니다): ${_nf_l#"$NF_ROOT"/}" >&2
   done < <(find "$NF_STATE" -maxdepth 2 -type l 2>/dev/null)
-  unset _nf_l
+  unset _nf_l _nf_t
 fi
 
 nf_registered_at() {
@@ -239,6 +241,14 @@ nf_move_old_names "$NF_HOME" 사람.tsv people.tsv 대화.tsv conversations.tsv 
   기능안내.json feature_tips.json 느린값.json slow_values.json 최신판.txt latest_version.txt 한도.json quota.json \
   기여.tsv contributions.tsv 다음말 next_message
 nf_move_old_names "$NF_HOME/marks" 서버점검필요 server_check_needed
+nf_fix_cockpit_pair() {
+  local o="$1/조종석.html" n="$1/cockpit.html"
+  [ -f "$o" ] && [ ! -L "$o" ] && [ -f "$n" ] && [ ! -L "$n" ] || return 0
+  if grep -qF '"__BOARD__"' "$n" 2>/dev/null; then rm -f "$n"
+  else rm -f "$o" && ln -s cockpit.html "$o" 2>/dev/null; fi
+  return 0
+}
+nf_fix_cockpit_pair "$NF_STATE"
 nf_move_old_names "$NF_STATE" 조종석.html cockpit.html 처방받음.tsv prescriptions_received.tsv 가져오기.tsv import.tsv \
   레드팀권함.tsv redteam_suggested.tsv 새제품안내.tsv new_product_notice.tsv 바로잡은줄.tsv corrected_lines.tsv \
   board.안내함 board.notified board.만들기 board.create_asked
