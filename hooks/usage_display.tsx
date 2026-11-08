@@ -3,8 +3,6 @@ import type { EngineInterface, Register } from 'claude-code'
 
 import type { Usage } from '../types/usage_display'
 
-// 앱의 입력창 위에 대화 용량과 한도를 한 줄로 표시한다. 터미널은 상태줄이 같은 값을 표시한다.
-// 사용자가 켜겠다고 답했을 때만 표시한다(`bin/statusline_enable.py 켜기` 가 표시를 남긴다).
 const usage = atom({ plugin: 'nightflight', key: 'usage' } as const, null)
 const isOn = atom({ plugin: 'nightflight', key: 'usageIsOn' } as const, false)
 
@@ -45,7 +43,6 @@ function 값으로(e: {
   }
 }
 
-// 조종석이 읽도록 5시간 · 7일 한도만 파일로 남긴다(사람 자리). 값이 그대로면 쓰지 않는다.
 export function 한도칸(값: Usage) {
   return 값.limits
     .filter(한도 => 한도이름[한도.kind])
@@ -58,7 +55,6 @@ export function 한도칸(값: Usage) {
 
 type 한도한칸 = { 종류: string; 사용: number; 초기화: number | null }
 
-// 대화마다 마지막으로 받은 값이 달라 그대로 덮으면 낮은 값 · 빠진 칸이 남는다. 같은 기간이면 큰 값, 기간이 다르면 나중에 끝나는 쪽을 둔다.
 export function 한도합치기(옛: 한도한칸[], 새: 한도한칸[]): 한도한칸[] {
   const 칸 = new Map(옛.map(x => [x.종류, x]))
   for (const x of 새) {
