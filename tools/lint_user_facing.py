@@ -134,7 +134,7 @@ WORDS = (
 
 
 def _사전():
-    p = Path(__file__).resolve().parent.parent / "data" / "낱말사전.tsv"
+    p = Path(__file__).resolve().parent.parent / "data" / "word_dictionary.tsv"
     try:
         rows = [l.split("\t") for l in p.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")]
     except Exception:
@@ -153,8 +153,8 @@ def _사전():
 _더할, _풀이 = _사전()
 WORDS = WORDS + tuple(_더할)
 SEOLMYEONG.update(_풀이)
-쓰지않음 = {c.split("\t")[0] for c in (Path(__file__).resolve().parent.parent / "data" / "낱말사전.tsv").read_text(encoding="utf-8").splitlines()
-           if not c.startswith("#") and "\t라" in c} if (Path(__file__).resolve().parent.parent / "data" / "낱말사전.tsv").is_file() else set()
+쓰지않음 = {c.split("\t")[0] for c in (Path(__file__).resolve().parent.parent / "data" / "word_dictionary.tsv").read_text(encoding="utf-8").splitlines()
+           if not c.startswith("#") and "\t라" in c} if (Path(__file__).resolve().parent.parent / "data" / "word_dictionary.tsv").is_file() else set()
 
 
 def _alt(words):
@@ -166,7 +166,7 @@ _KO = [w[0] for w in WORDS if not re.match(r"^[A-Za-z]", w[0])]
 JARGON_EN = r"\b(" + _alt(_EN) + r")\b"
 JARGON_KO = r"(?<![가-힣])(" + _alt(_KO) + r")"
 try:
-    _가 = [l.split("\t")[0] for l in (Path(__file__).resolve().parent.parent / "data" / "낱말사전.tsv").read_text(encoding="utf-8").splitlines()
+    _가 = [l.split("\t")[0] for l in (Path(__file__).resolve().parent.parent / "data" / "word_dictionary.tsv").read_text(encoding="utf-8").splitlines()
           if not l.startswith("#") and "\t가" in l]
 except Exception:
     _가 = []
@@ -222,7 +222,7 @@ TAUGHT = []
 def _onboarding_known() -> set:
     try:
         home = os.environ.get("NIGHTFLIGHT_HOME") or str(pathlib.Path.home() / ".nightflight")
-        f = pathlib.Path(home) / "사람.tsv"
+        f = pathlib.Path(home) / "people.tsv"
         if not f.exists():
             return set()
         out = set()
@@ -239,7 +239,7 @@ def 올라간낱말() -> set:
     import os
     home = os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight")
     try:
-        f = pathlib.Path(home) / "사람.tsv"
+        f = pathlib.Path(home) / "people.tsv"
         if not f.exists():
             return set()
         import collections as _c

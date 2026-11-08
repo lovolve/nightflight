@@ -53,7 +53,7 @@ if [ -z "$FILES" ]; then
          -o -name DerivedData -o -name dist -o -name .next -o -name __pycache__ \
          -o -name .claude -o -name .nightflight -o -name Pods -o -name .venv -o -name vendor \) -prune -o \
       -type f "${NEWER[@]}" -print 2>/dev/null | head -200 \
-    | NF_CMD="$CMD" python3 -I "$NF_PYDIR/명령읽기.py" 2>/dev/null | head -20)
+    | NF_CMD="$CMD" python3 -I "$NF_PYDIR/command_read.py" 2>/dev/null | head -20)
 fi
 touch "$MARK" 2>/dev/null
 find "$NF_STATE" -maxdepth 1 -name ".repeat-guard-mark-*" -mtime +2 -delete 2>/dev/null
@@ -90,5 +90,5 @@ if [ -f "$SAID" ] && awk -F'\t' -v s="$SESSION" -v x="$HIT" \
      '$1==s && $2==x{f=1} END{exit !f}' "$SAID"; then FIRST=0; fi
 [ "$FIRST" = 1 ] && printf '%s\t%s\n' "$SESSION" "$HIT" >> "$SAID"
 
-python3 -I "$NF_PYDIR/같은증상셈.py" "$BASE" "$N" "$FIRST"
+python3 -I "$NF_PYDIR/same_symptom_count.py" "$BASE" "$N" "$FIRST"
 exit 0

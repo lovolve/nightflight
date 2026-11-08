@@ -1,0 +1,47 @@
+# How to use Claude Code features
+
+Use these only when the tool exists in Claude Code. If it does not, skip it and continue the way you were working. Do not explain feature names to the user. Tell the user only the result they will experience.
+
+## Show a plan first
+
+- When: a big change that is not in the design table, a data structure change, a fix that spans several features.
+- How: use `EnterPlanMode` to write the plan and show it, and make the fix after the user approves.
+- When not: while building the design table's sub-features in order. Do not talk to the user during the Build stage.
+
+## Progress display
+
+- When: a task with three or more steps, or one that takes a long time.
+- How: list the steps with the to-do tool, and mark each one the moment you finish it.
+- Why: the user can tell whether the work is running or has stopped.
+
+## Check the screen directly
+
+- When: after you build or change a web screen. Only if the desktop app's browser tool is available.
+- How:
+  1. Write the dev server in `.claude/launch.json`. Do not write secrets in it.
+  2. Start the server with `preview_start`.
+  3. Read the content and the errors with `read_page` and `read_console_messages`.
+  4. Click the buttons. If something is wrong, fix it and look again.
+- Take a screenshot only when the user tells you to. For anything you could not see, write "not checked visually".
+
+## Code review
+
+- When: before leaving the Build stage for the Test stage, and before entering the Launch stage.
+- Ask the user first, and run it only after approval. Say together with the question that it uses more of their quota. Ask as `data/asking.en.md` says.
+- How: after approval, call the `code-review` skill. If that skill does not exist, hand the review to the `code-reviewer` agent.
+- If the user declines, do not ask again; move on. Ask only once at the same point.
+
+## Dedicated agents
+
+- `code-explorer`: use it when the answer needs wide reading of the code. It keeps the main conversation from filling up with file contents.
+- `code-reviewer`: use it for a code review the user has approved.
+- Do not pass an agent's judgment on as it is. Open the files yourself and check before you relay it.
+
+## Introduce AI tools at the moment they are needed
+
+This reduces the cases where the user cannot use a tool simply because they did not know it existed. Tell the user it exists; the user does the choosing.
+
+- When: the user needs an app icon, store images, an intro video or narration and has no material, or the user has decided to put an AI feature in the app.
+- How: get the list with `brain.sh <current stage> 도구/이미지디자인` (or `도구/영상음성`, `도구/모델`) and introduce the tools as that guidance says. Take the answer as options, the way `data/asking.en.md` says.
+- Introduce a tool only once for the same task. If the user has said "stop these suggestions", do not introduce any.
+- Do not state prices. Do not sign up or pay on the user's behalf.

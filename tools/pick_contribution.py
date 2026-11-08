@@ -78,11 +78,11 @@ def _home():
 
 def _person():
     v = os.environ.get("NF_PERSON")
-    return Path(v) if v else _home() / "사람.tsv"
+    return Path(v) if v else _home() / "people.tsv"
 
 
 def _store():
-    return _home() / "기여.tsv"
+    return _home() / "contributions.tsv"
 
 
 def _rows(path):

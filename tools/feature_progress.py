@@ -31,7 +31,7 @@ def _unverified(how):
 
 def 기능표():
     out = {}
-    p = HERE.parent / "data" / "기능.tsv"
+    p = HERE.parent / "data" / "features.tsv"
     for c in _rows(p):
         if c[0].startswith("#"):
             continue

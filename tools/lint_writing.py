@@ -19,7 +19,7 @@ def 기록자리(뿌리: Path) -> Path:
 
 
 def 용어표():
-    p = ROOT / "data" / "용어.tsv"
+    p = ROOT / "data" / "terms.tsv"
     out = []
     if not p.is_file():
         return out
@@ -35,7 +35,7 @@ def 용어표():
 
 
 def 사전바꿈():
-    p = ROOT / "data" / "낱말사전.tsv"
+    p = ROOT / "data" / "word_dictionary.tsv"
     out = []
     if not p.is_file():
         return out
@@ -167,7 +167,7 @@ def main(argv):
         return 0
     from collections import Counter
     c = Counter((a, k) for a, _, k, _ in 모두)
-    print(f"  ⛔ 쓰기 규칙을 어긴 곳 {len(모두)}곳 — 한 이름(data/용어.tsv) · 짧은 문장 · 한 동작 · 기호 겹침 없이")
+    print(f"  ⛔ 쓰기 규칙을 어긴 곳 {len(모두)}곳 — 한 이름(data/terms.tsv) · 짧은 문장 · 한 동작 · 기호 겹침 없이")
     for 자리 in ("화면", "기록표", "알림", "안내"):
         줄 = " · ".join(f"{k} {c[(자리, k)]}" for k in ("용어", "길이", "동작", "기호") if c[(자리, k)])
         if 줄:

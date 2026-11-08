@@ -22,7 +22,7 @@ while [ -L "$_nf_me" ] && [ "$_nf_i" -lt 20 ]; do
 done
 HERE="$(cd "$(dirname "$_nf_me")" 2>/dev/null && pwd -P)"
 unset _nf_me _nf_i _nf_t
-KEYSH="$HERE/열쇠.sh"
+KEYSH="$HERE/license_key.sh"
 NFL="en"
 if . "$HERE/project-root.sh" >/dev/null 2>&1; then
   NFL="$(LC_ALL="$_nf_lc_old" nf_lang 2>/dev/null || echo en)"

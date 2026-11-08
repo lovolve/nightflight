@@ -52,7 +52,7 @@ else
   NF_TOOLS_NOTE=""
   NF_BROKEN_NOTE="깨진 전제가 있으면 상태줄이 그 자리를 칠한다."
 fi
-BAKDIR="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/설치백업/$(date +%Y%m%d-%H%M%S)-$$"
+BAKDIR="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/install_backup/$(date +%Y%m%d-%H%M%S)-$$"
 
 S="$APP/.claude/settings.json"
 OFF="$APP/.claude/NF_OFF"
@@ -91,7 +91,7 @@ else
   case "${PLUGIN_SPOT:+plugin}" in
     plugin) echo "  · 훅 — 플러그인으로 깔려 있어 이미 돕니다(앱 설정에 다시 적지 않았습니다)"
                          echo "  · 상태줄 — 플러그인 자리에서는 붙이지 않았습니다" ;;
-    *) mkdir -p "$APP/.claude" && python3 -I "$NF_PYDIR/새앱채우기.py" "$ICTO/hooks/hooks.json" "$ICTO" "$S" "$OFF"
+    *) mkdir -p "$APP/.claude" && python3 -I "$NF_PYDIR/new_app_fill.py" "$ICTO/hooks/hooks.json" "$ICTO" "$S" "$OFF"
        echo "  ✅ 반복 감지 훅 — 같은 파일을 한 대화에서 8번 고치면 알린다"
        echo "  ✅ 턴 끝 검사 — 검사가 «사람이 기억할 때»가 아니라 자동으로 돈다"
        echo "  ✅ 상태줄 — 기록이 «명령 없이» 화면 아래에 항상 보인다" ;;

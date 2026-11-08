@@ -9,11 +9,11 @@ _HERE = Path(__file__).resolve().parent
 _PLUGIN = _HERE.parent
 import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parent))
 try:
-    import 관문기준값 as _기준값
+    import gate_thresholds as _기준값
     _BRAIN = _기준값.자리()
 except ImportError:
     _BRAIN = _PLUGIN.parent / "nightflight-server" / "catalog" / "관문-기준값.tsv"
-_PUBLIC = _PLUGIN / "data" / "관문.tsv"
+_PUBLIC = _PLUGIN / "data" / "gates.tsv"
 
 
 def _today():

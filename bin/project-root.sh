@@ -80,11 +80,11 @@ nf_registered_at() {
   if [ -n "${NF_TEST_REG_BY_LEDGER:-}" ] && nf_dev 2>/dev/null; then
     { [ -f "$1/.nightflight/ledger.tsv" ] || [ -f "$1/.claude/ledger.tsv" ]; } && return 0
   fi
-  awk -F'\t' -v r="$1" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_HOME/사람.tsv" 2>/dev/null
+  awk -F'\t' -v r="$1" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_HOME/people.tsv" 2>/dev/null
 }
 nf_conv_id() { printf '%s' "${NF_SESSION:-${CLAUDE_CODE_SESSION_ID:-}}" | tr -d '\t\r\n'; }
 nf_conv_ok_at() {
-  local f="$NF_HOME/대화.tsv" s
+  local f="$NF_HOME/conversations.tsv" s
   [ -n "${1:-}" ] || return 1
   awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
   s="$(nf_conv_id)"
@@ -92,7 +92,7 @@ nf_conv_ok_at() {
   awk -F'\t' -v r="$1" -v s="$s" '$1==r&&($2=="*"||$2==s){f=1} END{exit !f}' "$f" 2>/dev/null
 }
 nf_conv_add() {
-  local f="$NF_HOME/대화.tsv"
+  local f="$NF_HOME/conversations.tsv"
   [ -n "${1:-}" ] && [ -n "${2:-}" ] || return 1
   mkdir -p "$NF_HOME" 2>/dev/null
   awk -F'\t' -v r="$1" -v s="$2" '$1==r&&$2==s{f=1} END{exit !f}' "$f" 2>/dev/null && return 0
@@ -101,24 +101,24 @@ nf_conv_add() {
 nf_conv_take_next() {
   local s; s="$(nf_conv_id)"
   [ -n "$s" ] || return 0
-  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null || return 0
+  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null || return 0
   nf_conv_drop_next "$1" && nf_conv_add "$1" "$s"
 }
 nf_conv_drop_next() {
-  local f="$NF_HOME/대화.tsv"
+  local f="$NF_HOME/conversations.tsv"
   awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
   awk -F'\t' -v r="$1" '!($1==r&&$2=="다음대화")' "$f" > "$f.$$" 2>/dev/null && mv -f "$f.$$" "$f"
 }
 nf_conv_scope() {
-  awk -F'\t' -v r="$1" '$1==r&&$2=="*"{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 폴더; return; }
-  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$NF_HOME/대화.tsv" 2>/dev/null && { echo 대화; return; }
+  awk -F'\t' -v r="$1" '$1==r&&$2=="*"{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null && { echo 폴더; return; }
+  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null && { echo 대화; return; }
   echo 폴더
 }
 nf_registered() { nf_registered_at "$NF_ROOT" && nf_conv_ok_at "$NF_ROOT"; }
 
 nf_productid() {
   if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi
-  local p="$NF_HOME/사람.tsv" f="$NF_ROOT/.nightflight-product" v w n ok='^[a-z0-9][a-z0-9.-]{1,154}$'
+  local p="$NF_HOME/people.tsv" f="$NF_ROOT/.nightflight-product" v w n ok='^[a-z0-9][a-z0-9.-]{1,154}$'
   nf_registered || return 0
   v="$(awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{v=$4} END{print v}' "$p" 2>/dev/null | tr -d '[:space:]')"
   printf '%s' "$v" | grep -qE "$ok" || v=""
@@ -163,8 +163,8 @@ nf_state_make() {
     grep -qF "$NF_GI_MARK2" "$NF_STATE/.gitignore" 2>/dev/null && return 0
   fi
   case "$NF_STATE" in
-    */.claude) _nf_gi_name="기록폴더-claude-gitignore.txt" ;;
-    *)         _nf_gi_name="기록폴더-gitignore.txt" ;;
+    */.claude) _nf_gi_name="record_dir_claude_gitignore.txt" ;;
+    *)         _nf_gi_name="record_dir_gitignore.txt" ;;
   esac
   for _nf_d in "${CLAUDE_PLUGIN_ROOT:-}/data" \
                "${NF_PYDIR:-/nonexistent}/../data" \
@@ -220,10 +220,30 @@ NF_HOME="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}"
 case "$NF_HOME" in /*) ;; *) NF_HOME="$HOME/.nightflight" ;; esac
 if [ -n "${NIGHTFLIGHT_HOME:-}" ] && [ -e "$NF_HOME" ] && [ ! -O "$NF_HOME" ]; then NF_HOME="$HOME/.nightflight"; fi
 nf_next_file() {
-  printf '%s/다음말/%s' "$NF_HOME" "$(cd "$NF_STATE" 2>/dev/null && pwd -P | shasum | cut -c1-16)"
+  printf '%s/next_message/%s' "$NF_HOME" "$(cd "$NF_STATE" 2>/dev/null && pwd -P | shasum | cut -c1-16)"
 }
-NF_PERSON="$NF_HOME/사람.tsv"
-NF_PERSONFILE="$NF_HOME/사람id"
+nf_move_old_names() {
+  local d="$1"; shift
+  [ -d "$d" ] && [ -O "$d" ] || return 0
+  while [ $# -ge 2 ]; do
+    if [ -e "$d/$1" ] && [ ! -e "$d/$2" ] && [ ! -L "$d/$1" ]; then
+      if [ "$1" = 사람id ]; then cp -p "$d/$1" "$d/$2" 2>/dev/null || true
+      else mv "$d/$1" "$d/$2" 2>/dev/null && ln -s "$2" "$d/$1" 2>/dev/null || true; fi
+    fi
+    shift 2
+  done
+}
+nf_move_old_names "$NF_HOME" 사람.tsv people.tsv 대화.tsv conversations.tsv 사람id person_id 언어 language \
+  조종석동의 cockpit_consent 열쇠상태 license_state 앱표시켬 app_display_on 이용권.json license.json 이용권.새로 license.new \
+  무료끝남 free_ended 다음알림 next_notice 표시 marks 설치백업 install_backup 관문-기준값.tsv gate_thresholds.tsv \
+  기능안내.json feature_tips.json 느린값.json slow_values.json 최신판.txt latest_version.txt 한도.json quota.json \
+  기여.tsv contributions.tsv 다음말 next_message
+nf_move_old_names "$NF_HOME/marks" 서버점검필요 server_check_needed
+nf_move_old_names "$NF_STATE" 조종석.html cockpit.html 처방받음.tsv prescriptions_received.tsv 가져오기.tsv import.tsv \
+  레드팀권함.tsv redteam_suggested.tsv 새제품안내.tsv new_product_notice.tsv 바로잡은줄.tsv corrected_lines.tsv \
+  board.안내함 board.notified board.만들기 board.create_asked
+NF_PERSON="$NF_HOME/people.tsv"
+NF_PERSONFILE="$NF_HOME/person_id"
 export NF_ROOT NF_STATE NF_HOME NF_PERSON NF_PERSONFILE
 
 nf_dev() {

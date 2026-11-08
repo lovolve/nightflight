@@ -65,7 +65,7 @@ if [ "${1:-}" = "--올렸다" ]; then
   B="$ST/board"
   nf_sums "$B" > "$ST/board.sent"
   rm -f "$ST/board.막음"
-  python3 -I "$HERE/다른조종석.py" --올렸다 "$ST" "$B/machine.json" 2>/dev/null || true
+  python3 -I "$HERE/other_cockpits.py" --올렸다 "$ST" "$B/machine.json" 2>/dev/null || true
   echo "  · 조종석에 올린 것으로 적었습니다 — $(basename "$ROOT") ($(ls "$B"/*.json 2>/dev/null | wc -l | tr -d ' ')칸)"
   exit 0
 fi
@@ -116,18 +116,18 @@ _nf_next_of() {
   printf '%s' "$_f"
 }
 ST="$(nf_state_of "$ROOT")"
-URL="$(python3 -I "$HERE/믿는글.py" 주소 "$ST" 2>/dev/null || true)"
-CONSENT="$(head -1 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/조종석동의" 2>/dev/null || true)"
+URL="$(python3 -I "$HERE/trusted_text.py" 주소 "$ST" 2>/dev/null || true)"
+CONSENT="$(head -1 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/cockpit_consent" 2>/dev/null || true)"
 if [ -n "$URL" ]; then
   NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$ROOT" CLAUDE_PROJECT_DIR="$ROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
   if [ "$CONSENT" = "아니오" ]; then
-    python3 "$HERE/../tools/조종석파일.py" "$(dirname "$ST")" >/dev/null 2>&1 || true
+    python3 "$HERE/../tools/cockpit_file.py" "$(dirname "$ST")" >/dev/null 2>&1 || true
     exit 0
   fi
 fi
 
 if [ -z "$URL" ]; then
-  _NF_TRK="$(python3 -I "$HERE/믿는글.py" 저장소안내 "$ST" 2>/dev/null || true)"
+  _NF_TRK="$(python3 -I "$HERE/trusted_text.py" 저장소안내 "$ST" 2>/dev/null || true)"
   if [ -n "$_NF_TRK" ]; then _nf_nx="$(_nf_next_of "$ROOT")"; printf '%s\n' "$_NF_TRK" > "$_nf_nx" 2>/dev/null; exit 0; fi
   PROOT="${CLAUDE_PROJECT_DIR:-$CWD}"
   [ -n "$PROOT" ] && [ -d "$PROOT" ] || exit 0
@@ -138,11 +138,11 @@ if [ -z "$URL" ]; then
   NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$PROOT" CLAUDE_PROJECT_DIR="$PROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
   if [ -d "$PST" ]; then
     ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
-    python3 "$HERE/../tools/조종석파일.py" "$PROOT" >/dev/null 2>&1 || true
+    python3 "$HERE/../tools/cockpit_file.py" "$PROOT" >/dev/null 2>&1 || true
   fi
   [ "$AGAIN" = "1" ] && exit 0
   [ "$CONSENT" = "아니오" ] && exit 0
-  ASKED="$PST/board.만들기"
+  ASKED="$PST/board.create_asked"
   if [ -f "$ASKED" ]; then
     [ "$(grep -c . "$ASKED" 2>/dev/null || echo 0)" -ge 3 ] && exit 0
     [ -n "$SID" ] && grep -qxF "$SID" "$ASKED" 2>/dev/null && exit 0
@@ -151,12 +151,12 @@ if [ -z "$URL" ]; then
   cp "$HERE/../board/cockpit.html" "$PST/cockpit.html" 2>/dev/null || exit 0
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
-  NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/조종석만들기안내.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
+  NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/cockpit_create_guide.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
   exit 0
 fi
 
 [ -x "$HERE/ledger.sh" ] && "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1
-python3 "$HERE/../tools/조종석파일.py" "$(dirname "$ST")" >/dev/null 2>&1 || true
+python3 "$HERE/../tools/cockpit_file.py" "$(dirname "$ST")" >/dev/null 2>&1 || true
 
 B="$ST/board"
 [ -d "$B" ] || exit 0
@@ -189,14 +189,14 @@ print(" · ".join(names))
 [ -n "$CHANGED" ] || CHANGED="(전부)"
 
 MARK="$ST/board.막음"
-TOLD="$ST/board.안내함"
+TOLD="$ST/board.notified"
 RECEIPT="$(shasum "$ST/board.sent" 2>/dev/null | cut -d' ' -f1)"; RECEIPT="${RECEIPT:-없음}"
 nf_told_set() {
   { awk -F'\t' -v s="$1" '$1!=s' "$TOLD" 2>/dev/null | tail -n 49; printf '%s\t%s\t%s\n' "$1" "$2" "$3"; } > "$TOLD.$$" \
     && mv -f "$TOLD.$$" "$TOLD"
 }
 nf_warn_once() {
-  if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)" = "en" ]; then
+  if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/language" 2>/dev/null)" = "en" ]; then
     printf '%s\n' '{"systemMessage": "  ⚠️ The cockpit is older than your records and was not updated this time. Say \"update the cockpit\" to update it."}'
   else
     printf '%s\n' '{"systemMessage": "  ⚠️ 조종석이 기록보다 오래됐습니다 — 이번에는 못 올렸습니다. 「조종석 올려」라고 말씀해 주시면 올립니다."}'
@@ -226,5 +226,5 @@ else
 fi
 
 _nf_nx="$(_nf_next_of "$ROOT")"
-python3 -I "$HERE/조종석올림안내.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/다른조종석.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
+python3 -I "$HERE/cockpit_upload_guide.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/other_cockpits.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
 exit 0

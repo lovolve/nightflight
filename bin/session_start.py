@@ -36,7 +36,7 @@ def 모델권함(때):
     if not 모델:
         return ""
     try:
-        return subprocess.run([sys.executable, "-I", os.path.join(os.environ["HERE"], "모델권함.py"), 모델, 때],
+        return subprocess.run([sys.executable, "-I", os.path.join(os.environ["HERE"], "model_suggest.py"), 모델, 때],
                               capture_output=True, text=True, timeout=3).stdout.strip()
     except Exception:
         return ""
@@ -53,7 +53,7 @@ import sys as _sys
 
 def _낱말사전():
     import pathlib
-    p = pathlib.Path(__file__).resolve().parent.parent / "data" / "낱말사전.tsv"
+    p = pathlib.Path(__file__).resolve().parent.parent / "data" / "word_dictionary.tsv"
     try:
         rows = [l.split("\t") for l in p.read_text(encoding="utf-8").splitlines() if l.strip() and not l.startswith("#")]
     except Exception:
@@ -202,7 +202,7 @@ if src in ("startup", "") and isinstance(now, dict) and now.get("stage") is None
     say("⭐ **아직 진단 전입니다.** 사용자 첫 말에 답하면서 먼저 «0-진단»으로 이 맥을 점검하고(질문 없이), 본 것을 한 줄로 말씀드린 뒤 `ledger.sh 단계 \"0. 진단\"` 으로 적으십시오. "
         "이미 만들던 제품이면(커밋 · 화면 파일 · 기획 메모가 있으면) 진단 뒤 «가져오기» 스킬대로 조종석 칸을 코드에서 채우십시오(`ledger.sh 가져오기 시작`).")
 _끝 = _한국날(문.get("무료끝")) if isinstance(문, dict) and 문.get("무료끝") else ""
-_끝남표 = os.path.join(os.environ.get("NF_HOME", ""), "무료끝남") if os.environ.get("NF_HOME") else ""
+_끝남표 = os.path.join(os.environ.get("NF_HOME", ""), "free_ended") if os.environ.get("NF_HOME") else ""
 if isinstance(문, dict) and 문.get("까닭") == "끝남":
     try:
         _끝남표 and open(_끝남표, "w").close()
@@ -231,10 +231,10 @@ elif isinstance(문, dict) and 문.get("확인") == "못함":
 _등 = 문.get("제품등록") if isinstance(문, dict) else None
 if isinstance(_등, dict):
     try:
-        open(os.path.join(os.environ.get("NF_HOME", ""), "이용권.새로"), "w").close() if os.environ.get("NF_HOME") else None
+        open(os.path.join(os.environ.get("NF_HOME", ""), "license.new"), "w").close() if os.environ.get("NF_HOME") else None
     except OSError:
         pass
-    _열쇠 = os.path.join(os.environ.get("HERE", ""), "열쇠.sh")
+    _열쇠 = os.path.join(os.environ.get("HERE", ""), "license_key.sh")
     if _등.get("까닭") == "무료앱등록":
         say("⭐ 이 제품이 이 컴퓨터의 **무료 제품**으로 제품등록됐습니다.")
         say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 제품을 무료 제품으로 등록했습니다. 이 컴퓨터의 무료 1년 동안 쓰실 수 있습니다.»")
@@ -258,12 +258,12 @@ if isinstance(_등, dict):
 _넘 = 문.get("칸넘침") if isinstance(문, dict) else None
 if isinstance(_넘, dict) and isinstance(_넘.get("앱들"), list):
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    import 제품이름
-    _이름표 = 제품이름.목록()
-    _앱 = [적음(제품이름.보임(x, _이름표), 120) for x in _넘["앱들"]]
+    import product_name
+    _이름표 = product_name.목록()
+    _앱 = [적음(product_name.보임(x, _이름표), 120) for x in _넘["앱들"]]
     say("⚠️ **플랜의 유료 제품등록(%s개)보다 제품이 많습니다(%d개)** — 플랜을 낮추신 뒤입니다(무료 제품 1개는 따로)." % (수(_넘.get("칸수")), len(_앱)))
     say("   첫 답에서 사용자에게 목록을 보여 드리고 «계속 쓰실 %s개»를 고르시게 하십시오: %s" % (수(_넘.get("칸수")), " · ".join(_앱)))
-    say("   괄호 안이 제품 번호입니다. 고르지 않은 제품은 사용자 답을 들은 뒤에만 `" + os.path.join(os.environ.get("HERE", ""), "열쇠.sh") + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
+    say("   괄호 안이 제품 번호입니다. 고르지 않은 제품은 사용자 답을 들은 뒤에만 `" + os.path.join(os.environ.get("HERE", ""), "license_key.sh") + " 앱빼기 <제품 번호> 확인` 으로 비웁니다.")
 if isinstance(now, dict) and now.get("stage") == 3 and 모델권함("설계"):
     say(모델권함("설계").strip())
 say("⛔ 이 글은 사용자에게 안 보입니다. 받았다고 말할 필요 없습니다.")
@@ -329,7 +329,7 @@ if (_dk0 := (now or {}).get("단계끝") or {}).get("단계") in (0, 1, 2):
     if _빈 or _dk0.get("단계") in (0, 2):
         try:
             import importlib.util as _u2
-            _s2 = _u2.spec_from_file_location("_dk2", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "단계끝.py"))
+            _s2 = _u2.spec_from_file_location("_dk2", os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "stage_end.py"))
             _m2 = _u2.module_from_spec(_s2); _s2.loader.exec_module(_m2)
             _빈칸 = _m2.앱설정빈것()
         except Exception:
@@ -413,13 +413,13 @@ if dp and not dp.get("못쟀다"):
         say()
 
 try:
-    with open(os.path.join(DATA, "폐기.tsv"), encoding="utf-8") as f:
+    with open(os.path.join(DATA, "discarded.tsv"), encoding="utf-8") as f:
         dead = [l.rstrip("\n").split("\t") for l in f
                 if l.strip() and not l.startswith("#")]
 except Exception:
     dead = []
 if dead:
-    rows, tail = cut(dead, 10, "data/폐기.tsv")
+    rows, tail = cut(dead, 10, "data/discarded.tsv")
     say("⑤ **폐기된 결론** %d건 — ⛔ 이것을 근거로 말하지 마십시오" % len(dead))
     for r in rows:
         say("   · 「%s」 (%s) → 대신: %s" % (r[0], r[1] if len(r) > 1 else "", r[3] if len(r) > 3 else ""))
@@ -479,7 +479,7 @@ def 길이맞추기(줄들, 한도=9500):
         덩이들.append(지금)
     합 = lambda: sum(len(c) + 1 for b in 덩이들 for c in b) + len(덩이들)
     차례 = [("③", "표준목록"), ("④", "영향목록"), ("①", "결정목록"), ("📐", "조종석 설계표"),
-            ("⑥", "시도목록"), ("⑤", "data/폐기.tsv"), ("**지금 하던 것", "카드")]
+            ("⑥", "시도목록"), ("⑤", "data/discarded.tsv"), ("**지금 하던 것", "카드")]
     for 머리, 명령 in 차례:
         for b in 덩이들:
             if 합() <= 한도:

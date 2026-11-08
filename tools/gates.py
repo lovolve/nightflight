@@ -7,13 +7,13 @@ from pathlib import Path
 
 _HERE = Path(__file__).resolve().parent
 _PLUGIN = _HERE.parent
-_GATES = _PLUGIN / "data" / "관문.tsv"
+_GATES = _PLUGIN / "data" / "gates.tsv"
 
 
 def _할일표():
     out = {}
     try:
-        for l in (_PLUGIN / "data" / "관문할일.tsv").read_text(encoding="utf-8").splitlines():
+        for l in (_PLUGIN / "data" / "gate_tasks.tsv").read_text(encoding="utf-8").splitlines():
             c = l.split("\t")
             if l.startswith("#") or len(c) < 2:
                 continue
@@ -27,7 +27,7 @@ def _할일표():
 할일표 = _할일표()
 import sys as _s; _s.path.insert(0, str(Path(__file__).resolve().parent))
 try:
-    import 관문기준값 as _기준값
+    import gate_thresholds as _기준값
     _BRAIN = _기준값.자리()
 except ImportError:
     _BRAIN = _PLUGIN.parent / "nightflight-server" / "catalog" / "관문-기준값.tsv"
@@ -38,7 +38,7 @@ except ImportError:
 
 
 def _이미한것값():
-    f = Path(__file__).resolve().parent.parent / "data" / "이미한것.tsv"
+    f = Path(__file__).resolve().parent.parent / "data" / "already_done.tsv"
     if not f.is_file():
         return ()
     줄 = []

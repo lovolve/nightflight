@@ -8,7 +8,7 @@ Decision 1: confirm the plan. Confirm the target user in the same step.
 
 ## Tools
 
-For showing a plan before a big change, progress display, checking the screen directly and code review, follow `${CLAUDE_PLUGIN_ROOT}/data/도구쓰는법.en.md`.
+For showing a plan before a big change, progress display, checking the screen directly and code review, follow `${CLAUDE_PLUGIN_ROOT}/data/tool_use.en.md`.
 
 ## What to ask the brain server
 
@@ -17,7 +17,7 @@ The framework for narrowing the target user and the method for choosing benchmar
 On entering this stage, query the brain server first:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/bin/두뇌.sh" 1 <topic>
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 1 <topic>
 ```
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
@@ -27,7 +27,7 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 
 ## How to ask the user
 
-When you need to ask the user something, first read `${CLAUDE_PLUGIN_ROOT}/data/묻는법.en.md` and ask exactly as it says: options per item, the recommended option on top, and "Not sure yet".
+When you need to ask the user something, first read `${CLAUDE_PLUGIN_ROOT}/data/asking.en.md` and ask exactly as it says: options per item, the recommended option on top, and "Not sure yet".
 
 Record each decision in its own field:
 

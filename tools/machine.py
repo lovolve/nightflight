@@ -10,7 +10,7 @@ import sys
 import time
 
 상태집 = pathlib.Path(os.environ.get("NIGHTFLIGHT_HOME") or (pathlib.Path.home() / ".nightflight"))
-느린값적은곳 = 상태집 / "느린값.json"
+느린값적은곳 = 상태집 / "slow_values.json"
 하루 = 24 * 60 * 60
 
 

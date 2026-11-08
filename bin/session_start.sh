@@ -36,11 +36,11 @@ export NF_SESSION
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
 case "$IN" in *'"source":"startup"'*|*'"source": "startup"'*) nf_conv_take_next "$NF_ROOT" 2>/dev/null || true ;; esac
 nf_registered || { printf '%s' "$IN" >/dev/null; exit 0; }
-_nf_kan="$NF_HOME/이용권.json"
+_nf_kan="$NF_HOME/license.json"
 if [ ! -f "$_nf_kan" ] || [ -n "$(find "$_nf_kan" -mmin +60 2>/dev/null)" ]; then
   if nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; then printf '%s\n' "$NF_KAN_ANSWER" > "$_nf_kan" 2>/dev/null
   else
-  ( _a="$(bash "$HERE/열쇠.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$_nf_kan.$$" && mv -f "$_nf_kan.$$" "$_nf_kan" ) >/dev/null 2>&1 &
+  ( _a="$(bash "$HERE/license_key.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$_nf_kan.$$" && mv -f "$_nf_kan.$$" "$_nf_kan" ) >/dev/null 2>&1 &
   fi
 fi
 unset _nf_kan
@@ -56,8 +56,8 @@ if [ -d "$NF_STATE/tools" ]; then
   unset _nf_l _nf_b
 fi
 
-python3 -I "$HERE/../tools/관문기준값.py" 받기 >/dev/null 2>&1 || true
-python3 -I "$HERE/../tools/판확인.py" 받기 >/dev/null 2>&1 || true
+python3 -I "$HERE/../tools/gate_thresholds.py" 받기 >/dev/null 2>&1 || true
+python3 -I "$HERE/../tools/version_check.py" 받기 >/dev/null 2>&1 || true
 bash "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 || true
 
 if ! { nf_dev 2>/dev/null && [ -n "${NF_PID:-}" ]; }; then NF_PID="$(nf_personid 2>/dev/null | tr -d "[:space:]")"; fi
@@ -65,14 +65,14 @@ NF_MPRINT="$(nf_macprint 2>/dev/null | tr -d "[:space:]")"
 NF_BID="$(nf_productid 2>/dev/null | tr -d "[:space:]")"
 NF_DEV="$(nf_dev 2>/dev/null && printf 1 || printf 0)"
 NF_CALL="$(awk -F'\t' '$2=="호칭"{v=$3; s=1} END{if (s) print v}' "$NF_PERSON" 2>/dev/null | tr -d '\000-\037\177')"
-NF_UI_LANG="$(nf_lang 2>/dev/null)"; printf '%s\n' "$NF_UI_LANG" > "$NF_HOME/언어" 2>/dev/null
-printf '%s' "$IN" | NF_UI_LANG="$NF_UI_LANG" NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/열쇠상태" \
+NF_UI_LANG="$(nf_lang 2>/dev/null)"; printf '%s\n' "$NF_UI_LANG" > "$NF_HOME/language" 2>/dev/null
+printf '%s' "$IN" | NF_UI_LANG="$NF_UI_LANG" NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/license_state" \
   NF_MPRINT="$NF_MPRINT" NF_BID="$NF_BID" NF_DEV="$NF_DEV" NF_CALL="$NF_CALL" \
   NF_HOME="$NF_HOME" NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
-if [ -f "$NF_HOME/이용권.새로" ]; then
-  rm -f "$NF_HOME/이용권.새로"
+if [ -f "$NF_HOME/license.new" ]; then
+  rm -f "$NF_HOME/license.new"
   if ! { nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; }; then
-    ( _a="$(bash "$HERE/열쇠.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$NF_HOME/이용권.json.$$" && mv -f "$NF_HOME/이용권.json.$$" "$NF_HOME/이용권.json" ) >/dev/null 2>&1 &
+    ( _a="$(bash "$HERE/license_key.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$NF_HOME/license.json.$$" && mv -f "$NF_HOME/license.json.$$" "$NF_HOME/license.json" ) >/dev/null 2>&1 &
   fi
 fi
 exit 0

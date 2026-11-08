@@ -32,7 +32,7 @@ description: 개발 단계일 때 쓴다 — 설계한 기능을 구현하고 �
 
 ## 사용자에게 묻는 법과 도구
 
-물을 일이 생기면 `${CLAUDE_PLUGIN_ROOT}/data/묻는법.md` 대로 묻는다. 계획 먼저 보여 주기 · 진행 표시 · 화면 직접 확인 · 코드 검토는 `${CLAUDE_PLUGIN_ROOT}/data/도구쓰는법.md` 를 따른다.
+물을 일이 생기면 `${CLAUDE_PLUGIN_ROOT}/data/asking.md` 대로 묻는다. 계획 먼저 보여 주기 · 진행 표시 · 화면 직접 확인 · 코드 검토는 `${CLAUDE_PLUGIN_ROOT}/data/tool_use.md` 를 따른다.
 
 ## 두뇌에 무엇을 묻나
 
@@ -41,7 +41,7 @@ description: 개발 단계일 때 쓴다 — 설계한 기능을 구현하고 �
 ⭐ **부르는 법** — 이 단계에 들어오면 **먼저 묻는다**:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/bin/두뇌.sh" 4 <갈래>
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 4 <갈래>
 ```
 
 갈래를 모르면 아무 말이나 넣으면 **물을 수 있는 갈래 목록**이 돌아온다.

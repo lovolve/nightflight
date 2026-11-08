@@ -120,7 +120,7 @@ def _아직(root) -> None:
 def main() -> int:
     HOME_REPO = Path(__file__).resolve().parent.parent
     root = Path(sys.argv[1]).resolve() if len(sys.argv) > 1 else HOME_REPO
-    gp = root / "data" / "관문.tsv"
+    gp = root / "data" / "gates.tsv"
     if gp.is_file():
         for ln in gp.read_text(encoding="utf-8").splitlines():
             if ln.startswith("#") or "\t" not in ln:

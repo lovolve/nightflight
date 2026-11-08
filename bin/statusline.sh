@@ -28,7 +28,7 @@ print(str(w.get("project_dir") or w.get("current_dir") or ".").replace("\t", " "
       "".join(ch for ch in str(d.get("session_id") or "none")[:16] if ch.isalnum() or ch in "-_") or "none", f5, r5, f7, sep="\t")
 ' 2>/dev/null)
 EOF
-printf '%s' "$IN" | python3 -I "$(dirname "$0")/한도남기기.py" 2>/dev/null || true
+printf '%s' "$IN" | python3 -I "$(dirname "$0")/quota_record.py" 2>/dev/null || true
 [ -n "${DIR:-}" ] || exit 0
 
 if [ -n "${NO_COLOR:-}" ]; then
@@ -49,7 +49,7 @@ BLK=$(n 막음); DEC=$(n 결정)
 W_BLOCK="막음"; W_DEC="결정"; W_NONE="아직 기록 없음"; W_CONV="이 대화"; W_SOON="곧 새로 시작해야 해요"; W_5="5시간"; W_7="7일"; W_NAME="야간비행"
 W_H="시간 뒤 초기화"; W_M="분 뒤 초기화"
 W_UNSHOWN="안 보여드림"; W_BROKEN1="전제"; W_BROKEN2="건 다시 봐야 함"; W_UNLOG1="커밋"; W_UNLOG2="건이 «됐다» 없이 지나갔어요"; W_UNLOG3="기록 없는 커밋"
-LANG_UI="$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/언어" 2>/dev/null)"
+LANG_UI="$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/language" 2>/dev/null)"
 [ -n "$LANG_UI" ] || LANG_UI="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$(dirname "$0")/project-root.sh" 2>/dev/null)"
 if [ "$LANG_UI" = "en" ]; then
   W_BLOCK="Blocked"; W_DEC="Decisions"; W_NONE="no records yet"; W_CONV="This conversation"; W_SOON="start a new one soon"; W_5="5-hour"; W_7="7-day"; W_NAME="Nightflight"

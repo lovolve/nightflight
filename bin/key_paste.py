@@ -194,7 +194,7 @@ if 닮은키(prompt):
     막기(두말("라이선스 키처럼 보이는 글이 있어서 AI에게 보내지 않았습니다. 메일로 받은 키를 한 줄 그대로(띄어쓰기 없이) 다시 붙여 넣어 주십시오.",
             "Something that looks like a license key was in your message, so it wasn't sent to the AI. Paste the key from your email again on one line, exactly as it appears."))
 if 명령(prompt, 등급꼴):
-    _열쇠 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "열쇠.sh")
+    _열쇠 = os.path.join(os.path.dirname(os.path.realpath(__file__)), "license_key.sh")
     ctx = ("야간비행: 이용권 플랜을 바꾸시려는 말씀으로 보입니다. "
            "`" + _열쇠 + " 등급 <라이트|플러스>` 를 부르십시오(라이선스 키는 필요 없습니다). "
            "돌아온 말을 그대로 전하고, «결제하신 메일로 금액이 적힌 확인 링크를 보내 드렸습니다 — 그 링크에서 확인하셔야 바뀝니다»라고 알리십시오. "

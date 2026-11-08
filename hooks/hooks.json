@@ -39,7 +39,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/정리듣기.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/cleanup_listen.sh",
             "timeout": 10
           }
         ]
@@ -49,7 +49,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/조종석다음말.sh",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}\"/bin/cockpit_next_message.sh",
             "timeout": 10
           }
         ]

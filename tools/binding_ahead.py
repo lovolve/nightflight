@@ -26,7 +26,7 @@ def _rows(p):
 
 def _기능표():
     out = {}
-    for c in _rows(HERE.parent / "data" / "기능.tsv"):
+    for c in _rows(HERE.parent / "data" / "features.tsv"):
         out[c[0]] = {"말": c[1] if len(c) > 1 else "",
                      "껍데기": c[3] if len(c) > 3 else "",
                      "묶임": [k for k in (c[4] if len(c) > 4 else "").split(",") if k.strip()]}
@@ -35,7 +35,7 @@ def _기능표():
 
 def _방아쇠표():
     out = []
-    for c in _rows(HERE.parent / "data" / "묶임.tsv"):
+    for c in _rows(HERE.parent / "data" / "constraints.tsv"):
         if len(c) < 4:
             continue
         out.append({"방아쇠": [t.strip() for t in c[0].split(",") if t.strip()],

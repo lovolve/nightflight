@@ -58,7 +58,7 @@ You may need to approve again in `/hooks` after a plugin update.
 
 Differences from Claude Code:
 
-- The cockpit cannot be published as a live web page. Open the file `.nightflight/조종석.html` instead.
+- The cockpit cannot be published as a live web page. Open the file `.nightflight/cockpit.html` instead.
 - Screen layout previews do not appear.
 - Records are not written in plan mode. They are written after you approve the plan.
 
@@ -82,7 +82,7 @@ Differences from Claude Code:
 - The cockpit asks once before its first upload. If you agree, a copy of your records goes to a private page (artifact) in your Claude account.
   - Uploaded: decisions, dead ends, feature progress, this computer's chip, operating system, memory and storage status, and the names and stages of other products registered on this computer.
   - Not uploaded: the values of secrets.
-  - If you decline, you use only the cockpit file (`.nightflight/조종석.html`). To change your mind, say "update the cockpit".
+  - If you decline, you use only the cockpit file (`.nightflight/cockpit.html`). To change your mind, say "update the cockpit".
 - The Nightflight server receives only what it needs for stage guidance and license checks: the stage number, the guidance requested, a number identifying this computer (a random number made at install and a one-way value derived from the hardware number), the product number, your license key (when you enter it), your email address and confirmation code (when you confirm with your payment email), the plan you are changing to, your language, and a random request number that stops a request from counting twice. The server also briefly uses an irreversible value derived from your connection address.
 - To check for a new version, Nightflight reads a public GitHub file once every 6 hours. It sends no records.
 - The full list of values and how long they are kept is in the privacy policy on the sales page.

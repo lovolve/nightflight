@@ -36,7 +36,7 @@ Rules:
 
 ## How to ask the user, and tools
 
-When you need to ask the user something, follow `${CLAUDE_PLUGIN_ROOT}/data/묻는법.en.md`. For showing a plan first, progress display, checking the screen directly and code review, follow `${CLAUDE_PLUGIN_ROOT}/data/도구쓰는법.en.md`.
+When you need to ask the user something, follow `${CLAUDE_PLUGIN_ROOT}/data/asking.en.md`. For showing a plan first, progress display, checking the screen directly and code review, follow `${CLAUDE_PLUGIN_ROOT}/data/tool_use.en.md`.
 
 ## What to ask the brain server
 
@@ -45,7 +45,7 @@ Remedies by symptom, the module catalog, and the notice "this feature is the thi
 On entering this stage, query the brain server first:
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/bin/두뇌.sh" 4 <topic>
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 4 <topic>
 ```
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.

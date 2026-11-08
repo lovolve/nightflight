@@ -102,7 +102,7 @@ def _git에서뺀다(집: Path) -> None:
             return
         if _표식2 in 기존:
             return
-    이름 = "기록폴더-claude-gitignore.txt" if 집.name == ".claude" else "기록폴더-gitignore.txt"
+    이름 = "record_dir_claude_gitignore.txt" if 집.name == ".claude" else "record_dir_gitignore.txt"
     본문 = "*\n!.gitignore\n"
     자료 = Path(__file__).resolve().parent.parent / "data" / 이름
     try:
