@@ -39,6 +39,11 @@ The fields are: `한줄` one-line pitch, `누구` who it is for, `문제` proble
 
 Write the text in quotes in English. The Korean words in the command are what the tool reads. Never show them to the user.
 
+## Undecided items and pass checks
+
+- Do not fill in what the user has not decided with a guess. Record it with `ledger.sh 안정함 "<what>" "<what you would have guessed>"`. It shows at the top of the cockpit decisions.
+- When the user decides, run `ledger.sh 안정함 정함 <number> "<decision>"` and also record the decision.
+
 ## Do not do these in this stage
 
 1. Do not ask for what you can find. Fill it in by research and show a draft first.

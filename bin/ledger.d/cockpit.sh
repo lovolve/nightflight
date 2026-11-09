@@ -18,7 +18,7 @@ case "$KIND" in
         echo "  ⛔ 조종석 주소 꼴이 아닙니다. Artifact 게시 결과로 받은 claude.ai 주소를 그대로 적으십시오." >&2
         exit 1
       fi
-      printf '%s\n' "$2" > "$BOARD"; echo "  · 조종석 주소를 기억했습니다: $2"
+      mkdir -p "$(dirname "$BOARD")" 2>/dev/null; printf '%s\n' "$2" > "$BOARD"; echo "  · 조종석 주소를 기억했습니다: $2"
     elif [ -n "$(nf_board_url)" ]; then
       echo "  조종석: $(nf_board_url)"
       board_nudge 단계 || true
@@ -87,7 +87,7 @@ case "$KIND" in
     fi
     OUT="$(dirname "$STATE")/board"; mkdir -p "$OUT"
     STATE="$STATE" OUT="$OUT" PERSON="${NF_PERSON:-}" UNVERIFIED_TOKENS="$UNVERIFIED_TOKENS" \
-      NF_TRACE="${NF_TRACE:-${NF_STATE:-$NF_HOME}/prescriptions_received.tsv}" \
+      NF_TRACE="${NF_TRACE:-${NF_STATE:+$NF_STATE/internal/prescriptions_received.tsv}}" \
       NF_KEYLINE="$(nf_keyline 2>/dev/null)" \
       NF_BRAIN_SET="$([ -n "${NF_BRAIN_BASE:-}" ] && [ -n "${NF_DOORKEY:-}" ] && echo 1)" \
       NF_PERSONFILE="${NF_PERSONFILE:-}" NF_UI_LANG="$(nf_lang 2>/dev/null)" \

@@ -30,8 +30,15 @@ def _저장소에_들어_있나(파일: str) -> bool:
     return r.returncode == 0
 
 
+def _주소파일(기록폴더: str) -> str:
+    for 후보 in (os.path.join(기록폴더, "internal", "board.url"), os.path.join(기록폴더, "board.url")):
+        if os.path.isfile(후보):
+            return 후보
+    return os.path.join(기록폴더, "internal", "board.url")
+
+
 def 조종석주소(기록폴더: str) -> str:
-    파일 = os.path.join(기록폴더, "board.url")
+    파일 = _주소파일(기록폴더)
     try:
         with open(파일, encoding="utf-8", errors="replace") as f:
             글 = f.read(300).strip()
@@ -54,7 +61,7 @@ if __name__ == "__main__":
         if 주소:
             print(주소)
     elif 명령 == "저장소안내":
-        파일 = os.path.join(값, "board.url")
+        파일 = _주소파일(값)
         if os.path.isfile(파일) and _저장소에_들어_있나(파일):
             말 = "야간비행: 조종석 주소 파일이 저장소에 들어 있어 쓰지 않았습니다. 새 조종석을 만들지 말고, `git rm --cached -- " + 파일 + "` 로 저장소에서만 빼고 무시 목록에 넣은 뒤 사용자에게 보고하십시오."
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": 말}}, ensure_ascii=False))

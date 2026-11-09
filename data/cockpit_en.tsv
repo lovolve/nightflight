@@ -937,3 +937,11 @@ AI 답하기	AI replies
 {n}개 중 {n}	Out of {n}: {n}
 
 {n}-{n} {n}:{n} 판	Saved {n}-{n} {n}:{n}
+독립 확인 대기	Waiting for an independent check
+독립 확인 실패	Independent check failed
+사람 확인 필요	Needs a person to check
+합격 기준: {q}	Pass check: {q}
+ · AI 초안	 · AI draft
+안 정한 것 {n}개	Not decided yet: {n}
+«{q}» 정하기 — 선택지로 물어 주세요	Decide «{q}» — ask me with choices
+(추측했다면: {q})	(would have guessed: {q})

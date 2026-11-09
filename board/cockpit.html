@@ -960,7 +960,7 @@ header, .n-meta{padding-inline:16px}
 .n-stg .sv-group{margin:24px 0 8px; padding-top:16px; border-top:1px solid var(--rule); font-size:var(--fs-4); color:var(--ink); font-weight:600}
 .n-stg .sv-group:first-child{margin-top:4px; padding-top:0; border-top:0}
 .n-stg .sv-group .sub{font-size:var(--fs-5)}
-.n-stg .sv-src > summary{display:block; grid-template-columns:none; padding:2px 0; font-size:var(--fs-5); color:var(--faint); cursor:pointer; list-style:none}
+.n-stg .sv-src > summary,.n-stg .kv-src > summary{display:block; grid-template-columns:none; padding:2px 0; font-size:var(--fs-5); color:var(--faint); cursor:pointer; list-style:none}
 .n-stg .sv-src > summary::-webkit-details-marker{display:none} .n-stg .sv-src > summary:hover{color:var(--muted)}
 .sv-card{background:var(--panel); border-color:var(--rule)}
 .sv-bar > span{background:var(--ink-2)}
@@ -1122,6 +1122,7 @@ header, .n-meta{padding-inline:16px}
 @media (max-width:520px){ .jf-p{padding-left:16px} .jf-q small{display:block; margin:2px 0 0} }
 .dc-g{border:1px solid var(--open-rule); border-radius:12px; background:var(--panel); padding:12px 16px; margin:12px 0}
 .dc-h{display:flex; justify-content:space-between; align-items:baseline; margin:0 0 8px} .dc-h b{font-size:var(--fs-3); color:var(--ink)} .dc-h span{font-size:var(--fs-5); color:var(--faint)}
+.ac{display:block; flex-basis:100%; margin:2px 0 0 24px; font-size:var(--fs-5); color:var(--muted)} .dc-g.ud .dc-h b{color:var(--ink)} .ud-g{color:var(--faint)}
 .dc-intro{margin:32px 0 4px; font-size:var(--fs-4); color:var(--muted); line-height:1.55} .dc-intro b{display:block; font-size:var(--fs-2); color:var(--ink); margin-bottom:2px}
 .dc-it{display:grid; grid-template-columns:minmax(110px,150px) minmax(0,1fr); gap:12px; align-items:start; padding:12px 0; border-top:1px solid var(--rule)}
 .dc-it:first-of-type{border-top:0} .dc-it .k{font-size:var(--fs-3); font-weight:600; color:var(--ink); line-height:1.55}
@@ -1305,7 +1306,8 @@ header, .n-meta{padding-inline:16px}
       +(!표시&&(손||넘)?'<span class="sst">'+esc(z['상태'])+'</span>':'')
       +(z['이름표']&&!묶임?'<em>'+esc(z['이름표'])+'</em>':'')
       +(z['확인']&&!(확인줄&&직접)?'<span class="cf" title="'+esc(z['확인'])+'">'+esc(z['확인'])+'</span>':'')
-      +표시+'</li>';
+      +표시
+      +(z['기준']?'<span class="ac">합격 기준: '+esc(z['기준'])+(z['기준확인']==='확인됨'?'':' · AI 초안')+'</span>':'')+'</li>';
   }
   function 확인목록(f){
     var 순=세부순서(f), 수={}, 본={}, 글='';
@@ -1611,7 +1613,7 @@ header, .n-meta{padding-inline:16px}
       +있칸.map(function(k){ return '<div class="kv"><span class="k">'+k[1]+'</span><span class="v">'+esc(소[k[0]])+'</span></div>'; }).join('')+'</div>';
     var 정기=((last.piled||{}).decisions||[]).filter(function(x){return x['항목'];}).slice().reverse(), 세부기=[];
     (p['기능들']||[]).forEach(function(f){ f['세부'].forEach(function(z){ 세부기.push(z); }); });
-    t+=정한것상자(p, 짝짓기(세부기, 정기, function(x){ return x['항목']+' '+x['값']; }, 100), '기획 결정 사항');
+    t+=안정함상자()+정한것상자(p, 짝짓기(세부기, 정기, function(x){ return x['항목']+' '+x['값']; }, 100), '기획 결정 사항');
     var 남=[]; (p['기능들']||[]).forEach(function(f){ f['세부'].forEach(function(z){ if(z['상태']!=='완료') 남.push(z); }); });
     if(남.length) t+='<p class="sv-group">미결정 사항</p>'+남.map(function(z){ return '<div class="sv-row sv-act" role="button" tabindex="0" data-say="'+esc(지시(['기획 단계','미결정 사항',z['이름']],'이 항목을 정하려고 합니다.\n무엇을 결정해야 하는지와 선택할 수 있는 안을 먼저 보여 주세요.',z['상태']+(z['이름표']?' — '+z['이름표']:'')))+'"><i class="nw">○</i><span class="nm">'+esc(z['이름'])+(z['이름표']?' <span class="dim">— '+esc(z['이름표'])+'</span>':'')+'</span><span class="pill nw">정하기</span></div>'; }).join('');
     var 정=보일결정().filter(기획결정인가);
@@ -1843,6 +1845,14 @@ header, .n-meta{padding-inline:16px}
     else if(j===8) k='<div class="sk-cards"><i class="g"></i><i class="g"></i><i class="g"></i></div><div class="sk-chart"></div>';
     return '<div class="sk">'+k+'<p class="sk-say">'+말+'</p></div>';
   }
+  function 안정함상자(){
+    var xs=((last.plan||{})['안정함'])||[];
+    if(!xs.length) return '';
+    return '<div class="dc-g ud"><div class="dc-h"><b>안 정한 것 '+xs.length+'개</b></div><ul class="dc-vl">'
+      +xs.map(function(x){ var 말='«'+x['무엇']+'» 정하기 — 선택지로 물어 주세요';
+        return '<li><span class="cp-say" role="button" tabindex="0" data-say="'+esc(말)+'">'+esc(x['무엇'])+(x['추측']?' <span class="ud-g">(추측했다면: '+esc(x['추측'])+')</span>':'')+'</span></li>'; }).join('')
+      +'</ul></div>';
+  }
   function 정한것상자(p, 짝, 제목){
     var o='';
     function 근거뗌(v){ var m=String(v||'').match(/^(.*?)\s*\(([^()]*)\)\s*$/); return (m && /\d{4}-\d{2}|결정|\.(swift|md|py|ts|js|ya?ml|json)|README|docs|문서/.test(m[2]))?[m[1],m[2]]:[String(v||''),'']; }
@@ -1871,7 +1881,7 @@ header, .n-meta{padding-inline:16px}
     var 세부=[]; (p['기능들']||[]).forEach(function(f){ f['세부'].forEach(function(z){ 세부.push(z); }); });
     var 짝=짝짓기(세부, 정, function(x){ return x['항목']+' '+x['값']; }, 100);
     var t=화면설계도();
-    t+=정한것상자(p, 짝, '설계 결정 사항');
+    t+=안정함상자()+정한것상자(p, 짝, '설계 결정 사항');
     t+=상태도();
     var dc=((last.features||{})['설계점검'])||{};
     var 구=dc['구조내용']||[], g구=dc['구조'];

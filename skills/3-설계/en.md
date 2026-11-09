@@ -132,6 +132,13 @@ Never ask about the tech stack by tool name. Ask by the result the user gets, an
 
 Write the text in quotes in these commands in English. The Korean words in the commands are what the tool reads. Never show them to the user.
 
+## Undecided items and pass checks
+
+- Do not fill in what the user has not decided with a guess. Record it with `ledger.sh 안정함 "<what>" "<what you would have guessed>"`. It shows at the top of the cockpit decisions.
+- When the user decides, run `ledger.sh 안정함 정함 <number> "<decision>"` and also record the decision.
+- For each sub-feature to build, write one pass check: `ledger.sh 합격기준 "<feature>" "<sub-feature>" "<when this is done → this happens>"`. You write the draft. Only for important features (payment, login, personal data, server permissions), confirm it with the user using choices.
+- Without a pass check, development on that sub-feature is blocked. If the user chooses "proceed without a check", run `ledger.sh 기준없이진행 "<feature>" 기준 "<their words>"` and continue (use `표준` the same way when there is no standard method).
+
 ## Do not do these in this stage
 
 1. Do not draw from your own taste right away. Collect references first.

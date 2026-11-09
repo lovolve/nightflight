@@ -295,19 +295,36 @@ def 세부상태(기능, 세부, 상태, 이름표="", 사용자가눌렀다=Fal
     설치전 = all(str(r.get("출처", "")).startswith("설치 전") for r in hit)
     if not 설치전 and not 사용자가눌렀다 and 상태 in ("진행 중", "완료") and any(int(r["단계"]) >= 4 and r["상태"] != 상태 for r in hit):
         n = _출처있는표준수(기능)
-        if n is not None and n == 0:
+        import acceptance as _ac
+        if n is not None and n == 0 and not _ac.우회있나(기능, "표준"):
             sys.exit(f"  ⛔ 「{기능}」에 표준방식 확인이 없습니다 — 표준 없이 «{상태}» 상태로 옮기지 않습니다.\n"
                      f"     먼저 이 기능을 공식 문서 · 같은 기능의 앱으로 리서치해서 적으십시오:\n"
                      f"     ledger.sh 표준 \"<표준 방식 한 줄>\" \"<출처 — 어느 앱·어느 공식 문서>\" 공식문서|남이한것|돌려봄 \"{기능}\" \"<도구 조합>\" \"<실패 경우>\"\n"
-                     f"     (「내기억」으로 적은 것 · 도구 조합이나 실패 경우가 없는 옛 줄은 세지 않습니다)")
+                     f"     (「내기억」으로 적은 것 · 도구 조합이나 실패 경우가 없는 옛 줄은 세지 않습니다)\n"
+                     f"     사용자가 선택지에서 «표준 없이 진행»을 고르셨으면:  ledger.sh 기준없이진행 \"{기능}\" 표준 \"<사용자가 고른 말>\"")
+        if any(r["단계"] in _ac.대상단계 for r in hit) and not _ac.기준(기능, 세부) and not _ac.우회있나(기능, "기준"):
+            sys.exit(_ac.막는글(기능, 세부))
         m = _연결따짐(기능)
         if m is False:
             sys.exit(f"  ⛔ 「{기능}」이 다른 기능과 어떻게 엮이는지 적혀 있지 않습니다 — 따져 보지 않고 «{상태}» 상태로 옮기지 않습니다.\n"
                      f"     엮이면:   ledger.sh 영향 \"{기능}\" \"<같이 바뀌는 기능>\" \"같은것을쓴다: <무엇>\" 리서치|표준|깨졌다\n"
                      f"     안 엮이면: ledger.sh 독립 \"{기능}\" \"<왜 다른 기능과 안 엮이나>\"")
+    독립대기 = False
+    if 상태 == "완료" and not 낮춤 and not 사용자가눌렀다:
+        try:
+            import independent_check as _ic
+            if _ic.대상인가(기능, 세부):
+                _ic.대기적기(기능, 세부, 이름표)
+                상태, 이름표, 독립대기 = "확인 필요", "독립 확인 대기", True
+        except Exception:
+            pass
     for r in hit:
         r["상태"], r["이름표"], r["바뀐날"] = 상태, 이름표, date.today().isoformat()
     쓰기(rows)
+    if 독립대기:
+        print(f"  · {기능} / {세부} → 확인 필요 (독립 확인 대기) — 중요한 기능이라 따로 띄운 확인 담당 AI가 본 뒤에 완료가 됩니다.")
+        print("    턴이 끝나면 확인 담당 AI를 띄우라는 안내가 갑니다.")
+        return
     if 상태 == "완료" and not 낮춤:
         lp = _file().with_name("ledger.tsv")
         if lp.exists():
@@ -632,6 +649,11 @@ def _기록낮춤():
 def compute():
     rows = 읽기()
     _설명 = 설명읽기()
+    try:
+        import acceptance as _ac
+        _기준, _열 = _ac.기준표(), _ac.열린것()
+    except Exception:
+        _기준, _열 = {}, []
     _언제 = 언제읽기()
     낮출 = _기록낮춤()
     for r in rows:
@@ -648,7 +670,9 @@ def compute():
         완 = r["상태"] == "완료"
         f["세부"].append({"이름": r["세부기능"], "상태": r["상태"], "이름표": "" if 완 else r["이름표"],
                          "확인": r["이름표"] if 완 else "", "출처": r["출처"], "바뀐날": r.get("바뀐날") or "",
-                         "때": (_언제.get((r["기능"], r["세부기능"])) if not 완 else None)})
+                         "때": (_언제.get((r["기능"], r["세부기능"])) if not 완 else None),
+                         "기준": (_기준.get((r["기능"], r["세부기능"])) or {}).get("기준", ""),
+                         "기준확인": (_기준.get((r["기능"], r["세부기능"])) or {}).get("확인", "")})
         f["수"][r["상태"]] = f["수"].get(r["상태"], 0) + 1
     for st in per.values():
         st.pop("_i")
@@ -670,7 +694,8 @@ def compute():
         for i, e in enumerate(새, 1):
             e["번호"] = i
         x["요소"] = 새
-    return {"있나": bool(rows), "상태들": 상태들, "단계": per, "화면들": 화면, "하는일들": 화면일읽기(), "없앤것": 없앤것읽기()}
+    return {"있나": bool(rows), "상태들": 상태들, "단계": per, "화면들": 화면, "하는일들": 화면일읽기(), "없앤것": 없앤것읽기(),
+            "안정함": [{"번호": v["번호"], "무엇": v["무엇"], "추측": v["추측"]} for v in _열]}
 
 
 def 보기():

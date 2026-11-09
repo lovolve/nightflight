@@ -72,7 +72,7 @@ fi
 
 [ -n "$SAY" ] || exit 0
 . "$(dirname "$0")/project-root.sh"
-MARK="$NF_STATE/resources-said"
+MARK="$NF_STATE/internal/resources-said"; mkdir -p "$NF_STATE/internal" 2>/dev/null
 nf_state_make
 NOW=$(date +%s)
 KEY=$(printf '%s' "$KINDS" | cksum | cut -d' ' -f1)

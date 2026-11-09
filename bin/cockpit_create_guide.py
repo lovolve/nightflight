@@ -23,7 +23,7 @@ print(json.dumps({"hookSpecificOutput": {
   "hookEventName": "Stop",
   "additionalContext": 물음 + (
     "이 프로젝트에는 아직 조종석이 없습니다 — " + ("올려도 된다고 하면 " if 물음 else "지금 ") + "만들어 주십시오(첫 대화에서 한 번).\n"
-    "  ① Artifact publish · file_path \"" + st + "/board_page.html\" · icon \"gauge\" · "
+    "  ① Artifact publish · file_path \"" + st + "/internal/board_page.html\" · icon \"gauge\" · "
     "capabilities {\"db\":{}} · description \"" + ("Cockpit showing this product's stage and remaining work" if 영어 else "이 제품의 단계와 남은 일을 보여 주는 조종석") + "\"\n"
     "  ② 받은 주소를 등록합니다: `" + here + "/ledger.sh 조종석 \"<받은 주소>\"` → `" + here + "/board_push.sh --화면올렸다 " + root + "`\n"
     "  ③ " + st + "/board/ 에 칸(*.json)이 있으면 ArtifactData batch · 같은 주소 · 칸마다 "

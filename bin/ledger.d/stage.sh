@@ -6,6 +6,10 @@ case "$KIND" in
     _WHY=""; [ "${3:-}" = "--이유" ] && _WHY="${4:-}"
     _SN=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 번호 "$NAME" 2>/dev/null) || _SN=""
     NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 넘기 "$NAME" "$_WHY" || exit 1
+    if [ "$_SN" = 4 ] && ! printf '%s\n' "$@" | grep -qx -- '--물었음'; then
+      _UD="$(NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/acceptance.py" 넘어가기전 4 2>/dev/null)"
+      if [ -n "$_UD" ]; then printf '%s\n' "$_UD"; exit 1; fi
+    fi
     if [ "$_SN" = 2 ]; then
       _MISSI=""
       for _k in 한줄 누구 문제; do awk -F'\t' -v k="$_k" '$2=="제품소개"&&$3==k&&$4!=""{f=1} END{exit !f}' "$STATE" 2>/dev/null || _MISSI="$_MISSI $_k"; done

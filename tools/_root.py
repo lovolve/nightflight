@@ -73,6 +73,18 @@ def _링크걷기(집: Path) -> None:
         pass
 
 
+SYS = "internal"
+
+
+def sys_path(state, name: str, read: bool = False) -> Path:
+    새 = Path(state) / SYS / name
+    if read:
+        옛 = Path(state) / name
+        return 새 if 새.exists() or not 옛.exists() else 옛
+    새.parent.mkdir(parents=True, exist_ok=True)
+    return 새
+
+
 def state_dir(create: bool = False) -> Path:
     r = root()
     for d in _DIRS:

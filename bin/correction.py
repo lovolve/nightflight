@@ -5,7 +5,7 @@ import os, sys, time
 st, 종류, 글, 왜 = (sys.argv[1:5] + ["", "", "", ""])[:4]
 기록 = os.path.join(st, "ledger.tsv")
 화면 = os.path.join(st, "screens.tsv")
-남김 = os.path.join(st, "corrected_lines.tsv")
+남김 = os.path.join(st, "internal", "corrected_lines.tsv")
 오늘 = time.strftime("%Y-%m-%d")
 
 def 읽기(p):
@@ -21,6 +21,7 @@ def 쓰기(p, 줄들):
     os.replace(t, p)
 
 def 옮김(옮길):
+    os.makedirs(os.path.dirname(남김), exist_ok=True)
     with open(남김, "a", encoding="utf-8") as f:
         for 이름, 줄 in 옮길:
             f.write("%s\t%s\t%s\t%s\n" % (오늘, 이름, (왜 or "겹침").replace("\t", " ").replace("\n", " "), 줄))

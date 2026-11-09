@@ -158,7 +158,7 @@ def w(n, o):
     os.replace(t, p)
 import datetime
 
-RG = os.path.join(os.path.dirname(os.environ["STATE"]), "repeat-guard.tsv")
+RG = os.path.join(os.path.dirname(os.environ["STATE"]), "internal", "repeat-guard.tsv")
 repeat = None
 if os.path.exists(RG):
     from collections import Counter

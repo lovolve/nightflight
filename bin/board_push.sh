@@ -42,7 +42,8 @@ if [ "${1:-}" = "--화면올렸다" ]; then
     echo "     [모델] 폴더를 함께 주십시오: $HERE/board_push.sh --화면올렸다 <제품 폴더>" >&2
     exit 0
   fi
-  shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1 > "$ST/board.page"
+  mkdir -p "$ST/internal" 2>/dev/null
+  shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1 > "$ST/internal/board.page"
   echo "  · 조종석 화면을 새 판으로 올린 것으로 적었습니다 — $(basename "$ROOT")"
   exit 0
 fi
@@ -63,7 +64,8 @@ if [ "${1:-}" = "--올렸다" ]; then
     exit 0
   fi
   B="$ST/board"
-  nf_sums "$B" > "$ST/board.sent"
+  mkdir -p "$ST/internal" 2>/dev/null
+  nf_sums "$B" > "$ST/internal/board.sent"
   rm -f "$ST/board.막음"
   python3 -I "$HERE/other_cockpits.py" --올렸다 "$ST" "$B/machine.json" 2>/dev/null || true
   echo "  · 조종석에 올린 것으로 적었습니다 — $(basename "$ROOT") ($(ls "$B"/*.json 2>/dev/null | wc -l | tr -d ' ')칸)"
@@ -148,14 +150,14 @@ if [ -z "$URL" ]; then
   fi
   [ "$AGAIN" = "1" ] && exit 0
   [ "$CONSENT" = "아니오" ] && exit 0
-  ASKED="$PST/board.create_asked"
+  ASKED="$PST/internal/board.create_asked"
   if [ -f "$ASKED" ]; then
     [ "$(grep -c . "$ASKED" 2>/dev/null || echo 0)" -ge 3 ] && exit 0
     [ -n "$SID" ] && grep -qxF "$SID" "$ASKED" 2>/dev/null && exit 0
   fi
-  mkdir -p "$PST" 2>/dev/null || exit 0
-  cp "$HERE/../board/cockpit.html" "$PST/board_page.html" 2>/dev/null || exit 0
-  nf_page_title "$PST/board_page.html"
+  mkdir -p "$PST/internal" 2>/dev/null || exit 0
+  cp "$HERE/../board/cockpit.html" "$PST/internal/board_page.html" 2>/dev/null || exit 0
+  nf_page_title "$PST/internal/board_page.html"
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
   NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/cockpit_create_guide.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
@@ -170,11 +172,11 @@ B="$ST/board"
 
 NOWSUM="$(nf_sums "$B")"
 [ -n "$NOWSUM" ] || exit 0
-WAS="$(cat "$ST/board.sent" 2>/dev/null || true)"
+WAS="$(cat "$ST/internal/board.sent" 2>/dev/null || true)"
 PAGENOW="$(shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1)"
-PAGEWAS="$(cat "$ST/board.page" 2>/dev/null || true)"
+PAGEWAS="$(cat "$ST/internal/board.page" 2>/dev/null || true)"
 PAGENEW=0; [ -n "$PAGENOW" ] && [ "$PAGENOW" != "$PAGEWAS" ] && PAGENEW=1
-[ "$PAGENEW" = "1" ] && cp "$HERE/../board/cockpit.html" "$ST/board_page.html" 2>/dev/null && nf_page_title "$ST/board_page.html"
+[ "$PAGENEW" = "1" ] && mkdir -p "$ST/internal" 2>/dev/null && cp "$HERE/../board/cockpit.html" "$ST/internal/board_page.html" 2>/dev/null && nf_page_title "$ST/internal/board_page.html"
 [ "$NOWSUM" = "$WAS" ] && [ "$PAGENEW" = "0" ] && exit 0
 
 CHANGED="$(python3 -I -c '
@@ -196,8 +198,8 @@ print(" · ".join(names))
 [ -n "$CHANGED" ] || CHANGED="(전부)"
 
 MARK="$ST/board.막음"
-TOLD="$ST/board.notified"
-RECEIPT="$(shasum "$ST/board.sent" 2>/dev/null | cut -d' ' -f1)"; RECEIPT="${RECEIPT:-없음}"
+TOLD="$ST/internal/board.notified"
+RECEIPT="$(shasum "$ST/internal/board.sent" 2>/dev/null | cut -d' ' -f1)"; RECEIPT="${RECEIPT:-없음}"
 nf_told_set() {
   { awk -F'\t' -v s="$1" '$1!=s' "$TOLD" 2>/dev/null | tail -n 49; printf '%s\t%s\t%s\n' "$1" "$2" "$3"; } > "$TOLD.$$" \
     && mv -f "$TOLD.$$" "$TOLD"

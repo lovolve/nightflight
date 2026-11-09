@@ -40,7 +40,8 @@ else:
     무엇 = "설계까지 갔던 제품의 한 줄 소개가 바뀌었습니다"
 
 오늘 = time.strftime("%Y-%m-%d")
-자리 = os.path.join(os.path.dirname(기록), "new_product_notice.tsv")
+자리 = os.path.join(os.path.dirname(기록), "internal", "new_product_notice.tsv")
+os.makedirs(os.path.dirname(자리), exist_ok=True)
 try:
     for 줄 in open(자리, encoding="utf-8", errors="replace"):
         if 줄.rstrip("\n").split("\t")[:2] == [오늘, 때]:

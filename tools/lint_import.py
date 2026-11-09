@@ -42,7 +42,7 @@ import _root
 
 
 def _파일():
-    return _root.state_dir() / "import.tsv"
+    return _root.state_dir() / "internal" / "import.tsv"
 
 
 def 표지():
@@ -122,6 +122,7 @@ def 없음(칸, 이유):
     이유 = (이유 or "").strip()
     if not 이유:
         sys.exit("  ⛔ 이유가 필요합니다 — 왜 이 앱에는 그 칸이 없나")
+    _파일().parent.mkdir(parents=True, exist_ok=True)
     with open(_파일(), "a", encoding="utf-8") as f:
         f.write(f"{date.today().isoformat()}\t없음\t{칸} — {이유}\n")
     print(f"  · «{칸}» — 이 앱엔 없음 ({이유})")

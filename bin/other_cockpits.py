@@ -29,7 +29,8 @@ def 올렸다(st: Path, machine: Path):
         md = json.loads(machine.read_text(encoding="utf-8"))
     except Exception:
         return 0
-    (st / "board.machine").write_text(json.dumps({"때": time.time(), "무늬": 무늬(md)}, ensure_ascii=False), encoding="utf-8")
+    (st / "internal").mkdir(parents=True, exist_ok=True)
+    (st / "internal" / "board.machine").write_text(json.dumps({"때": time.time(), "무늬": 무늬(md)}, ensure_ascii=False), encoding="utf-8")
     return 0
 
 
@@ -58,7 +59,8 @@ def main(argv):
         if not url:
             continue
         try:
-            전 = json.loads((st / "board.machine").read_text(encoding="utf-8"))
+            _bm = st / "internal" / "board.machine"
+            전 = json.loads((_bm if _bm.exists() else st / "board.machine").read_text(encoding="utf-8"))
         except Exception:
             전 = {}
         if 전.get("무늬") == 새무늬 and time.time() - float(전.get("때") or 0) < 한시간:

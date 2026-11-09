@@ -132,7 +132,7 @@ feed_save() {
 }
 KIND="${1:-show}"
 
-BOARD="$(dirname "$STATE")/board.url"
+BOARD="$(dirname "$STATE")/internal/board.url"
 nf_part() {
   local f="$NF_PYDIR/ledger.d/$1.sh"
   if [ ! -f "$f" ]; then
@@ -171,6 +171,15 @@ case "$KIND" in
   따라잡기) python3 -I "$NF_PYDIR/../tools/catch_up.py" "${@:2}" ;;
   개인정보초안) python3 -I "$NF_PYDIR/../tools/privacy_draft.py" "${NF_ROOT:-$PWD}" ;;
   레드팀) _NFP="$(nf_part redteam)" || exit 1; . "$_NFP" ;;
+  독립확인) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" "${@:2}" ;;
+  중요기능) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" 중요 "${@:2}" ;;
+  중요기능뺌) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" 중요뺌 "${@:2}" ;;
+  합격기준) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 기준 "${@:2}" ;;
+  합격기준확인) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 기준확인 "${@:2}" ;;
+  기준없이진행) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 없이진행 "${@:2}" ;;
+  안정함) case "${2-}" in 정함|나중) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" "${@:2}" ;;
+                         목록) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 안정함목록 ;;
+                         *) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 안정함 "${@:2}" ;; esac ;;
   기여동의|기여후보|기여|기여목록|기여취소) _NFP="$(nf_part contribution)" || exit 1; . "$_NFP" ;;
 
   *)

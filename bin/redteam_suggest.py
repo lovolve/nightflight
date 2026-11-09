@@ -6,12 +6,8 @@ import os, sys, time
 때 = sys.argv[2] if len(sys.argv) > 2 else ""
 기능 = (sys.argv[3] if len(sys.argv) > 3 else "").lower()
 
-분야말 = {
-    "결제": ("결제", "구독", "환불", "인앱", "돈받기", "payment", "billing", "subscription"),
-    "로그인": ("로그인", "회원", "가입", "계정", "인증", "login", "auth", "account"),
-    "개인정보": ("개인정보", "위치", "연락처", "건강", "전화번호", "주소", "생년", "location", "contact", "health"),
-    "서버권한": ("서버", "권한", "관리자", "데이터베이스", "server", "admin", "permission", "database"),
-}
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from important import 이름분야
 까닭 = {
     "개발": "설계가 굳는 마지막 자리입니다. 개발에 들어가면 기능 사이 연결 · 데이터 구조를 바꾸는 값이 몇 배로 커집니다",
     "출시": "출시 뒤에는 사용자 기록과 돈이 걸려 고치기 어렵고, 보안 구멍은 그대로 사용자 피해가 됩니다",
@@ -21,12 +17,13 @@ import os, sys, time
     "서버권한": "서버 권한을 잘못 열면 아무나 남의 데이터를 읽거나 지울 수 있습니다",
 }
 if 때 == "기능":
-    때 = next((k for k, ws in 분야말.items() if any(w in 기능 for w in ws)), "")
+    때 = 이름분야(기능)
 if 때 not in 까닭 or not 기록:
     sys.exit(0)
 
 이미 = set()
-for 파일, 칸번호 in ((기록, 2), (os.path.join(os.path.dirname(기록), "redteam_suggested.tsv"), 1)):
+_권함 = os.path.join(os.path.dirname(기록), "internal", "redteam_suggested.tsv")
+for 파일, 칸번호 in ((기록, 2), (_권함, 1)):
     try:
         for 줄 in open(파일, encoding="utf-8", errors="replace"):
             칸 = 줄.rstrip("\n").split("\t")
@@ -39,7 +36,8 @@ for 파일, 칸번호 in ((기록, 2), (os.path.join(os.path.dirname(기록), "r
 if 때 in 이미:
     sys.exit(0)
 try:
-    with open(os.path.join(os.path.dirname(기록), "redteam_suggested.tsv"), "a", encoding="utf-8") as f:
+    os.makedirs(os.path.dirname(_권함), exist_ok=True)
+    with open(_권함, "a", encoding="utf-8") as f:
         f.write(time.strftime("%Y-%m-%d") + "\t" + 때 + "\n")
 except OSError:
     pass

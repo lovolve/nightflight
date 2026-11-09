@@ -32,9 +32,10 @@ case "$KIND" in
       mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
       printf '%s\t프로젝트\t%s\t\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" >> "$NF_PERSON" 2>/dev/null
       _nf_t "  이 폴더를 야간비행 프로젝트로 등록했습니다." "  This folder is now registered as a Nightflight project."
-      if [ -f "$BOARD" ]; then
-        git -c core.fsmonitor=false -C "$NF_ROOT" rm --cached -q --ignore-unmatch -- "$BOARD" >/dev/null 2>&1 || true
-        rm -f "$BOARD"
+      _OLDB="$(dirname "$(dirname "$BOARD")")/board.url"
+      if [ -f "$BOARD" ] || [ -f "$_OLDB" ]; then
+        git -c core.fsmonitor=false -C "$NF_ROOT" rm --cached -q --ignore-unmatch -- "$BOARD" "$_OLDB" >/dev/null 2>&1 || true
+        rm -f "$BOARD" "$_OLDB"
         _nf_t "  이 폴더에 들어 있던 조종석 주소를 지웠습니다. 이 제품의 조종석을 새로 만듭니다." \
               "  Removed the cockpit address that came with this folder. A new cockpit will be made for this product."
       fi

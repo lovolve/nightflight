@@ -38,7 +38,7 @@ fi
 REPO="$NF_ROOT"
 nf_registered || exit 0
 
-TOUCHED="$NF_STATE/repeat-guard.tsv"
+TOUCHED="$NF_STATE/internal/repeat-guard.tsv"
 RUN_LINTS=1
 if [ "$ALL" != "--전부" ]; then
   S="${NF_SESSION:-${CLAUDE_CODE_SESSION_ID:-$(date +%Y%m%d)}}"
@@ -110,6 +110,8 @@ run_one lint_table_grants.py     "새 표에 누가 읽고 쓸 수 있는지 적
 run_one lint_citations.py        "규정을 인용한 자리에 확인 표지가 있나"            -
 run_one lint_user_facing.py     "사용자에게 보이는 문구에 개발 용어가 있나"
 run_one lint_handoff_claim.py    "「사용자가 하셔야」라고 하면서 눌러는 봤나"   -
+run_one independent_check.py   "중요한 기능을 코딩한 대화와 따로 확인했나"   -
+run_one acceptance.py          "개발 세부기능에 합격 기준이 있나 · 안 정한 것이 남았나"   -
 run_dev lint_board_wiring.py     "계산은 되는데 화면에 안 가는 것이 있나"       -
 run_dev lint_cockpit_classes.py  "조종석에서 막대 전용 이름을 다른 자리에 썼나"   -
 run_dev lint_cockpit_scale.py    "조종석 글자 크기·굵기·간격이 정한 단계 안인가"   -
@@ -128,8 +130,8 @@ run_dev lint_vague_words.py    "제가 지어낸 불명확한 말이 사용자 �
 run_one lint_screen_label.py   "조종석에 나가는 줄에 화면 문구·종류가 있나"   -
 run_one lint_screen_spec.py    "화면 흐름의 화면마다 «언제 보나»·«하는 일»이 적혀 있나"   -
 _nf_run_was="$RUN_LINTS"
-if [ "$RUN_LINTS" != 1 ] && [ -f "$NF_STATE/import.tsv" ] \
-   && [ -n "$(find "$NF_STATE/import.tsv" "$NF_STATE/ledger.tsv" "$NF_STATE/plan.tsv" "$NF_STATE/screens.tsv" -mmin -120 2>/dev/null | head -1)" ]; then
+if [ "$RUN_LINTS" != 1 ] && [ -f "$NF_STATE/internal/import.tsv" ] \
+   && [ -n "$(find "$NF_STATE/internal/import.tsv" "$NF_STATE/ledger.tsv" "$NF_STATE/plan.tsv" "$NF_STATE/screens.tsv" -mmin -120 2>/dev/null | head -1)" ]; then
   RUN_LINTS=1
 fi
 run_one lint_import.py         "개발 중간에 깐 앱이면 조종석 칸을 다 가져왔나(가져왔음 · 이 앱엔 없음 · 아직)"   -

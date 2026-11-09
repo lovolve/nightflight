@@ -64,6 +64,8 @@ if [ -d "$NF_ROOT/.nightflight" ]; then NF_STATE="$NF_ROOT/.nightflight"
 elif [ -f "$NF_ROOT/.claude/ledger.tsv" ]; then NF_STATE="$NF_ROOT/.claude"
 fi
 [ -n "$NF_STATE" ] || NF_STATE="$NF_ROOT/.nightflight"
+NF_SYS="$NF_STATE/internal"
+NF_SYS_FILES="board.url board.sent board.page board.machine board.notified board.create_asked board_page.html redteam_suggested.tsv prescriptions_received.tsv new_product_notice.tsv corrected_lines.tsv import.tsv repeat-guard.tsv repeat-guard-said.tsv resources-said independent_checks.tsv independent_retro.done checks"
 _nf_plug="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd -P)"
 [ -L "$NF_STATE" ] && rm -f "$NF_STATE" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더가 다른 곳을 가리키는 바로가기여서 걷었습니다(그 자리에 쓰게 될 수 있었습니다)." >&2
 if [ -d "$NF_STATE" ]; then
@@ -252,6 +254,24 @@ nf_fix_cockpit_pair "$NF_STATE"
 nf_move_old_names "$NF_STATE" 조종석.html cockpit.html 처방받음.tsv prescriptions_received.tsv 가져오기.tsv import.tsv \
   레드팀권함.tsv redteam_suggested.tsv 새제품안내.tsv new_product_notice.tsv 바로잡은줄.tsv corrected_lines.tsv \
   board.안내함 board.notified board.만들기 board.create_asked
+nf_to_internal() {
+  local d="$1" n o t l
+  [ -d "$d" ] || return 0
+  for n in $NF_SYS_FILES; do
+    o="$d/$n"; t="$d/internal/$n"
+    { [ -e "$o" ] && [ ! -L "$o" ]; } || continue
+    git -c core.fsmonitor=false -C "$d" ls-files --error-unmatch -- "$n" >/dev/null 2>&1 && continue
+    mkdir -p "$d/internal" 2>/dev/null || return 0
+    if [ "$n" = board.url ]; then [ -e "$t" ] || cp -p "$o" "$t" 2>/dev/null; continue; fi
+    if [ ! -e "$t" ]; then mv "$o" "$t" 2>/dev/null
+    elif [ -d "$o" ]; then cp -R "$o/." "$t/" 2>/dev/null && rm -rf "$o"
+    else case "$n" in *.tsv) cat "$o" >> "$t" 2>/dev/null && rm -f "$o" ;; *) if [ "$o" -nt "$t" ]; then mv -f "$o" "$t"; else rm -f "$o"; fi ;; esac
+    fi
+    for l in "$d"/*; do [ -L "$l" ] && [ "$(readlink "$l" 2>/dev/null)" = "$n" ] && rm -f "$l"; done
+  done
+  return 0
+}
+nf_to_internal "$NF_STATE"
 NF_PERSON="$NF_HOME/people.tsv"
 NF_PERSONFILE="$NF_HOME/person_id"
 export NF_ROOT NF_STATE NF_HOME NF_PERSON NF_PERSONFILE

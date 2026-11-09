@@ -24,7 +24,7 @@ EOPY
 . "$(dirname "$0")/project-root.sh"
 nf_registered || exit 0
 
-STATE="$NF_STATE/repeat-guard.tsv"
+mkdir -p "$NF_STATE/internal" 2>/dev/null; STATE="$NF_STATE/internal/repeat-guard.tsv"
 LIMIT="${REPEAT_LIMIT:-8}"
 nf_state_make || true
 
@@ -84,7 +84,7 @@ EOF
 
 BASE=$(basename "$HIT")
 
-SAID="$NF_STATE/repeat-guard-said.tsv"
+SAID="$NF_STATE/internal/repeat-guard-said.tsv"
 FIRST=1
 if [ -f "$SAID" ] && awk -F'\t' -v s="$SESSION" -v x="$HIT" \
      '$1==s && $2==x{f=1} END{exit !f}' "$SAID"; then FIRST=0; fi

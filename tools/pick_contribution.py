@@ -158,7 +158,7 @@ def candidates():
     if SRC:
         root = str(_root()) + os.sep
         seen = {}
-        for c in _rows(_state() / "repeat-guard.tsv"):
+        for c in _rows(_state() / "internal" / "repeat-guard.tsv"):
             f = c[1] if len(c) > 1 else ""
             if not f.startswith(root) or not f.endswith(tuple(SRC)):
                 continue
