@@ -1115,7 +1115,7 @@ header, .n-meta{padding-inline:16px}
 .jf-chip.todo{border-style:dashed; color:var(--ink-2)} .jf-chip.bad{border-color:var(--stop)} .jf-chip.bad::before{content:""; display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--stop); margin-right:4px; vertical-align:1px}
 .sv-fold{margin:8px 0 0} .sv-fold > summary{cursor:pointer; list-style:none; font-size:var(--fs-3); color:var(--ink); font-weight:600; padding:8px 0; display:flex!important; align-items:baseline; gap:8px; width:100%; white-space:nowrap}
 .sv-fold > summary .sub{white-space:normal; flex:1; min-width:0} .sv-fold > summary::-webkit-details-marker{display:none} .sv-fold .sub{font-size:var(--fs-5); font-weight:400; color:var(--muted); margin-left:8px}
-.cp-say{cursor:pointer} .cp-say:focus-visible{outline:2px solid var(--done-b); outline-offset:2px} .cp-toast{white-space:pre-line; position:fixed; margin:0; width:max-content; max-width:min(720px, calc(100vw - 32px)); padding:8px 12px; border-radius:6px; border:1px solid var(--faint); background:var(--panel); color:var(--ink); font-size:var(--fs-5); z-index:50} .cp-toast:empty{display:none}
+.cp-say{cursor:pointer} .cp-say:focus-visible{outline:2px solid var(--done-b); outline-offset:2px} .cp-toast{white-space:pre-line; position:fixed; margin:0; width:max-content; max-width:min(720px, calc(100vw - 32px)); padding:8px 12px; border-radius:6px; border:1px solid var(--faint); background:var(--panel); color:var(--ink); font-size:var(--fs-5); z-index:50; pointer-events:none} .cp-toast:empty{display:none}
 .jf-lg{display:flex; flex-wrap:wrap; gap:8px 16px; margin:2px 0 12px; font-size:var(--fs-5); color:var(--muted)}
 .jf-lg i{display:inline-block; width:14px; height:9px; border-radius:999px; margin-right:4px; vertical-align:0; border:1px solid var(--rule)} .jf-lg i.d{border-color:var(--done-b); background:var(--ground)} .jf-lg i.t{border-style:dashed; border-color:var(--faint)} .jf-lg i.b{width:7px; height:7px; border:0; background:var(--stop); border-radius:50%}
 .jf-sep{font-size:var(--fs-5); color:var(--faint)}
@@ -2671,7 +2671,10 @@ header, .n-meta{padding-inline:16px}
     DB.doc('state/marked').set({items:새}).then(function(){ last.marked={items:새}; 그리기(); 눌림말('임시 저장했습니다. 다음 대화에서 기록에 반영합니다.', null); })
       .catch(function(x){ 버튼.disabled=false; 눌림말('저장하지 못했습니다. 대화창에 말씀해 주십시오.'+((x&&x.code)?' ('+x.code+')':''), 버튼); });
   }
-  function 눌림말(t, 칸){ var e=document.querySelector('.n-didmsg'); if(e) e.textContent=t; 안내띄움(t, 칸); }
+  var 임시저장말='임시 저장했습니다. 다음 대화에서 기록에 반영합니다.', 임시저장보임=false;
+  function 눌림말(t, 칸){ var e=document.querySelector('.n-didmsg'); if(e) e.textContent=t;
+    if(t===임시저장말){ if(임시저장보임) return; 임시저장보임=true; }
+    안내띄움(t, 칸); }
 
   function setLive(on,t){var e=$('live'); e.className=on?'on':''; $('live-t').textContent=t; e.style.display=on?'none':'';}
   var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"},"5":{"줄":["A","O"]},"6":{"줄":["A","O"]}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":"O","features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":"A","오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","한도":{"한도":["A","O"]},"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"고름":"A","끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O"},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A","실패확인기능":"A","표준확인기능":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}},"설명들":"O"},"stuck":{"items":["A","O"]}};
@@ -2877,7 +2880,7 @@ header, .n-meta{padding-inline:16px}
     줄.style.top=위+'px'; 줄.style.left=Math.max(16, Math.min(곳.left, innerWidth-크.width-16))+'px';
   }
   var 누른자리=null;
-  document.addEventListener('pointerdown', function(ev){ 누른자리=[ev.clientX, ev.clientY]; }, true);
+  document.addEventListener('pointerdown', function(ev){ 누른자리=[ev.clientX, ev.clientY]; var 줄=document.querySelector('.cp-toast'); if(줄) 줄.textContent=''; }, true);
   function 안내띄움(글, 칸){
     var 줄=document.querySelector('.cp-toast');
     if(!줄){ 줄=document.createElement('p'); 줄.className='cp-toast'; 줄.setAttribute('aria-live','polite'); document.body.appendChild(줄); }
