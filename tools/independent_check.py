@@ -116,13 +116,16 @@ def _기록줄(칸, 무엇):
 def 설명(기능, 세부) -> Path:
     if (기능, 세부) not in 읽기():
         sys.exit(f"  ⛔ 「{기능} / {세부}」은 독립 확인 대기 항목이 아닙니다 — independent_check.py 목록 을 보십시오")
-    열쇠 = secrets.token_hex(8)
     v = 읽기()[(기능, 세부)]
-    _적기(기능, 세부, "대기", "", 열쇠, v["확인말"])
     폴더 = _상태폴더() / "internal" / "checks"
     폴더.mkdir(parents=True, exist_ok=True)
     이름 = hashlib.sha1(f"{기능}\t{세부}".encode("utf-8")).hexdigest()[:10]
     결과 = 폴더 / f"{이름}.result.md"
+    이미 = 폴더 / f"{이름}.brief.md"
+    if v["상태"] == "대기" and v["열쇠"] and 이미.exists():
+        return 이미
+    열쇠 = secrets.token_hex(8)
+    _적기(기능, 세부, "대기", "", 열쇠, v["확인말"])
     결과.unlink(missing_ok=True)
     기능설명 = plan.설명읽기().get(기능, "")
     표준 = [c for c in _기록줄("표준", 기능) if len(c) > 5 and c[5] == 기능]
@@ -165,6 +168,13 @@ def 설명(기능, 세부) -> Path:
     return p
 
 
+def _기록경로(결과파일) -> str:
+    try:
+        return str(Path(결과파일).resolve().relative_to(_상태폴더().resolve()))
+    except ValueError:
+        return Path(결과파일).name
+
+
 def 기록(기능, 세부, 판정, 근거, 결과파일):
     if 판정 not in 판정말:
         sys.exit("  ⛔ 판정은 통과 · 실패 · 사람 중 하나입니다")
@@ -188,7 +198,7 @@ def 기록(기능, 세부, 판정, 근거, 결과파일):
     plan.쓰기(rows)
     _적기(기능, 세부, 판정, 근거.strip(), v["열쇠"], v["확인말"])
     with open(_기록(), "a", encoding="utf-8") as f:
-        f.write("\t".join([date.today().isoformat(), "독립확인", 판정, 근거.strip().replace("\t", " "), str(결과파일), "", f"{기능} › {세부}"]) + "\n")
+        f.write("\t".join([date.today().isoformat(), "독립확인", 판정, 근거.strip().replace("\t", " "), _기록경로(결과파일), "", f"{기능} › {세부}"]) + "\n")
     print(f"  · 독립 확인 {판정} — {기능} / {세부} → {상태}")
     if 판정 != "통과":
         print(f"  [모델] 사용자에게 알리십시오(막지 않습니다): 「{기능} / {세부}」 독립 확인 결과 «{판정}» — {근거.strip()}")
@@ -203,7 +213,13 @@ def 안내() -> int:
     print(f"  · 중요한 기능 독립 확인 대기 {len(대기)}건 — 만든 대화가 아니라 따로 띄운 확인 담당 AI가 봅니다.")
     for v in 대기[:5]:
         print(f"    - {v['기능']} / {v['세부']}")
-    v = 대기[0]
+    지은 = [v for v in 대기 if v["열쇠"]]
+    if 지은:
+        print(f"  [모델] 설명을 이미 지은 {len(지은)}건은 확인 담당 AI가 돌고 있으면 결과를 기다리십시오. 같은 건을 또 띄우지 않습니다.")
+    안지은 = [v for v in 대기 if not v["열쇠"]]
+    if not 안지은:
+        return 1
+    v = 안지은[0]
     print("  [모델] 하나씩 하십시오. 설명 파일을 짓고, 그 경로만 확인 에이전트에게 주십시오(당신의 설명 · 판단은 덧붙이지 않습니다):")
     print(f"    python3 \"{here}\" 설명 \"{v['기능']}\" \"{v['세부']}\"")
     print("    → Agent 도구 · subagent_type \"nightflight:feature-verifier\" · prompt 「<설명 파일 경로> 를 읽고 그대로 하십시오」")

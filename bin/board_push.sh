@@ -66,7 +66,7 @@ if [ "${1:-}" = "--올렸다" ]; then
   B="$ST/board"
   mkdir -p "$ST/internal" 2>/dev/null
   nf_sums "$B" > "$ST/internal/board.sent"
-  rm -f "$ST/board.막음"
+  rm -f "$ST/board.막음" "$ST/board.막음.told"
   python3 -I "$HERE/other_cockpits.py" --올렸다 "$ST" "$B/machine.json" 2>/dev/null || true
   echo "  · 조종석에 올린 것으로 적었습니다 — $(basename "$ROOT") ($(ls "$B"/*.json 2>/dev/null | wc -l | tr -d ' ')칸)"
   exit 0
@@ -76,6 +76,12 @@ nf_page_title() {
   local l; l="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)"
   [ "$l" = en ] || return 0
   python3 -I -c 'import sys,re; p=sys.argv[1]; s=open(p,encoding="utf-8").read(); open(p,"w",encoding="utf-8").write(re.sub(r"<title>[^<]*</title>","<title>Nightflight cockpit</title>",s,count=1))' "$1" 2>/dev/null || true
+}
+
+nf_place_page() {
+  local d="$1" t="$1.tmp.$$"
+  cp "$HERE/../board/cockpit.html" "$t" 2>/dev/null && nf_page_title "$t" && mv -f "$t" "$d" && return 0
+  rm -f "$t" 2>/dev/null; return 1
 }
 
 HOOK_IN=""
@@ -156,8 +162,7 @@ if [ -z "$URL" ]; then
     [ -n "$SID" ] && grep -qxF "$SID" "$ASKED" 2>/dev/null && exit 0
   fi
   mkdir -p "$PST/internal" 2>/dev/null || exit 0
-  cp "$HERE/../board/cockpit.html" "$PST/internal/board_page.html" 2>/dev/null || exit 0
-  nf_page_title "$PST/internal/board_page.html"
+  nf_place_page "$PST/internal/board_page.html" || exit 0
   ( cd "$PROOT" && CLAUDE_PROJECT_DIR="$PROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
   printf '%s\n' "${SID:-대화id없음-$(date +%s)}" >> "$ASKED"
   NFL="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)" python3 -I "$HERE/cockpit_create_guide.py" "$PROOT" "$HERE" "$PST" "$CONSENT"
@@ -176,7 +181,7 @@ WAS="$(cat "$ST/internal/board.sent" 2>/dev/null || true)"
 PAGENOW="$(shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1)"
 PAGEWAS="$(cat "$ST/internal/board.page" 2>/dev/null || true)"
 PAGENEW=0; [ -n "$PAGENOW" ] && [ "$PAGENOW" != "$PAGEWAS" ] && PAGENEW=1
-[ "$PAGENEW" = "1" ] && mkdir -p "$ST/internal" 2>/dev/null && cp "$HERE/../board/cockpit.html" "$ST/internal/board_page.html" 2>/dev/null && nf_page_title "$ST/internal/board_page.html"
+[ "$PAGENEW" = "1" ] && mkdir -p "$ST/internal" 2>/dev/null && nf_place_page "$ST/internal/board_page.html"
 [ "$NOWSUM" = "$WAS" ] && [ "$PAGENEW" = "0" ] && exit 0
 
 CHANGED="$(python3 -I -c '
@@ -201,39 +206,78 @@ MARK="$ST/board.막음"
 TOLD="$ST/internal/board.notified"
 RECEIPT="$(shasum "$ST/internal/board.sent" 2>/dev/null | cut -d' ' -f1)"; RECEIPT="${RECEIPT:-없음}"
 nf_told_set() {
-  { awk -F'\t' -v s="$1" '$1!=s' "$TOLD" 2>/dev/null | tail -n 49; printf '%s\t%s\t%s\n' "$1" "$2" "$3"; } > "$TOLD.$$" \
+  { awk -F'\t' -v s="$1" '$1!=s' "$TOLD" 2>/dev/null | tail -n 49; printf '%s\t%s\t%s\t%s\n' "$1" "$2" "$3" "${4:-}"; } > "$TOLD.$$" \
     && mv -f "$TOLD.$$" "$TOLD"
 }
+PROG="$(python3 -I - "$B" <<'PY' 2>/dev/null
+import glob, hashlib, json, os, sys
+h = hashlib.sha256()
+for f in sorted(glob.glob(os.path.join(sys.argv[1], "*.json"))):
+    n = os.path.basename(f)
+    if n == "machine.json":
+        continue
+    try:
+        d = json.load(open(f, encoding="utf-8"))
+        if isinstance(d, dict):
+            빼기 = {"now.json": ("updatedAt", "repeat"), "piled.json": ("dict",)}.get(n, ())
+            d = {k: v for k, v in d.items() if k not in 빼기}
+        b = json.dumps(d, ensure_ascii=False, sort_keys=True).encode("utf-8")
+    except Exception:
+        b = open(f, "rb").read()
+    h.update(n.encode("utf-8") + b"\0" + b + b"\0")
+print(h.hexdigest())
+PY
+)"
 nf_warn_once() {
-  if [ "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/language" 2>/dev/null)" = "en" ]; then
-    printf '%s\n' '{"systemMessage": "  ⚠️ The cockpit is older than your records and was not updated this time. Say \"update the cockpit\" to update it."}'
-  else
-    printf '%s\n' '{"systemMessage": "  ⚠️ 조종석이 기록보다 오래됐습니다 — 이번에는 못 올렸습니다. 「조종석 올려」라고 말씀해 주시면 올립니다."}'
-  fi
+  python3 -I - "$ST/internal/board.sent" "$(head -c 2 "${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/language" 2>/dev/null)" <<'PY' 2>/dev/null || true
+import json, os, sys, time
+sent, lang = sys.argv[1], sys.argv[2]
+try:
+    t = time.localtime(os.path.getmtime(sent))
+except OSError:
+    t = None
+if lang == "en":
+    when = time.strftime("%b %-d %H:%M", t) if t else "never"
+    msg = "  ⚠️ The cockpit has stopped updating (last updated: " + when + "). Say \"update the cockpit\" in a new conversation."
+else:
+    when = ("%d월 %d일 %s" % (t.tm_mon, t.tm_mday, time.strftime("%H:%M", t))) if t else "아직 없음"
+    msg = "  ⚠️ 조종석이 멈춰 있습니다(마지막 반영: " + when + "). 새 대화에서 «조종석 올려»라고 말씀해 주세요."
+print(json.dumps({"systemMessage": msg}, ensure_ascii=False))
+PY
 }
 if [ -n "$SID" ]; then
   _nf_line="$(awk -F'\t' -v s="$SID" '$1==s{l=$0} END{print l}' "$TOLD" 2>/dev/null)"
-  TSTATE=""; THASH=""
+  TSTATE=""; THASH=""; TPROG=""
   if [ -n "$_nf_line" ]; then
-    TSTATE="$(printf '%s' "$_nf_line" | cut -f2 -s)"; THASH="$(printf '%s' "$_nf_line" | cut -f3 -s)"
+    TSTATE="$(printf '%s' "$_nf_line" | cut -f2 -s)"; THASH="$(printf '%s' "$_nf_line" | cut -f3 -s)"; TPROG="$(printf '%s' "$_nf_line" | cut -f4 -s)"
     [ -n "$TSTATE" ] || TSTATE="조용"
   fi
-  [ "$TSTATE" = "조용" ] && exit 0
+  if [ "$TSTATE" = "조용" ] && [ -n "$THASH" ] && [ "$THASH" != "$RECEIPT" ]; then TSTATE=""; fi
+  if [ "$TSTATE" = "조용" ]; then
+    [ "$PROG" = "$TPROG" ] && exit 0
+    nf_told_set "$SID" 조용 "$THASH" "$PROG"; nf_warn_once
+    NF_REGUIDE=1
+  fi
+  if [ "${NF_REGUIDE:-0}" = "0" ]; then
   if [ "$AGAIN" = "1" ]; then
     [ "$TSTATE" = "막음" ] || exit 0
     [ "$THASH" != "$RECEIPT" ] && exit 0
-    nf_told_set "$SID" 조용 "$RECEIPT"; nf_warn_once; exit 0
+    nf_told_set "$SID" 조용 "$RECEIPT" "$PROG"; nf_warn_once; exit 0
   fi
   if [ "$TSTATE" = "막음" ] && [ "$THASH" = "$RECEIPT" ]; then
-    nf_told_set "$SID" 조용 "$RECEIPT"; exit 0
+    nf_told_set "$SID" 조용 "$RECEIPT" "$PROG"; nf_warn_once; exit 0
   fi
   nf_told_set "$SID" 막음 "$RECEIPT"
+  fi
 else
-  if [ "$AGAIN" = "1" ]; then nf_warn_once; exit 0; fi
-  [ -f "$MARK" ] && exit 0
-  : > "$MARK"
+  if [ "$AGAIN" = "1" ] || [ -f "$MARK" ]; then
+    [ -f "$MARK" ] || : > "$MARK"
+    [ "$(cat "$MARK.told" 2>/dev/null)" = "$PROG" ] || { printf '%s\n' "$PROG" > "$MARK.told"; nf_warn_once; }
+    exit 0
+  fi
+  : > "$MARK"; rm -f "$MARK.told"
 fi
 
 _nf_nx="$(_nf_next_of "$ROOT")"
-python3 -I "$HERE/cockpit_upload_guide.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/other_cockpits.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
+NF_GUIDE_SHORT="${NF_REGUIDE:-0}" python3 -I "$HERE/cockpit_upload_guide.py" "$URL" "$CHANGED" "$ROOT" "$HERE" "$ST" "$PAGENEW" "$(python3 -I "$HERE/other_cockpits.py" --안내 "$ST" "$HERE" 2>/dev/null || true)" > "$_nf_nx.tmp" 2>/dev/null && mv -f "$_nf_nx.tmp" "$_nf_nx"
 exit 0

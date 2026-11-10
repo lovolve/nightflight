@@ -89,7 +89,9 @@ def 짓는다(뿌리: Path) -> Path | None:
     껍질 = ('<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
             '</head>\n<body>\n')
-    나갈곳.write_text(껍질 + 몸 + "\n</body>\n</html>\n", encoding="utf-8")
+    임시 = 나갈곳.with_name(나갈곳.name + ".tmp.%d" % os.getpid())
+    임시.write_text(껍질 + 몸 + "\n</body>\n</html>\n", encoding="utf-8")
+    os.replace(임시, 나갈곳)
     print("  ✅ 조종석을 파일로 지었습니다 — 칸 %d개 · %s" % (len(판) - 1, 나갈곳))
     if len(판) - 1 == 0:
         print("     ⚠️ 칸이 **하나도 없습니다** — 첫 대화를 하면 채워집니다.")

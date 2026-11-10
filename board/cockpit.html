@@ -1260,7 +1260,7 @@ header, .n-meta{padding-inline:16px}
   function esc(s){var d=document.createElement('div');d.textContent=s==null?'':String(s);
     return d.innerHTML.replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 
-  var EN=["Diagnose","Plan","Validate","Design","Build","Verify","Launch","Fix","After launch"];
+  var EN=["Diagnose","Plan","Validate","Design","Build","Test","Launch","Fix","After launch"];
   function 칩(t,c){ return '<span class="n-chip'+(c?' '+c:'')+'">'+esc(t)+'</span>'; }
   function 칸들(xs,c){
     var h='<dl class="n-kv'+(c?' '+c:'')+'"'+(c==='top'?' style="--n:'+xs.length+'"':'')+'>';

@@ -53,7 +53,10 @@ def main() -> int:
     bad = []
     looked = 0
     old = 0
-    for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+    줄들 = path.read_text(encoding="utf-8").splitlines()
+    출처있는결정 = {c[2] for c in (l.split("\t") for l in 줄들)
+                  if len(c) > 2 and c[1] == "결정" and any(m in " ".join(c[2:]) for m in MARKS)}
+    for n, line in enumerate(줄들, 1):
         cols = line.split("\t")
         if len(cols) < 3:
             continue
@@ -64,6 +67,8 @@ def main() -> int:
         kind = cols[1]
         whole = " ".join(cols[2:])
         if any(m in whole for m in MARKS):
+            continue
+        if kind in ("되돌림", "전제바뀜", "전제해소") and any(cols[2].strip() and cols[2].strip() in d for d in 출처있는결정):
             continue
         for col in cols[2:]:
             num = flagged(col)

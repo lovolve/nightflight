@@ -19,7 +19,7 @@ except ValueError:
 bid = os.environ.get("BID") or ""
 이름표 = product_name.목록()
 def 보임(b):
-    return product_name.보임(b, 이름표)
+    return product_name.보임(b, 이름표, 영어)
 if not isinstance(d, dict):
     print(말("  플랜의 제품등록은 지금 확인하지 못했습니다 — 아이디어 · 검증 단계는 그대로 쓰실 수 있습니다.",
              "  Could not check your plan's product slots right now. Plan and Validate still work as usual."))
@@ -56,9 +56,15 @@ else:
                  "  ⚠️ All %d product slots on your plan are in use (free: %s · paid: %s)." % (int(칸) + 1, 보임(무료), _쓴것)))
         print(말("     아이디어 · 검증 단계는 그대로 쓰실 수 있습니다. 제품등록은 설계 단계부터라, 그때 이 제품도 1개가 됩니다.",
                  "     Plan and Validate still work. Slots count from Design, so this product will need one then."))
-        print(말("     플러스 플랜으로 바꾸시거나, 다른 제품의 제품등록을 푸시면 그 자리가 바로 돌아옵니다(같은 제품을 다시 넣는 것은 30일 뒤입니다). 플랜 안내: " + 주소,
-                 "     Switch to the Plus plan, or free another product's slot to get it back right away (the same product can take a slot again after 30 days). Plans: " + 주소))
-        print("  [모델] 괄호 안이 제품 번호입니다. 풀려면 사용자가 고른 제품으로 " + 열쇠 + " 앱빼기 <제품 번호> 확인 · 플러스로 바꾸려면 " + 열쇠 + " 등급 플러스 (라이선스 키는 필요 없습니다 · 결제한 메일로 확인 링크가 갑니다)")
+        플러스 = d.get("등급") == "헤비" or int(칸) >= 14
+        if 플러스:
+            print(말("     다른 제품의 제품등록을 푸시면 그 자리가 바로 돌아옵니다(같은 제품을 다시 넣는 것은 30일 뒤입니다).",
+                     "     Free another product's slot to get it back right away (the same product can take a slot again after 30 days)."))
+            print("  [모델] 괄호 안이 제품 번호입니다. 풀려면 사용자가 고른 제품으로 " + 열쇠 + " 앱빼기 <제품 번호> 확인 · 이미 플러스이므로 플랜을 올리라고 하지 않습니다")
+        else:
+            print(말("     플러스 플랜으로 바꾸시거나, 다른 제품의 제품등록을 푸시면 그 자리가 바로 돌아옵니다(같은 제품을 다시 넣는 것은 30일 뒤입니다). 플랜 안내: " + 주소,
+                     "     Switch to the Plus plan, or free another product's slot to get it back right away (the same product can take a slot again after 30 days). Plans: " + 주소))
+            print("  [모델] 괄호 안이 제품 번호입니다. 풀려면 사용자가 고른 제품으로 " + 열쇠 + " 앱빼기 <제품 번호> 확인 · 플러스로 바꾸려면 " + 열쇠 + " 등급 플러스 (라이선스 키는 필요 없습니다 · 결제한 메일로 확인 링크가 갑니다)")
     else:
         _씀 = len(앱들) + len(접은)
         if 칸 is None:
