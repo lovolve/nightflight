@@ -1,0 +1,1 @@
+사용량 표시	usage display	2.1.317	2026-11-11 실측: hooks/usage_display.tsx 의 session.start 를 2.1.258 은 «없는 사건»으로 거절, 2.1.321 은 plugin validate --strict 통과 · 2.1.317 형식 정의에 session.start 있음
