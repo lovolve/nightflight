@@ -1,0 +1,26 @@
+# ⛔ 야간비행의 기록 자리는 **커밋에 안 들어갑니다.**
+#   거기에는 정하신 것 · 이 컴퓨터의 상태 · 화면 주소가 쌓입니다.
+#   누구나 볼 수 있는 곳에 올리시면 그것이 같이 올라갑니다.
+*.p8
+asc.env
+.env
+.env.*
+!.env.example
+
+**/.claude/*
+.claude/board/machine.json
+
+__pycache__/
+*.pyc
+.DS_Store
+
+.said-*
+
+probe/돌았다.txt
+.claude/settings.json
+
+supabase/
+
+.nightflight-dev
+
+.글꼴원본/

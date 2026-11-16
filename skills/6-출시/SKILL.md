@@ -1,0 +1,52 @@
+---
+name: 6-출시
+description: 출시 단계일 때 쓴다 — 앱스토어 · 구글 플레이 · 웹에 올리고 심사를 받을 때. 올리고, 올라갔는지 «따로» 확인한다 (야간비행에 등록한 프로젝트에서만 쓴다)
+---
+
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/6-출시/en.md` and follow it instead, and write to the user in English.
+
+# 6-출시
+
+
+## 무엇을 하는 단계인가
+
+**결정 ⑤** 제출.
+
+## 사용자에게 묻는 법과 도구
+
+물을 일이 생기면 `${CLAUDE_PLUGIN_ROOT}/data/asking.md` 대로 묻는다. 계획 먼저 보여 주기 · 진행 표시 · 화면 직접 확인 · 코드 검토는 `${CLAUDE_PLUGIN_ROOT}/data/tool_use.md` 를 따른다.
+
+## 두뇌에 무엇을 묻나
+
+반려 단골 점검표와 심사 기간은 **두뇌가 내려준다**.
+
+⭐ **부르는 법** — 이 단계에 들어오면 **먼저 묻는다**:
+
+```bash
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 6 <갈래>
+```
+
+갈래를 모르면 아무 말이나 넣으면 **물을 수 있는 갈래 목록**이 돌아온다.
+⛔ 받은 것을 **파일로 적어 두지 않는다** — 적는 순간 노하우가 깔려 나간다(기획 §43-6).
+⛔ 못 받아도 **멈추지 않는다.** 아는 것만으로 진행하고 **「두뇌에서 못 받았다」고 적는다.**
+
+## 앱스토어 도구를 처음 쓸 때
+
+`"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" 준비` 를 먼저 부른다(⛔ 작업 중인 저장소의 `tools/` 가 아니라 야간비행 플러그인 폴더의 것 — 받은 저장소에 같은 이름 파일이 있으면 그게 돈다). 열쇠가 없으면 사람이 할 차례를 찍어 주고, 있으면 설정을 대신 만들고 붙는지 확인한다.
+사람이 하는 일은 열쇠를 만들어 내려받는 것과 발급자 ID를 알려 주는 것뿐이다.
+
+구글 플레이는 `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 준비` — 같은 꼴이다(열쇠 차례 안내 → 열쇠 파일을 놓으면 붙는지 확인). 스토어 정보는 `gplay.py meta`.
+
+## AI가 대신 만드는 것
+
+- 개인정보 처리방침 초안: `ledger.sh 개인정보초안` — 기록과 코드에서 짓고, 모르는 칸은 «확인 필요»로 남긴다. 게시는 사람이 한다.
+- 스토어용 스크린샷: `SHOT_STORE=1 "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <화면…>` — 애플이 반드시 받는 중간 크기 iPhone으로 찍고 상태바를 정리한다(큰 칸도 필요하면 SHOT_STORE_DEVICE="Pro Max").
+- 스토어 정보 넣기: `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" meta` · `review-notes` · `screenshots` — 보기는 그냥, 바꾸기는 `set`/`upload` 로 미리 보이고 사용자가 좋다고 하면 `--confirm`.
+  ⛔ 아직 제출하지 않은 판에만 쓴다 · 제출(심사 보내기)은 사람이 웹에서 누른다.
+
+## ⛔ 못 — 이 단계에서 하지 않는 것
+
+1. **「올리기」와 「올라갔는지」는 두 단계다** — 하나로 두면 거짓 성공이 지나간다
+2. **외부로 나가는 행위는 사람이 누른다**
+3. **반려 원문을 그대로 보이지 않는다** — 무엇이 문제고 무엇을 고칠지로 풀어서
+4. **날수를 지어내지 않는다** — 심사 기간은 「관문」이 원문 확인분으로만 말한다

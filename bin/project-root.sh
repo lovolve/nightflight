@@ -1,0 +1,485 @@
+#!/bin/bash
+if [ -z "${NF_LC_WAS:-}" ]; then
+  for _nf_lcv in "${LC_ALL:-}" "${LC_MESSAGES:-}" "${LANG:-}"; do
+    case "$_nf_lcv" in C|POSIX|C.*|"") : ;; *) NF_LC_WAS="$_nf_lcv"; break ;; esac
+  done
+  unset _nf_lcv
+fi
+export NF_LC_WAS
+LC_ALL=C; export LC_ALL
+nf_curl() {
+  _nf_c_https=1
+  for _nf_c_a in "$@"; do
+    case "$_nf_c_a" in
+      http://*)  nf_dev 2>/dev/null && _nf_c_https=0; break ;;
+      https://*) _nf_c_https=1; break ;;
+    esac
+  done
+  unset _nf_c_a
+  if [ "$_nf_c_https" = 1 ]; then
+    unset _nf_c_https
+    command curl -q --noproxy '*' --proto '=https' "$@"
+  else
+    unset _nf_c_https
+    command curl -q --noproxy '*' "$@"
+  fi
+}
+
+nf_post() {
+  _nf_u="$1"; shift
+  _nf_b="$1"; shift
+  printf '%s' "$_nf_b" | nf_curl -sS --max-time "${NF_BRAIN_TIMEOUT:-10}" \
+    -X POST "$_nf_u" -H 'Content-Type: application/json' "$@" --data-binary @-
+  _nf_rc=$?
+  unset _nf_u _nf_b
+  return $_nf_rc
+}
+
+nf_realdir() {
+  _nf_rp="${1:-}"
+  _nf_rn=0
+  while [ -L "$_nf_rp" ] && [ "$_nf_rn" -lt 20 ]; do
+    _nf_rl="$(readlink "$_nf_rp" 2>/dev/null)" || break
+    case "$_nf_rl" in
+      /*) _nf_rp="$_nf_rl" ;;
+      *)  _nf_rp="$(cd "$(dirname "$_nf_rp")" 2>/dev/null && pwd -P)/$_nf_rl" ;;
+    esac
+    _nf_rn=$((_nf_rn + 1))
+  done
+  if [ -L "$_nf_rp" ]; then unset _nf_rp _nf_rn _nf_rl; return 1; fi
+  (cd "$(dirname "$_nf_rp")" 2>/dev/null && pwd -P)
+  unset _nf_rp _nf_rn _nf_rl
+}
+
+NF_PYDIR="$(nf_realdir "${BASH_SOURCE[0]:-$0}")"
+
+NF_ROOT=""
+for k in NIGHTFLIGHT_PROJECT_DIR CLAUDE_PROJECT_DIR CODEX_PROJECT_DIR CURSOR_PROJECT_DIR PROJECT_ROOT; do
+  v="$(eval printf '%s' "\${$k:-}")"
+  [ -n "$v" ] && [ -d "$v" ] && NF_ROOT="$v" && break
+done
+[ -n "$NF_ROOT" ] || NF_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")"
+NF_STATE=""
+if [ -d "$NF_ROOT/.nightflight" ]; then NF_STATE="$NF_ROOT/.nightflight"
+elif [ -f "$NF_ROOT/.claude/ledger.tsv" ]; then NF_STATE="$NF_ROOT/.claude"
+fi
+[ -n "$NF_STATE" ] || NF_STATE="$NF_ROOT/.nightflight"
+NF_SYS="$NF_STATE/internal"
+NF_SYS_FILES="board.url board.sent board.page board.machine board.notified board.create_asked board_page.html redteam_suggested.tsv prescriptions_received.tsv new_product_notice.tsv corrected_lines.tsv import.tsv repeat-guard.tsv repeat-guard-said.tsv resources-said independent_checks.tsv independent_retro.done checks"
+_nf_plug="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")/.." 2>/dev/null && pwd -P)"
+[ -L "$NF_STATE" ] && rm -f "$NF_STATE" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더가 다른 곳을 가리키는 바로가기여서 걷었습니다(그 자리에 쓰게 될 수 있었습니다)." >&2
+if [ -d "$NF_STATE" ]; then
+  while IFS= read -r _nf_l; do
+    case "$_nf_l" in "$NF_STATE"/tools/*) continue ;; esac
+    case "$(readlink "$_nf_l" 2>/dev/null)" in "$_nf_plug"/*) continue ;; esac
+    _nf_t="$(readlink "$_nf_l" 2>/dev/null)"
+    case "$_nf_t" in ""|*/*|.|..) ;; *) [ -f "$(dirname "$_nf_l")/$_nf_t" ] && [ ! -L "$(dirname "$_nf_l")/$_nf_t" ] && continue ;; esac
+    rm -f "$_nf_l" 2>/dev/null && echo "  ⚠️ 야간비행: 기록 폴더 안의 바로가기를 걷었습니다(저장소 밖에 쓰게 될 수 있었습니다): ${_nf_l#"$NF_ROOT"/}" >&2
+  done < <(find "$NF_STATE" -maxdepth 2 -type l 2>/dev/null)
+  unset _nf_l _nf_t
+fi
+
+nf_registered_at() {
+  [ -n "${1:-}" ] || return 1
+  if [ -n "${NF_TEST_REG_BY_LEDGER:-}" ] && nf_dev 2>/dev/null; then
+    { [ -f "$1/.nightflight/ledger.tsv" ] || [ -f "$1/.claude/ledger.tsv" ]; } && return 0
+  fi
+  awk -F'\t' -v r="$1" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_HOME/people.tsv" 2>/dev/null
+}
+nf_conv_id() { printf '%s' "${NF_SESSION:-${CLAUDE_CODE_SESSION_ID:-}}" | tr -d '\t\r\n'; }
+nf_conv_ok_at() {
+  local f="$NF_HOME/conversations.tsv" s
+  [ -n "${1:-}" ] || return 1
+  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
+  s="$(nf_conv_id)"
+  [ -n "$s" ] || return 0
+  awk -F'\t' -v r="$1" -v s="$s" '$1==r&&($2=="*"||$2==s){f=1} END{exit !f}' "$f" 2>/dev/null
+}
+nf_conv_add() {
+  local f="$NF_HOME/conversations.tsv"
+  [ -n "${1:-}" ] && [ -n "${2:-}" ] || return 1
+  mkdir -p "$NF_HOME" 2>/dev/null
+  awk -F'\t' -v r="$1" -v s="$2" '$1==r&&$2==s{f=1} END{exit !f}' "$f" 2>/dev/null && return 0
+  printf '%s\t%s\n' "$1" "$2" >> "$f"
+}
+nf_conv_take_next() {
+  local s; s="$(nf_conv_id)"
+  [ -n "$s" ] || return 0
+  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null || return 0
+  nf_conv_drop_next "$1" && nf_conv_add "$1" "$s"
+}
+nf_conv_drop_next() {
+  local f="$NF_HOME/conversations.tsv"
+  awk -F'\t' -v r="${1:-}" '$1==r&&$2=="다음대화"{f=1} END{exit !f}' "$f" 2>/dev/null || return 0
+  awk -F'\t' -v r="$1" '!($1==r&&$2=="다음대화")' "$f" > "$f.$$" 2>/dev/null && mv -f "$f.$$" "$f"
+}
+nf_conv_scope() {
+  awk -F'\t' -v r="$1" '$1==r&&$2=="*"{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null && { echo 폴더; return; }
+  awk -F'\t' -v r="$1" '$1==r{f=1} END{exit !f}' "$NF_HOME/conversations.tsv" 2>/dev/null && { echo 대화; return; }
+  echo 폴더
+}
+nf_registered() { nf_registered_at "$NF_ROOT" && nf_conv_ok_at "$NF_ROOT"; }
+
+nf_productid() {
+  if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi
+  local p="$NF_HOME/people.tsv" f="$NF_ROOT/.nightflight-product" v w n ok='^[a-z0-9][a-z0-9.-]{1,154}$'
+  nf_registered || return 0
+  v="$(awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{v=$4} END{print v}' "$p" 2>/dev/null | tr -d '[:space:]')"
+  printf '%s' "$v" | grep -qE "$ok" || v=""
+  w=""
+  if [ -f "$f" ] && [ ! -L "$f" ]; then
+    w="$(head -c 160 "$f" 2>/dev/null | tr -d '[:space:]')"
+    printf '%s' "$w" | grep -qE "$ok" || w=""
+  fi
+  n="${w:-$v}"
+  if [ -z "$n" ]; then
+    n="p-$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n')"
+    [ "${#n}" -eq 18 ] || return 0
+  fi
+  if [ "$n" != "$v" ]; then
+    awk -F'\t' -v OFS='\t' -v r="$NF_ROOT" -v n="$n" '$2=="프로젝트"&&$3==r{$4=n; while (NF<6) $(NF+1)=""} {print}' "$p" > "$p.$$" 2>/dev/null \
+      && mv -f "$p.$$" "$p" || return 0
+  fi
+  if [ -z "$w" ] && [ ! -L "$f" ]; then
+    printf '%s\n' "$n" > "$f.$$" 2>/dev/null && mv -f "$f.$$" "$f" 2>/dev/null
+  fi
+  printf '%s' "$n"
+}
+
+NF_GI_MARK="야간비행이 더한 줄"
+NF_GI_MARK2="야간비행이 더한 줄 (2)"
+
+nf_not_product_root() {
+  local r="${1:-$NF_ROOT}"
+  case "$r" in
+    "$HOME"|"$HOME/"|"$HOME/Desktop"|"$HOME/Documents"|"$HOME/Downloads"|"$HOME/Library"|"$HOME/Library/"*|/|/tmp|/tmp/*|/private/tmp|/private/tmp/*) return 0 ;;
+  esac
+  [ -f "$r/.claude-plugin/plugin.json" ] && [ ! -f "$r/.nightflight-dev" ] && return 0
+  return 1
+}
+nf_state_make() {
+  mkdir -p "$NF_STATE" 2>/dev/null || return 1
+  if [ -f "$NF_ROOT/.claude-plugin/plugin.json" ] && [ -f "$NF_ROOT/.nightflight-dev" ] \
+     && grep -q '"name"[[:space:]]*:[[:space:]]*"nightflight"' "$NF_ROOT/.claude-plugin/plugin.json" 2>/dev/null; then
+    return 0
+  fi
+  if [ -e "$NF_STATE/.gitignore" ]; then
+    grep -qF "$NF_GI_MARK2" "$NF_STATE/.gitignore" 2>/dev/null && return 0
+  fi
+  case "$NF_STATE" in
+    */.claude) _nf_gi_name="record_dir_claude_gitignore.txt" ;;
+    *)         _nf_gi_name="record_dir_gitignore.txt" ;;
+  esac
+  for _nf_d in "${CLAUDE_PLUGIN_ROOT:-}/data" \
+               "${NF_PYDIR:-/nonexistent}/../data" \
+               "${NIGHTFLIGHT_PLUGIN:-/nonexistent}/data"; do
+    [ -f "$_nf_d/$_nf_gi_name" ] && _nf_gi="$_nf_d/$_nf_gi_name" && break
+  done
+  unset _nf_d
+  if [ -n "${_nf_gi:-}" ] && [ -f "$_nf_gi" ]; then
+    _nf_gi_body="$(cat "$_nf_gi")"
+  else
+    _nf_gi_body="$(printf '*\n!.gitignore\n')"
+  fi
+  _nf_gi_keep=""
+  if [ -e "$NF_STATE/.gitignore" ]; then
+    _nf_gi_keep="$(awk -v old="# ── $NF_GI_MARK " '
+      function ours(l) { return (l ~ /^[[:space:]]*$/ || l ~ /^#/ || l == "*" || l == "/*" || l ~ /^!/) }
+      { L[NR] = $0 }
+      END {
+        cut = NR + 1
+        for (i = 1; i <= NR; i++) if (index(L[i], old) == 1) { cut = i; break }
+        for (j = cut + 1; j <= NR; j++) if (!ours(L[j])) { cut = NR + 1; break }
+        if (index(L[1], "# 야간비행이 이 폴더에 적는 것은") == 1) {
+          all = 1; for (j = 1; j < cut; j++) if (!ours(L[j])) { all = 0; break }
+          if (all) cut = 1
+        }
+        for (i = 1; i < cut; i++) print L[i]
+      }' "$NF_STATE/.gitignore" 2>/dev/null)" || _nf_gi_keep=""
+  fi
+  if git -C "$NF_STATE" rev-parse --is-inside-work-tree >/dev/null 2>&1 && printf '%s' "$_nf_gi_body" | grep -q '^!'; then
+    if [ -n "$(printf '%s' "$_nf_gi_keep" | tr -d '[:space:]')" ]; then
+      printf '%s\n' "$_nf_gi_keep" > "$NF_STATE/.gitignore.nf$$" 2>/dev/null && mv -f "$NF_STATE/.gitignore.nf$$" "$NF_STATE/.gitignore" 2>/dev/null
+    else
+      rm -f "$NF_STATE/.gitignore" 2>/dev/null
+    fi
+    _nf_gi_body="$(printf '%s\n' "$_nf_gi_body" | while IFS= read -r _nf_l; do
+      if [[ "$_nf_l" == '!'* && "$_nf_l" != '!.gitignore' && "$_nf_l" != *'*'* ]] \
+         && git -C "$NF_STATE" check-ignore -q -- "${_nf_l#!}" 2>/dev/null; then
+        continue
+      fi
+      printf '%s\n' "$_nf_l"
+    done)"
+    unset _nf_l
+  fi
+  { if [ -n "$(printf '%s' "$_nf_gi_keep" | tr -d '[:space:]')" ]; then printf '%s\n\n' "$_nf_gi_keep"; fi
+    printf '# ── %s ── 시작\n%s\n# ── %s ── 끝\n' "$NF_GI_MARK2" "$_nf_gi_body" "$NF_GI_MARK2"
+  } > "$NF_STATE/.gitignore.nf$$" 2>/dev/null && mv -f "$NF_STATE/.gitignore.nf$$" "$NF_STATE/.gitignore" 2>/dev/null || true
+  unset _nf_gi_keep
+  unset _nf_gi _nf_gi_name _nf_gi_body
+  return 0
+}
+
+NF_HOME="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}"
+case "$NF_HOME" in /*) ;; *) NF_HOME="$HOME/.nightflight" ;; esac
+if [ -n "${NIGHTFLIGHT_HOME:-}" ] && [ -e "$NF_HOME" ] && [ ! -O "$NF_HOME" ]; then NF_HOME="$HOME/.nightflight"; fi
+nf_next_file() {
+  printf '%s/next_message/%s' "$NF_HOME" "$(cd "$NF_STATE" 2>/dev/null && pwd -P | shasum | cut -c1-16)"
+}
+nf_move_old_names() {
+  local d="$1"; shift
+  [ -d "$d" ] && [ -O "$d" ] || return 0
+  while [ $# -ge 2 ]; do
+    if [ -e "$d/$1" ] && [ ! -e "$d/$2" ] && [ ! -L "$d/$1" ]; then
+      if [ "$1" = 사람id ]; then cp -p "$d/$1" "$d/$2" 2>/dev/null || true
+      else mv "$d/$1" "$d/$2" 2>/dev/null && ln -s "$2" "$d/$1" 2>/dev/null || true; fi
+    fi
+    shift 2
+  done
+}
+nf_move_old_names "$NF_HOME" 사람.tsv people.tsv 대화.tsv conversations.tsv 사람id person_id 언어 language \
+  조종석동의 cockpit_consent 열쇠상태 license_state 앱표시켬 app_display_on 이용권.json license.json 이용권.새로 license.new \
+  무료끝남 free_ended 다음알림 next_notice 표시 marks 설치백업 install_backup 관문-기준값.tsv gate_thresholds.tsv \
+  기능안내.json feature_tips.json 느린값.json slow_values.json 최신판.txt latest_version.txt 한도.json quota.json \
+  기여.tsv contributions.tsv 다음말 next_message
+nf_move_old_names "$NF_HOME/marks" 서버점검필요 server_check_needed
+nf_fix_cockpit_pair() {
+  local o="$1/조종석.html" n="$1/cockpit.html"
+  [ -f "$o" ] && [ ! -L "$o" ] && [ -f "$n" ] && [ ! -L "$n" ] || return 0
+  if grep -qF '"__BOARD__"' "$n" 2>/dev/null; then rm -f "$n"
+  else rm -f "$o" && ln -s cockpit.html "$o" 2>/dev/null; fi
+  return 0
+}
+nf_fix_cockpit_pair "$NF_STATE"
+nf_move_old_names "$NF_STATE" 조종석.html cockpit.html 처방받음.tsv prescriptions_received.tsv 가져오기.tsv import.tsv \
+  레드팀권함.tsv redteam_suggested.tsv 새제품안내.tsv new_product_notice.tsv 바로잡은줄.tsv corrected_lines.tsv \
+  board.안내함 board.notified board.만들기 board.create_asked
+nf_to_internal() {
+  local d="$1" n o t l
+  [ -d "$d" ] || return 0
+  for n in $NF_SYS_FILES; do
+    o="$d/$n"; t="$d/internal/$n"
+    { [ -e "$o" ] && [ ! -L "$o" ]; } || continue
+    git -c core.fsmonitor=false -C "$d" ls-files --error-unmatch -- "$n" >/dev/null 2>&1 && continue
+    mkdir -p "$d/internal" 2>/dev/null || return 0
+    if [ "$n" = board.url ]; then [ -e "$t" ] || cp -p "$o" "$t" 2>/dev/null; continue; fi
+    if [ ! -e "$t" ]; then mv "$o" "$t" 2>/dev/null
+    elif [ -d "$o" ]; then cp -R "$o/." "$t/" 2>/dev/null && rm -rf "$o"
+    else case "$n" in *.tsv) cat "$o" >> "$t" 2>/dev/null && rm -f "$o" ;; *) if [ "$o" -nt "$t" ]; then mv -f "$o" "$t"; else rm -f "$o"; fi ;; esac
+    fi
+    for l in "$d"/*; do [ -L "$l" ] && [ "$(readlink "$l" 2>/dev/null)" = "$n" ] && rm -f "$l"; done
+  done
+  return 0
+}
+nf_to_internal "$NF_STATE"
+NF_PERSON="$NF_HOME/people.tsv"
+NF_PERSONFILE="$NF_HOME/person_id"
+export NF_ROOT NF_STATE NF_HOME NF_PERSON NF_PERSONFILE
+
+nf_dev() {
+  return 1
+}
+
+NF_BRAIN_BUILTIN="https://tmrivrgrtgsjevikwagr.supabase.co"
+NF_BRAIN_BASE="${NF_BRAIN_BASE:-$NF_BRAIN_BUILTIN}"
+if [ -n "${NF_BRAIN_ANON:-}" ] && ! nf_dev; then
+  case "$NF_BRAIN_ANON" in
+    sb_publishable_*) : ;;
+    eyJ*.*.*) : ;;
+    *) echo "  ⚠️ 저희 서버로 들어가는 열쇠가 이 컴퓨터 바깥에서 바뀌어 있어 **쓰지 않았습니다** — 원래 것으로 갑니다." >&2
+       unset NF_BRAIN_ANON ;;
+  esac
+fi
+NF_DOORKEY="${NF_BRAIN_ANON:-sb_publishable_4GO9uKMl-NyWnh42vAPHDQ_9NMZPGUO}"
+
+nf_addr_ok() {
+  case "${1:-}" in
+    https://*) ;;
+    http://*) nf_dev || return 1 ;;
+    *) return 1 ;;
+  esac
+  _nf_h="${1#*://}"; _nf_h="${_nf_h%%/*}"; _nf_h="${_nf_h%%\?*}"; _nf_h="${_nf_h%%\#*}"
+  _nf_h="$(printf '%s' "$_nf_h" | tr 'A-Z' 'a-z')"
+  case "$_nf_h" in
+    *[!a-z0-9.:-]*) return 1 ;;
+  esac
+  case "$_nf_h" in
+    127.0.0.1|127.0.0.1:*|localhost|localhost:*)
+      nf_dev && return 0 || return 1 ;;
+    *)
+      _nf_our="${NF_BRAIN_BUILTIN#*://}"; _nf_our="${_nf_our%%/*}"
+      _nf_our="$(printf '%s' "$_nf_our" | tr 'A-Z' 'a-z')"
+      if [ "$_nf_h" = "$_nf_our" ]; then
+        unset _nf_our; return 0
+      fi
+      unset _nf_our
+      case "$_nf_h" in
+        *.supabase.co) nf_dev && return 0 || return 1 ;;
+      esac
+      return 1 ;;
+  esac
+}
+
+if ! nf_addr_ok "$NF_BRAIN_BASE"; then
+  echo "  ⚠️ 저희 서버로 가는 주소가 이 컴퓨터 바깥에서 바뀌어 있어 **쓰지 않았습니다** — 본래 주소로 갑니다." >&2
+  NF_BRAIN_BASE="$NF_BRAIN_BUILTIN"
+fi
+if [ -n "${NF_BRAIN_URL:-}" ] && ! nf_addr_ok "$NF_BRAIN_URL"; then
+  echo "  ⚠️ 저희 서버로 가는 주소가 이 컴퓨터 바깥에서 바뀌어 있어 **쓰지 않았습니다** — 본래 주소로 갑니다." >&2
+  unset NF_BRAIN_URL
+fi
+if [ -n "${NF_CARRY_URL:-}" ] && ! nf_addr_ok "$NF_CARRY_URL"; then
+  echo "  ⚠️ 저희 서버로 가는 주소가 이 컴퓨터 바깥에서 바뀌어 있어 **쓰지 않았습니다** — 본래 주소로 갑니다." >&2
+  unset NF_CARRY_URL
+fi
+
+export NF_BRAIN_BASE NF_BRAIN_BUILTIN NF_DOORKEY
+
+nf_keyline() {
+  case "${1:-}" in
+    만료)
+      if [ "$(nf_lang)" = "en" ]; then
+        echo "Renewed? Say “Nightflight login” in this chat if this computer isn't connected yet."
+      else
+        echo "갱신하셨으면 바로 이어집니다. 이 컴퓨터가 아직 연결되지 않았으면 이 대화창에 «야간비행 로그인»이라고 말씀해 주십시오."
+      fi ;;
+    *)
+      if [ "$(nf_lang)" = "en" ]; then
+        echo "Bought a plan? Say “Nightflight login” in this chat to connect this computer."
+      else
+        echo "이용권을 사셨으면 이 대화창에 «야간비행 로그인»이라고 말씀해 주십시오. 이 컴퓨터가 계정에 연결됩니다."
+      fi ;;
+  esac
+}
+
+nf_ckey() {
+  local f="${NF_HOME:-$HOME/.nightflight}/account/key" k
+  [ -f "$f" ] && [ ! -L "$f" ] || return 0
+  k="$(head -c 64 "$f" 2>/dev/null | tr -d '[:space:]')"
+  [[ "$k" =~ ^[A-Za-z0-9_-]{43}$ ]] && printf '%s' "$k"
+  return 0
+}
+
+nf_personid() {
+  mkdir -p "$NF_HOME" 2>/dev/null
+  chmod 700 "$NF_HOME" 2>/dev/null || true
+  if [ -L "$NF_PERSONFILE" ] || { [ -e "$NF_PERSONFILE" ] && [ ! -O "$NF_PERSONFILE" ]; }; then
+    rm -f "$NF_PERSONFILE" 2>/dev/null || { echo "  ⛔ 이 컴퓨터의 야간비행 사람 번호 파일이 다른 계정 것입니다: $NF_PERSONFILE" >&2; return 1; }
+  fi
+  if [ ! -s "$NF_PERSONFILE" ]; then
+    (uuidgen 2>/dev/null || python3 -I -c "import uuid; print(uuid.uuid4())") \
+      | tr 'A-Z' 'a-z' > "$NF_PERSONFILE"
+  fi
+  chmod 600 "$NF_PERSONFILE" 2>/dev/null || true
+  cat "$NF_PERSONFILE"
+}
+
+NF_LANG_SEEN=""
+nf_lang() {
+  if [ -n "$NF_LANG_SEEN" ]; then printf '%s' "$NF_LANG_SEEN"; return 0; fi
+  case "${NF_LANG:-}" in
+    ko|en) NF_LANG_SEEN="$NF_LANG"; printf '%s' "$NF_LANG_SEEN"; return 0 ;;
+  esac
+  _nf_l=""
+  if [ "$(uname -s 2>/dev/null)" = "Darwin" ]; then
+    _nf_l="$(defaults read -g AppleLanguages 2>/dev/null | tr -d ' "()' | tr -d "\n" | cut -d, -f1)"
+  fi
+  [ -n "$_nf_l" ] || _nf_l="${NF_LC_WAS:-${LC_ALL:-${LC_MESSAGES:-${LANG:-}}}}"
+  case "$_nf_l" in
+    ko|ko[-_]*|Korean*) NF_LANG_SEEN="ko" ;;
+    "")                 NF_LANG_SEEN="en" ;;
+    *)                  NF_LANG_SEEN="en" ;;
+  esac
+  printf '%s' "$NF_LANG_SEEN"
+}
+
+nf_say() {
+  NFL="$(nf_lang)" python3 -I - "${1:-}" "${2:-말}" <<'PYSAY' 2>/dev/null
+import json, os, sys
+try:
+    d = json.loads(sys.argv[1] or "{}") or {}
+except Exception:
+    d = {}
+칸 = sys.argv[2] if len(sys.argv) > 2 and sys.argv[2] else "말"
+글 = d.get(칸) or ""
+if os.environ.get("NFL") == "en":
+    글 = d.get(칸 + "_en") or 글
+print(글)
+PYSAY
+}
+
+nf_plan() {
+  case "$(nf_lang)/${1:-}" in
+    ko/라이트) printf '라이트 플랜' ;;
+    ko/헤비)   printf '플러스 플랜' ;;
+    ko/무제한) printf '맥스 플랜' ;;
+    en/라이트) printf 'Lite plan' ;;
+    en/헤비)   printf 'Plus plan' ;;
+    en/무제한) printf 'Max plan' ;;
+    *)         printf '%s' "${1:-}" ;;
+  esac
+}
+
+nf_macprint() {
+  if nf_dev && [ -n "${NF_MACPRINT:-}" ]; then
+    printf '%s' "$NF_MACPRINT"; return
+  fi
+  local u=""
+  case "$(uname -s 2>/dev/null)" in
+    Darwin)
+      u="$(ioreg -rd1 -c IOPlatformExpertDevice 2>/dev/null | awk -F'"' '/IOPlatformUUID/{print $4; exit}')" ;;
+    Linux)
+      [ -r /etc/machine-id ] && u="$(cat /etc/machine-id 2>/dev/null)"
+      [ -n "$u" ] || { [ -r /var/lib/dbus/machine-id ] && u="$(cat /var/lib/dbus/machine-id 2>/dev/null)"; } ;;
+    MINGW*|MSYS*|CYGWIN*)
+      u="$(reg.exe query 'HKLM\SOFTWARE\Microsoft\Cryptography' //v MachineGuid 2>/dev/null \
+           | awk '/MachineGuid/{print $NF; exit}' | tr -d '\r')" ;;
+  esac
+  u="$(printf '%s' "$u" | tr -d '[:space:]')"
+  [ -n "$u" ] || return 0
+  printf '야간비행:%s' "$u" | { shasum -a 256 2>/dev/null || sha256sum 2>/dev/null || openssl dgst -sha256 -r 2>/dev/null; } | awk '{print $1}'
+}
+
+nf_bundleid() {
+  if nf_dev 2>/dev/null && [ -n "${NF_BUNDLEID+x}" ]; then printf '%s' "$NF_BUNDLEID"; return; fi
+  local root="${NF_ROOT:-$PWD}" id
+  id="$(find "$root" -maxdepth 4 -name project.pbxproj -not -path '*/Pods/*' -not -path '*/node_modules/*' 2>/dev/null \
+    | head -5 \
+    | xargs -I{} grep -h 'PRODUCT_BUNDLE_IDENTIFIER = ' {} 2>/dev/null \
+    | sed -E 's/.*PRODUCT_BUNDLE_IDENTIFIER = "?([^";]*)"?;.*/\1/' \
+    | grep -v -E '\$|Tests$|UITests$' \
+    | awk '{ print length($0) "\t" $0 }' | sort -n | head -1 | cut -f2 \
+    | tr 'A-Z' 'a-z')"
+  if [ -n "$id" ]; then printf '%s' "$id"; return; fi
+  id="$(find "$root" -maxdepth 4 \( -name build.gradle -o -name build.gradle.kts \) -not -path '*/node_modules/*' 2>/dev/null \
+    | head -5 \
+    | xargs -I{} grep -h -E '^[[:space:]]*applicationId[[:space:]=]+"[A-Za-z0-9_.]+"' {} 2>/dev/null \
+    | sed -E 's/.*"([A-Za-z0-9_.]+)".*/\1/' \
+    | awk '{ print length($0) "\t" $0 }' | sort -n | head -1 | cut -f2 \
+    | tr 'A-Z_' 'a-z-')"
+  if [ -n "$id" ]; then printf '%s' "$id"; return; fi
+  local pj
+  pj="$(find "$root" -maxdepth 3 -name package.json -not -path '*/node_modules/*' 2>/dev/null \
+    | awk -F/ '{ print NF "\t" $0 }' | sort -n | head -1 | cut -f2-)"
+  [ -n "$pj" ] || return 0
+  python3 -I - "$pj" <<'EOPY' 2>/dev/null
+import json, os, re, sys
+p = sys.argv[1]
+기본 = {"my-app", "my-project", "my-v0-project", "vite-project", "vite-react-typescript-starter",
+        "react-app", "my-react-app", "next-app", "my-next-app", "nextjs", "svelte-app", "sveltekit",
+        "astro", "nuxt-app", "app", "web", "website", "site", "frontend", "client", "project",
+        "demo", "test", "untitled", "workspace", "monorepo", "root"}
+def 다듬(x):
+    x = re.sub(r"[^a-z0-9.-]+", "-", (x or "").lower()).strip(".-")
+    return x[:150]
+try:
+    이름 = str(json.load(open(p, encoding="utf-8")).get("name") or "")
+except Exception:
+    이름 = ""
+이름 = 다듬(이름.split("/")[-1] if 이름.startswith("@") else 이름)
+if not 이름 or 이름 in 기본:
+    이름 = 다듬(os.path.basename(os.path.dirname(os.path.abspath(p))))
+if len(이름) >= 1:
+    print("web." + 이름, end="")
+EOPY
+}

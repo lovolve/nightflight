@@ -1,0 +1,159 @@
+"""프로젝트 루트와 기록 자리를 «도구와 무관하게» 찾는다."""
+import json
+import os
+import subprocess
+from pathlib import Path
+
+_ENV = ("NIGHTFLIGHT_PROJECT_DIR",
+        "CLAUDE_PROJECT_DIR",
+        "CODEX_PROJECT_DIR",
+        "CURSOR_PROJECT_DIR",
+        "PROJECT_ROOT")
+
+_DIRS = (".nightflight", ".claude")
+
+
+def root() -> Path:
+    for k in _ENV:
+        v = os.environ.get(k)
+        if v and Path(v).is_dir():
+            return Path(v).resolve()
+    try:
+        out = subprocess.run(["git", "-c", "core.fsmonitor=false", "rev-parse", "--show-toplevel"],
+                             capture_output=True, text=True, timeout=3)
+        if out.returncode == 0 and out.stdout.strip():
+            return Path(out.stdout.strip()).resolve()
+    except Exception:
+        pass
+    return Path.cwd().resolve()
+
+
+_표식 = "야간비행이 더한 줄"
+_표식2 = "야간비행이 더한 줄 (2)"
+
+
+def _우리줄(l: str) -> bool:
+    s = l.strip()
+    return s == "" or s.startswith("#") or s in ("*", "/*") or s.startswith("!")
+
+
+def _우리것걷기(기존: str) -> str:
+    줄 = 기존.split("\n")
+    자름 = len(줄)
+    for i, l in enumerate(줄):
+        if l.startswith("# \u2500\u2500 " + _표식 + " "):
+            자름 = i
+            break
+    if not all(_우리줄(l) for l in 줄[자름 + 1:]):
+        자름 = len(줄)
+    if 줄 and 줄[0].startswith("# 야간비행이 이 폴더에 적는 것은") and all(_우리줄(l) for l in 줄[:자름]):
+        자름 = 0
+    return "\n".join(줄[:자름]).rstrip("\n")
+
+
+def _링크걷기(집: Path) -> None:
+    import os
+    plug = str(Path(__file__).resolve().parent.parent)
+    try:
+        if 집.is_symlink():
+            집.unlink()
+            return
+        for 첫 in list(집.iterdir()):
+            후보 = [첫] + (list(첫.iterdir()) if 첫.is_dir() and not 첫.is_symlink() else [])
+            for l in 후보:
+                if not l.is_symlink() or l.parent.name == "tools" and l.parent.parent == 집:
+                    continue
+                t = os.readlink(l)
+                if t.startswith(plug + os.sep):
+                    continue
+                if t not in ("", ".", "..") and "/" not in t and (l.parent / t).is_file() and not (l.parent / t).is_symlink():
+                    continue
+                l.unlink()
+    except OSError:
+        pass
+
+
+SYS = "internal"
+
+
+def sys_path(state, name: str, read: bool = False) -> Path:
+    새 = Path(state) / SYS / name
+    if read:
+        옛 = Path(state) / name
+        return 새 if 새.exists() or not 옛.exists() else 옛
+    새.parent.mkdir(parents=True, exist_ok=True)
+    return 새
+
+
+def state_dir(create: bool = False) -> Path:
+    r = root()
+    for d in _DIRS:
+        p = r / d
+        if p.is_dir() and (d != ".claude" or (p / "ledger.tsv").is_file()):
+            _링크걷기(p)
+            if p.is_dir():
+                return p
+    p = r / _DIRS[0]
+    if create:
+        p.mkdir(parents=True, exist_ok=True)
+        _git에서뺀다(p)
+    return p
+
+
+def _git에서뺀다(집: Path) -> None:
+    글 = 집.parent / ".claude-plugin" / "plugin.json"
+    if 글.is_file() and False:
+        try:
+            if json.loads(글.read_text(encoding="utf-8")).get("name") == "nightflight":
+                return
+        except (OSError, ValueError):
+            pass
+    길 = 집 / ".gitignore"
+    기존 = ""
+    if 길.exists():
+        try:
+            기존 = 길.read_text(encoding="utf-8")
+        except OSError:
+            return
+        if _표식2 in 기존:
+            return
+    이름 = "record_dir_claude_gitignore.txt" if 집.name == ".claude" else "record_dir_gitignore.txt"
+    본문 = "*\n!.gitignore\n"
+    자료 = Path(__file__).resolve().parent.parent / "data" / 이름
+    try:
+        if 자료.is_file():
+            본문 = 자료.read_text(encoding="utf-8")
+        남김 = _우리것걷기(기존) if 기존 else ""
+        본문 = _손님이뺀것은안살림(집, 길, 남김, 본문)
+        덩어리 = "# \u2500\u2500 %s \u2500\u2500 시작\n%s\n# \u2500\u2500 %s \u2500\u2500 끝\n" % (_표식2, 본문.rstrip("\n"), _표식2)
+        길.write_text((남김 + "\n\n" if 남김.strip() else "") + 덩어리, encoding="utf-8")
+    except OSError:
+        pass
+
+
+def _손님이뺀것은안살림(집: Path, 길: Path, 남김: str, 본문: str) -> str:
+    줄들 = 본문.splitlines()
+    if not any(x.startswith("!") for x in 줄들):
+        return 본문
+    try:
+        if subprocess.run(["git", "-c", "core.fsmonitor=false", "-C", str(집), "rev-parse", "--is-inside-work-tree"],
+                          capture_output=True, timeout=10).returncode != 0:
+            return 본문
+        if 남김.strip():
+            길.write_text(남김 + "\n", encoding="utf-8")
+        elif 길.exists():
+            길.unlink()
+        남는 = []
+        for x in 줄들:
+            if x.startswith("!") and x != "!.gitignore" and "*" not in x:
+                if subprocess.run(["git", "-c", "core.fsmonitor=false", "-C", str(집), "check-ignore", "-q", "--", x[1:]],
+                                  capture_output=True, timeout=10).returncode == 0:
+                    continue
+            남는.append(x)
+        return "\n".join(남는) + "\n"
+    except (OSError, subprocess.SubprocessError):
+        return 본문
+
+
+def ledger() -> Path:
+    return state_dir() / "ledger.tsv"
