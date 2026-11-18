@@ -381,10 +381,36 @@ if _sc0.get("보일까"):
     say("🔌 **앱스토어 연결이 아직 없습니다**(%s) — 출시 때 스토어 정보 · 사진 · 심사 메모를 AI가 대신 넣으려면 먼저 연결해야 합니다." % 적음(_sc0.get("애플", ""), 20))
     say("   [모델] 사용자 첫 말에 답한 뒤 «앱스토어 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 %s 준비 를 불러" % os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "asc.py") + " 나온 차례를 하나씩 안내하십시오.")
     say()
-if _sc0.get("구글보일까"):
+if _sc0.get("구글보일까") and str(_sc0.get("구글", "")).startswith("받아 둔"):
+    say("🔌 **구글 플레이 연결 열쇠를 이미 받아 두셨습니다** — 새로 만들지 마십시오. 연결 자리로 옮기기만 하면 됩니다.")
+    say("   [모델] %s 준비 를 불러 찾은 파일을 사용자께 보여 드리고, 고르시면 --옮기기 로 옮기십시오." % os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "gplay.py"))
+    say()
+elif _sc0.get("구글보일까"):
     say("🔌 **구글 플레이 연결이 아직 없습니다** — 출시 때 스토어 정보를 AI가 대신 넣으려면 먼저 연결해야 합니다.")
     say("   [모델] «구글 플레이 연결을 미리 해 둘까요?»를 여쭙고, 좋다고 하시면 %s 준비 를 불러" % os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools", "gplay.py") + " 나온 차례를 하나씩 안내하십시오.")
     say()
+
+try:
+    sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+    import facts as _facts
+    _사실표 = _facts.표()
+    _사실잰 = _facts.잰값들()
+    if _사실표:
+        say("📏 **재고 말할 사실** — 아래는 기억 · 기록으로 단정하지 말고 그때 재서 말하십시오(못 재면 «확인 못 했습니다»):")
+        for _f in _사실표:
+            _v = _사실잰.get(_f["이름"])
+            if _v:
+                _날, _값, _근, _지, _오래 = _v
+                say("   · %s%s: %s (%s · %d일 전%s)" % (_f["이름"], " (이 앱)" if _f.get("출처") == "이 앱" else "", 적음(_값, 40), _날, _지, " · 오래됨 — 다시 재기 전에는 모름" if _오래 else ""))
+            else:
+                say("   · %s%s: 잰 적 없음 — 모름" % (_f["이름"], " (이 앱)" if _f.get("출처") == "이 앱" else ""))
+        say("   [모델] 재는 법은 data/facts.tsv 의 «재는법» 칸에 있습니다. 답 끝 검사가 잰 흔적 없이 단정한 말을 짚습니다.")
+        _사실후보 = _facts.공용후보()
+        if _사실후보:
+            say("   [모델] 여러 앱의 사실 표에 같은 사실이 있습니다(공용 표로 옮길 후보): %s" % " · ".join("%s(앱 %d곳)" % (적음(n, 30), k) for n, k in _사실후보[:5]))
+        say()
+except Exception:
+    pass
 
 if isinstance((now or {}).get("단계끝"), dict) and (now or {}).get("단계끝", {}).get("단계") in (5, 6, 7, 8):
     try:

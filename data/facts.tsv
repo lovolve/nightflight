@@ -1,0 +1,7 @@
+# RULE-0: 사용자 문구 칸 = 1
+
+출시 여부	출시 전|출시하지 않|출시 안 |아직 출시|출시됐|출시되었|출시되어|출시했|출시함|스토어에 나가 있|심사 중입니다|심사 중이|정식 트랙|프로덕션에	gplay\.py["']?\s+출시상태|asc\.py["']?\s+(출시상태|status)	gplay.py 출시상태 · asc.py 출시상태 로 스토어에 직접 묻는다. 기록 · 기억 · 커밋 글로 말하지 않는다	7	플랫폼 has iPhone|플랫폼 has 안드로이드
+구글 플레이 연결 열쇠	(구글|플레이|서비스 계정).{0,30}(열쇠|키).{0,20}(없습니다|없어|아직|만드|만들|받아야)	gplay\.py["']?\s+준비|\.googleplay|Downloads.*\.json	gplay.py 준비 — 연결 자리에 없으면 내려받기 · 바탕화면에 받아 둔 열쇠를 먼저 찾는다	30	플랫폼 has 안드로이드
+앱스토어 연결 열쇠	(앱스토어|애플|App Store Connect).{0,30}(열쇠|키).{0,20}(없습니다|없어|아직|만드|만들|받아야)	asc\.py["']?\s+준비|appstoreconnect|AuthKey_	asc.py 준비 — 찾아본 자리를 모두 보여 준다. 내려받기 폴더의 AuthKey_ 파일도 본다	30	플랫폼 has iPhone
+서버에 올라간 판	(서버|서버 기능|함수).{0,20}(배포 안|배포되지 않|올라가 있지 않|아직 안 올라|옛 판|예전 판)	functions (list|deploy)|list_edge_functions|get_edge_function|deploy_edge_function	서버 기능 목록을 직접 묻는다(supabase functions list 또는 서버 연결 도구). 코드 폴더만 보고 말하지 않는다	3	파일:supabase/functions
+앱 안 결제 상품	(결제 상품|구독 상품|앱 안 상품|인앱 상품).{0,20}(없습니다|아직|등록 안|등록되지 않|만들어야|있습니다|등록돼)	asc\.py["']?\s+iap|inappproducts|monetization|subscriptions	asc.py iap list 로 앱스토어에 묻는다. 구글 플레이는 Play Console «수익 창출» 화면을 사용자께 확인받는다	7	돈받기=앱안에서

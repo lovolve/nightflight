@@ -59,6 +59,14 @@ def _구글() -> str:
             continue
         if j.get("type") == "service_account" and j.get("private_key"):
             return "연결됨"
+    try:
+        import importlib.util as _u
+        _s = _u.spec_from_file_location("_gplay", str(Path(__file__).resolve().parent / "gplay.py"))
+        _g = _u.module_from_spec(_s); _s.loader.exec_module(_g)
+        if _g._받아둔열쇠():
+            return "받아 둔 열쇠 있음 — 옮기면 연결됩니다"
+    except Exception:
+        pass
     return "연결 안 됨"
 
 

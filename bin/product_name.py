@@ -31,7 +31,7 @@ def 보임(번호, 표, en=False):
         return "no app id" if en else "앱 번호를 못 읽은 제품"
     if 번호 in 표:
         return "%s (%s)" % (표[번호], 번호)
-    return ("A product registered on another computer (%s)" if en else "다른 컴퓨터에서 등록한 제품(%s)") % 번호
+    return ("A product with no name on this computer (%s)" if en else "이 컴퓨터에 이름이 없는 제품(%s)") % 번호
 
 
 def main():

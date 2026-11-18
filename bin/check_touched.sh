@@ -111,6 +111,7 @@ run_one lint_table_grants.py     "새 표에 누가 읽고 쓸 수 있는지 적
 run_one lint_citations.py        "규정을 인용한 자리에 확인 표지가 있나"            -
 run_one lint_user_facing.py     "사용자에게 보이는 문구에 개발 용어가 있나"
 run_one lint_handoff_claim.py    "「사용자가 하셔야」라고 하면서 눌러는 봤나"   -
+run_one lint_fact_claim.py       "상태를 재지 않고 단정했나"   -
 run_one lint_decision_words.py   "결정을 묻는 글에 개발 용어가 있나"   -
 run_one lint_done_evidence.py    "«완료»의 확인 방법대로 실제로 돌렸나"   -
 run_one lint_dead_functions.py    "웹 화면에 아무도 부르지 않는 함수가 있나"

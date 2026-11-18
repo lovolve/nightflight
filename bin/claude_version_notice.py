@@ -50,6 +50,11 @@ def 영어인가():
         return False
 
 
+def 받침있나(낱말: str) -> bool:
+    끝 = (낱말 or " ")[-1]
+    return "가" <= 끝 <= "힣" and (ord(끝) - 0xAC00) % 28 != 0
+
+
 def main():
     try:
         _입력 = json.load(sys.stdin) or {}
@@ -81,9 +86,10 @@ def main():
         모델 = f"Nightflight: this Claude Code is {지금글}; {이름} needs {최소글}+. If the user asks why it is missing, say this and how to update."
     else:
         이름 = " · ".join(ko for ko, _, _ in 모자람)
+        이가, 은는 = ("이", "은") if 받침있나(이름) else ("가", "는")
         할일 = "클로드 앱을 업데이트하십시오." if 앱 else "터미널에서 `claude update` 를 실행하십시오."
-        사람 = f"⚠️ 이 클로드 코드는 {지금글} 판이라 야간비행 {이름}이 나오지 않습니다. {최소글} 판 이상이 필요합니다. {할일}"
-        모델 = f"야간비행: 이 클로드 코드는 {지금글} 판이고 {이름}은 {최소글} 판 이상에서 돕니다. 사용자가 왜 안 나오는지 물으면 이 까닭과 업데이트 방법을 말하십시오."
+        사람 = f"⚠️ 이 클로드 코드는 {지금글} 판이라 야간비행 {이름}{이가} 나오지 않습니다. {최소글} 판 이상이 필요합니다. {할일}"
+        모델 = f"야간비행: 이 클로드 코드는 {지금글} 판이고 {이름}{은는} {최소글} 판 이상에서 돕니다. 사용자가 왜 안 나오는지 물으면 이 까닭과 업데이트 방법을 말하십시오."
     print(json.dumps({"systemMessage": 사람,
                       "hookSpecificOutput": {"hookEventName": "SessionStart", "additionalContext": 모델}},
                      ensure_ascii=False))

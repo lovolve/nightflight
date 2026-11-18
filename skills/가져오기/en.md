@@ -38,7 +38,7 @@ Text values you pass to `ledger.sh` commands (names, notes, evidence, screen wor
 | Decisions | Decisions written in documents or commit messages | `ledger.sh 결정 ...`: use exactly the form in "A decision has five fields and three markers" below |
 | How it is built | The way the code does things (payment, login, storage) | `ledger.sh 표준 "<method>" "<file>" 코드 "<feature>" "<tool combination>" "<failure cases the code handles>"` (`표준` = standard). If the code has no failure handling, write `없음: no handling in code`. A rule that spans several features goes to `ledger.sh 배운것` (`배운것` = lesson learned). |
 | Launch procedure questions | Payment, login, platform code | `ledger.sh 앱설정 <platform, payments, or feature> "<value>" 코드` |
-| Launch status | Store address, release commit, review email | `ledger.sh 앱설정 출시상태 "<not yet released, in review, or released — with evidence>" 코드` (`출시상태` = launch status) |
+| Launch status | **Ask the store first**: `tools/gplay.py 출시상태` · `tools/asc.py 출시상태` (when a store connection key exists). Only without a key: store address, release commit, review email | `ledger.sh 앱설정 출시상태 "<not yet released, in review, or released — with evidence>" 코드` (`출시상태` = launch status) — if you could not ask the store, write "could not ask the store" in the evidence |
 | Documents read | README, CLAUDE.md, AGENTS.md, docs/ | `ledger.sh 앱설정 읽은문서 "<document names — n decisions per document>" 코드` (`읽은문서` = documents read). Decisions found in the documents you read go into the Decisions field. |
 
 ### Shape of the commands: what to know before they are rejected

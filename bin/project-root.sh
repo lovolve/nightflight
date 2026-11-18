@@ -58,7 +58,15 @@ for k in NIGHTFLIGHT_PROJECT_DIR CLAUDE_PROJECT_DIR CODEX_PROJECT_DIR CURSOR_PRO
   v="$(eval printf '%s' "\${$k:-}")"
   [ -n "$v" ] && [ -d "$v" ] && NF_ROOT="$v" && break
 done
-[ -n "$NF_ROOT" ] || NF_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")"
+if [ -z "$NF_ROOT" ]; then
+  _nf_gt="$(git rev-parse --show-toplevel 2>/dev/null)"
+  _nf_hm="$(cd "$HOME" 2>/dev/null && pwd -P)"; _nf_hm="${_nf_hm:-$HOME}"
+  case "$_nf_gt" in
+    ""|/|"$_nf_hm"|"$_nf_hm/Desktop"|"$_nf_hm/Documents"|"$_nf_hm/Downloads"|"$_nf_hm/Library"|"$_nf_hm/Library/Mobile Documents/com~apple~CloudDocs"|"$_nf_hm/Library/Mobile Documents/com~apple~CloudDocs/Desktop"|"$_nf_hm/Library/Mobile Documents/com~apple~CloudDocs/Documents") NF_ROOT="$PWD" ;;
+    *) NF_ROOT="$_nf_gt" ;;
+  esac
+  unset _nf_gt _nf_hm
+fi
 _nf_ppl="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/people.tsv"
 if [ -f "$_nf_ppl" ] && ! awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$_nf_ppl" 2>/dev/null; then
   _nf_r1="$(cd "$NF_ROOT" 2>/dev/null && pwd -P)"

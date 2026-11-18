@@ -44,6 +44,7 @@ Google Play works the same way: `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 준비`.
 ## Do not do these in this stage
 
 1. "Upload" and "it arrived" are two steps. Combine them and a false success slips through.
+   The reverse is also true. An app that was already live was once reported as "not yet released". Do not state launch status from records or memory. Measure it at that moment with `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 출시상태` · `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" 출시상태`. The list of facts to measure is `data/facts.tsv`.
 2. Never perform an action that reaches the outside world yourself (uploading, submitting, publishing, sending). The user presses that button.
 3. Do not show the rejection text as it is. Explain what the problem is and what to fix.
 4. Do not invent day counts. State a review duration only from what the gate has confirmed against the original source.

@@ -12,6 +12,8 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN=""
 _nf_cwd="$(printf '%s' "$IN" | python3 -I "$HERE/cockpit_next_message.py" --폴더 2>/dev/null)"
 [ -n "$_nf_cwd" ] && export NIGHTFLIGHT_PROJECT_DIR="$_nf_cwd"
+_nf_sid="$(printf '%s' "$IN" | python3 -I "$HERE/cockpit_next_message.py" --대화 2>/dev/null)"
+[ -n "$_nf_sid" ] && export NF_SESSION="$_nf_sid"
 . "$HERE/project-root.sh" 2>/dev/null || exit 0
 nf_registered 2>/dev/null || exit 0
 _nf_f="$(nf_next_file)"

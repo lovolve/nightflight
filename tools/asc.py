@@ -12,6 +12,7 @@
 
   준비 [--issuer <발급자ID>]      처음 켜기 — 열쇠 만드는 차례 안내 · 설정 파일을 대신 만들고 붙는지 확인
   status                         버전·빌드·구독·제출 상태 한 화면
+  출시상태                        앱스토어에 지금 나가 있는지 잰다
   meta [set <언어> <칸> <값> --confirm]          스토어 정보(설명문·키워드·부제·지원 주소·개인정보 주소…) 보기 · 바꾸기
   review-notes [set <메모> --confirm]            심사 메모 보기 · 바꾸기
   screenshots [upload <언어> <사진…> --confirm]  스토어 사진 보기 · 올리기
@@ -252,6 +253,35 @@ def cmd_status(app: str):
         print("== 제출 ==")
         for s in sub["data"]:
             print(f"  {s['attributes'].get('state')}  {s['attributes'].get('submittedDate','')}")
+
+
+def 출시판정(versions: list) -> tuple:
+    def st(a):
+        return a.get("appStoreState") or a.get("appVersionState") or ""
+    나감 = ("READY_FOR_SALE", "READY_FOR_DISTRIBUTION", "PROCESSING_FOR_DISTRIBUTION", "REPLACED_WITH_NEW_VERSION")
+    심사 = ("WAITING_FOR_REVIEW", "IN_REVIEW", "PENDING_DEVELOPER_RELEASE", "PENDING_APPLE_RELEASE", "ACCEPTED")
+    for a in versions:
+        if st(a) in 나감:
+            return "출시함", f"앱스토어 {a.get('versionString', '?')} ({st(a)})"
+    for a in versions:
+        if st(a) in 심사:
+            return "심사 중", f"앱스토어 {a.get('versionString', '?')} ({st(a)})"
+    return "출시 전", "앱스토어에 나간 판이 없음"
+
+
+def cmd_출시상태(app: str):
+    vs = req("GET", f"/v1/apps/{app}/appStoreVersions?limit=10&fields[appStoreVersions]=versionString,appStoreState,appVersionState")
+    at = [v["attributes"] for v in vs.get("data", [])]
+    for a in at:
+        print(f"  {a.get('versionString', '?'):10s} {a.get('appStoreState') or a.get('appVersionState')}")
+    판, 근거 = 출시판정(at)
+    print(f"출시 상태: {판} — {근거} (잰 날 {time.strftime('%Y-%m-%d')})")
+    try:
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import facts
+        facts.적기("출시 여부", 판, f"{근거} · 앱 번호 {app}")
+    except Exception:
+        pass
 
 
 고칠수있는판 = ("PREPARE_FOR_SUBMISSION", "DEVELOPER_REJECTED", "REJECTED", "METADATA_REJECTED", "INVALID_BINARY")
@@ -568,6 +598,8 @@ def main():
         cmd_준비(rest)
     elif cmd == "status":
         cmd_status(app_id(args))
+    elif cmd == "출시상태":
+        cmd_출시상태(app_id(args))
     elif cmd == "meta":
         cmd_meta(app_id(args), [a for a in rest if a != "--confirm"])
     elif cmd == "review-notes":

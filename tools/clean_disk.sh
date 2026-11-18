@@ -9,7 +9,6 @@ export NF_LC_WAS
 LC_ALL=C; export LC_ALL
 set -e
 
-KEEP_DAYS="${CLEAN_KEEP_DAYS:-30}"
 APPLY=0
 [ "${1:-}" = "--apply" ] && APPLY=1
 [ "${1:-}" = "--list" ] && APPLY=0
@@ -17,11 +16,34 @@ APPLY=0
 die() { echo "⛔ $*" >&2; exit 1; }
 [ "$(uname)" = "Darwin" ] || die "맥에서만 돈다."
 
+_me="${BASH_SOURCE[0]}"; _i=0
+while [ -L "$_me" ] && [ "$_i" -lt 20 ]; do
+  _t="$(readlink "$_me")"; case "$_t" in /*) _me="$_t" ;; *) _me="$(cd "$(dirname "$_me")" && pwd -P)/$_t" ;; esac
+  _i=$((_i+1))
+done
+TABLE="${CLEAN_TABLE:-$(cd "$(dirname "$_me")/.." 2>/dev/null && pwd -P)/data/cleanup_disk.tsv}"
+unset _me _i _t
+[ -f "$TABLE" ] || die "정리 기준표가 없습니다 — 아무것도 지우지 않습니다: $TABLE"
+
+rows() {
+  local g p c w e
+  while IFS="$(printf '\t')" read -r g p c w e; do
+    case "$g" in ""|"#"*) continue ;; esac
+    [ "$g" = "$1" ] || continue
+    p="${p/#\~/$HOME}"
+    printf '%s\t%s\t%s\t%s\n' "$p" "$c" "$w" "$e"
+  done < "$TABLE"
+}
+DENY_LIST="$(rows 금지 | cut -f1)"
+ALLOW_LIST="$( { rows 지움; rows 조건; } | cut -f1 | sed 's|/\*$||')"
+
 FREED=0
 WOULD=0
 FAILED=0
+COVERED=""
 
 rec() {
+  [ -n "${CLEAN_NO_RECORD:-}" ] && return 0
   local SELF="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
   local L="$(cd "$(dirname "$SELF")/../bin" 2>/dev/null && pwd)/ledger.sh"
   [ -x "$L" ] || return 0
@@ -37,25 +59,40 @@ bytes() {
 human() { awk -v b="$1" 'BEGIN{ s="B KB MB GB TB"; split(s,u," "); i=1;
   while (b>=1024 && i<5) { b/=1024; i++ } printf (i==1?"%d%s":"%.1f%s"), b, u[i] }'; }
 
+under_any() {
+  local p="$1" x
+  while IFS= read -r x; do
+    [ -n "$x" ] || continue
+    case "$p" in "$x"|"$x"/*) return 0 ;; esac
+  done <<EOF2
+$2
+EOF2
+  return 1
+}
+
+CACHE_DIRS="Cache|Code Cache|GPUCache|Service Worker|DawnWebGPUCache|DawnGraphiteCache|Shared Dictionary|CachedData"
+
 ok_to_delete() {
   local p="$1"
   case "$p" in
     ""|"/"|"$HOME"|"$HOME/") return 1 ;;
     *..*) return 1 ;;
-  esac
-  case "$p" in
-    "$HOME/Library/Caches/"?*) ;;
-    "$HOME/Library/Application Support/"?*) ;;
-    "$HOME/Library/Developer/Xcode/UserData/"?*) ;;
-    "$HOME/.npm/_npx/"?*) ;;
+    "$HOME"/*) ;;
     *) return 1 ;;
   esac
   case "$p" in
-    "$HOME/.docker"*|"$HOME/.claude/projects"*) return 1 ;;
-    *"/Google/Chrome"*|*"/Firefox"*|*"/CoreSimulator"*) return 1 ;;
+    "$HOME/.docker"*|"$HOME/.claude/projects"*|"$HOME/.ssh"*|"$HOME/Library/Keychains"*|"$HOME/.nightflight"*) return 1 ;;
     *"/Cookies"*|*"/Local Storage"*|*"/IndexedDB"*|*"/Session Storage"*|*"/WebStorage"*) return 1 ;;
   esac
-  return 0
+  under_any "$p" "$DENY_LIST" && return 1
+  under_any "$p" "$ALLOW_LIST" && return 0
+  case "$p" in
+    "$HOME/Library/Caches/"*.ShipIt) return 0 ;;
+    "$HOME/Library/Application Support/"?*)
+      local b="${p##*/}"
+      case "|$CACHE_DIRS|" in *"|$b|"*) return 0 ;; esac ;;
+  esac
+  return 1
 }
 
 sweep() {
@@ -82,28 +119,43 @@ sweep() {
   fi
 }
 
+recent() { [ -n "$(find "$1" -maxdepth 2 -mtime -"$2" 2>/dev/null | head -1)" ]; }
+
+expand() {
+  local p="$1" x
+  case "$p" in
+    */\*) for x in "${p%/\*}"/* "${p%/\*}"/.[!.]*; do [ -e "$x" ] && printf '%s\n' "$x"; done ;;
+    *) [ -e "$p" ] && printf '%s\n' "$p" ;;
+  esac
+  return 0
+}
+
+OPEN_FILES="$(lsof -Fn -u "$(id -u)" 2>/dev/null | sed -n 's/^n//p' | grep "^$HOME/Library/" | sort -u || true)"
+in_use() {
+  printf '%s\n' "$OPEN_FILES" | grep -qF "$1/" && return 0
+  pgrep -qf "$1/" 2>/dev/null && return 0
+  return 1
+}
+
 echo
-if [ "$APPLY" -eq 1 ]; then echo "🧹 디스크 청소 — 실제로 지웁니다 (오래된 것 기준: ${KEEP_DAYS}일)"
-else echo "👀 디스크 청소 — 보여만 드립니다. 지우려면 --apply (오래된 것 기준: ${KEEP_DAYS}일)"; fi
+if [ "$APPLY" -eq 1 ]; then echo "🧹 디스크 청소 — 실제로 지웁니다 (기준표: 표에 없는 자리는 안 지웁니다)"
+else echo "👀 디스크 청소 — 보여만 드립니다. 지우려면 --apply (기준표: 표에 없는 자리는 안 지웁니다)"; fi
 FREE_BEFORE=$(df -h /System/Volumes/Data | awk 'NR==2{print $4}')
 echo "   시작 전 남은 공간: $FREE_BEFORE"
 
 echo
-echo "A. 순수 캐시 (지워도 다시 생긴다)"
-sweep "$HOME/Library/Caches/pip"                                   "파이썬 패키지 캐시"
-sweep "$HOME/Library/Caches/Homebrew"                              "brew 내려받기 캐시"
-sweep "$HOME/Library/Caches/node-gyp"                              "네이티브 빌드 헤더"
-sweep "$HOME/Library/Caches/deno"                                  "deno 모듈 캐시"
-sweep "$HOME/Library/Caches/org.swift.swiftpm"                     "Swift 패키지 캐시 (다음 빌드 한 번 느림)"
-sweep "$HOME/Library/Developer/Xcode/UserData/IB Support"          "인터페이스 빌더 찌꺼기"
-sweep "$HOME/Library/Developer/Xcode/UserData/IB%20Support"        "같은 폴더가 URL 인코딩된 이름으로 하나 더 생긴다"
-sweep "$HOME/Library/Caches/notion-updater"                        "노션 업데이터가 받아 둔 설치본"
+echo "A. 지워도 다시 생기는 것"
+while IFS="$(printf '\t')" read -r p c w e; do
+  COVERED="$COVERED
+${p%/\*}"
+  while IFS= read -r x; do [ -n "$x" ] && sweep "$x" "$w"; done < <(expand "$p")
+done < <(rows 지움)
 
 echo
 echo "A2. 앱 업데이트를 기다리는 파일"
 for sh in "$HOME/Library/Caches/"*.ShipIt; do
   [ -d "$sh" ] || continue
-  tgt=$(plutil -extract targetBundleURL raw -o - "$sh/ShipItState.plist" 2>/dev/null | sed 's|^file://||; s|/$||')
+  tgt=$(plutil -extract targetBundleURL raw -o - "$sh/ShipItState.plist" 2>/dev/null | sed 's|^file://||; s|/$||' || true)
   tgt=$(printf '%b' "${tgt//%/\\x}")
   name="$(basename "$sh" .ShipIt)"
   if [ -z "$tgt" ] || [ ! -e "$tgt" ]; then
@@ -127,42 +179,72 @@ for sh in "$HOME/Library/Caches/"*.ShipIt; do
 done
 
 echo
-echo "B. 앱 캐시 (앱이 꺼져 있을 때만 — 로그인은 안 건드린다)"
-CACHE_DIRS="Cache|Code Cache|GPUCache|Service Worker|DawnWebGPUCache|DawnGraphiteCache|Shared Dictionary|CachedData"
-for entry in \
-  "Notion|$HOME/Library/Application Support/Notion" \
-  "Obsidian|$HOME/Library/Application Support/obsidian" \
-  "Figma|$HOME/Library/Application Support/Figma" \
-  "Visual Studio Code|$HOME/Library/Application Support/Code" \
-  ; do
-  proc="${entry%%|*}"; root="${entry#*|}"
+echo "B. 앱 캐시 (쓰는 중이 아닌 앱만 — 로그인은 안 건드린다)"
+for root in "$HOME/Library/Application Support"/*; do
   [ -d "$root" ] || continue
-  if pgrep -qf "/Applications/$proc.app" 2>/dev/null || pgrep -qf "$root/" 2>/dev/null; then
-    printf "  건너뜀 %8s  %-52s (%s 가 켜져 있다)\n" "$(human "$(bytes "$root")")" "${root/#$HOME/~}" "$proc"
+  under_any "$root" "$DENY_LIST" && continue
+  app="$(basename "$root")"
+  case "$app" in com.apple.*|CrashReporter|AddressBook|CloudDocs|Claude) continue ;; esac
+  found="$(find "$root" -maxdepth 4 -type d 2>/dev/null | awk -F/ -v pat="$CACHE_DIRS" '
+    BEGIN{n=split(pat,a,"|"); for(i=1;i<=n;i++) want[a[i]]=1}
+    { if ($NF in want) print }' || true)"
+  [ -n "$found" ] || continue
+  tot=0
+  while IFS= read -r d; do [ -n "$d" ] && tot=$((tot + $(bytes "$d"))); done <<EOF3
+$found
+EOF3
+  [ "$tot" -ge 10485760 ] || continue
+  if in_use "$root"; then
+    printf "  건너뜀 %8s  %-40s (지금 쓰는 중이다 — 앱을 끈 뒤 다시 보십시오)\n" "$(human "$tot")" "$app"
     continue
   fi
-  while IFS= read -r d; do
-    [ -n "$d" ] && sweep "$d" "$proc 캐시"
-  done < <(find "$root" -maxdepth 4 -type d 2>/dev/null | awk -F/ -v pat="$CACHE_DIRS" '
-    BEGIN{n=split(pat,a,"|"); for(i=1;i<=n;i++) want[a[i]]=1}
-    { if ($NF in want) print }')
+  while IFS= read -r d; do [ -n "$d" ] && sweep "$d" "$app 캐시"; done <<EOF4
+$found
+EOF4
 done
 
 echo
-echo "C. ${KEEP_DAYS}일 넘게 안 쓴 것"
-if [ -d "$HOME/.npm/_npx" ]; then
-  while IFS= read -r d; do
-    [ -n "$d" ] && sweep "$d" "npx 로 한 번 쓰고 남은 것"
-  done < <(find "$HOME/.npm/_npx" -maxdepth 1 -mindepth 1 -type d -mtime +"$KEEP_DAYS" 2>/dev/null)
-fi
-if [ -d "$HOME/Library/Caches/ms-playwright" ]; then
-  find "$HOME/Library/Caches/ms-playwright" -maxdepth 0 -mtime +"$KEEP_DAYS" 2>/dev/null | while IFS= read -r d; do
-    [ -n "$d" ] && sweep "$d" "플레이라이트 브라우저 (다시 받는 데 ~500MB)"
-  done
-fi
+echo "C. 조건이 맞는 것 (오래 안 씀 · 쓰는 앱이 꺼져 있음)"
+while IFS="$(printf '\t')" read -r p c w e; do
+  COVERED="$COVERED
+${p%/\*}"
+  days=""; case "$c" in 날수:*) days="${c#날수:}" ;; esac
+  case "$days" in *[!0-9]*) days=30 ;; esac
+  while IFS= read -r x; do
+    [ -n "$x" ] || continue
+    if [ "$c" = "앱꺼짐" ]; then
+      if in_use "$x"; then
+        printf "  건너뜀 %8s  %-40s (지금 쓰는 중이다 — 앱을 끈 뒤 다시 보십시오)\n" "$(human "$(bytes "$x")")" "$w"
+        continue
+      fi
+      sweep "$x" "$w"; continue
+    fi
+    [ -n "$days" ] && recent "$x" "$days" && continue
+    sweep "$x" "$w${days:+ (${days}일 넘게 안 씀)}"
+  done < <(expand "$p")
+done < <(rows 조건)
 
 echo
-echo "D. 사람이 판단할 것 (이 도구는 안 지웁니다)"
+echo "D. 사람이 판단할 것 (이 도구는 안 지웁니다 — 지우면 생기는 일을 보고 정하십시오)"
+SHOWN=0
+while IFS="$(printf '\t')" read -r p c w e; do
+  COVERED="$COVERED
+${p%/\*}"
+  days="${c#날수:}"; case "$c" in 날수:*) ;; *) days="" ;; esac
+  tot=0; n=0
+  while IFS= read -r x; do
+    [ -n "$x" ] || continue
+    [ -n "$days" ] && recent "$x" "$days" && continue
+    tot=$((tot + $(bytes "$x"))); n=$((n+1))
+  done < <(expand "$p")
+  [ "$tot" -ge 104857600 ] || continue
+  label="${p%/\*}"; label="${label/#$HOME/~}"
+  case "$p" in */\*) label="$label 안 ${n}개" ;; esac
+  printf "  판단   %8s  %s — %s\n" "$(human "$tot")" "$w" "$label"
+  printf "  %8s  └ 지우면: %s\n" "" "$e"
+  SHOWN=$((SHOWN+1))
+done < <(rows 판단)
+
 ORPHAN=0
 for d in "$HOME/Library/Application Support"/*; do
   [ -d "$d" ] || continue
@@ -170,7 +252,7 @@ for d in "$HOME/Library/Application Support"/*; do
   case "$name" in com.apple.*|Caches|CrashReporter|AddressBook|CloudDocs|Google) continue ;; esac
   sz=$(bytes "$d"); [ "$sz" -gt 1073741824 ] || continue
   if [ ! -e "/Applications/$name.app" ] && [ ! -e "$HOME/Applications/$name.app" ]; then
-    printf "  없는 앱? %7s  %-30s  (/Applications/%s.app 이 없다)\n" "$(human "$sz")" "$name" "$name"
+    printf "  없는 앱? %7s  %-30s  (/Applications/%s.app 이 없다 — 이름이 달라 잘못 잡혔을 수 있습니다)\n" "$(human "$sz")" "$name" "$name"
     ORPHAN=$((ORPHAN+1))
   fi
 done
@@ -183,21 +265,23 @@ for entry in "cursor|/Applications/Cursor.app" "vscode|/Applications/Visual Stud
   printf "  없는 앱? %7s  %-30s  (%s 이 없다)\n" "$(human "$sz")" "~/.$n" "$app"
   ORPHAN=$((ORPHAN+1))
 done
-[ "$ORPHAN" -eq 0 ] && echo "  없는 앱이 두고 간 큰 데이터: 없음"
-KEEP_NOTE_vm_bundles="클로드 앱이 쓰는 것 — 지우지 않습니다"
-KEEP_NOTE_avd="안드로이드 에뮬레이터 — 지우지 않습니다"
-KEEP_NOTE_gradle="지우면 다음 안드로이드 빌드가 다시 받습니다 — 지우지 않습니다"
-for big in "$HOME/Library/Application Support/Claude/vm_bundles" "$HOME/.android/avd" "$HOME/.gradle" "$HOME/Downloads"; do
-  [ -e "$big" ] || continue
-  sz=$(bytes "$big"); [ "$sz" -gt 1073741824 ] || continue
-  note=""
-  case "$big" in
-    *vm_bundles) note="  ← $KEEP_NOTE_vm_bundles" ;;
-    *.android/avd) note="  ← $KEEP_NOTE_avd" ;;
-    *.gradle) note="  ← $KEEP_NOTE_gradle" ;;
-  esac
-  printf "  큰 것   %7s  %s%s\n" "$(human "$sz")" "${big/#$HOME/~}" "$note"
+[ "$SHOWN" -eq 0 ] && [ "$ORPHAN" -eq 0 ] && echo "  판단할 큰 것: 없음"
+
+echo
+echo "E. 표에 없는 큰 자리 (무엇인지 모릅니다 — 지우지 않습니다)"
+UNK=0
+for d in "$HOME/Library/Caches"/* "$HOME/Library/Developer"/* "$HOME"/.[!.]*; do
+  [ -d "$d" ] && [ ! -L "$d" ] || continue
+  under_any "$d" "$DENY_LIST" && continue
+  under_any "$d" "$COVERED" && continue
+  printf '%s\n' "$COVERED" | grep -qF "$d/" && continue
+  printf '%s\n' "$DENY_LIST" | grep -qF "$d/" && continue
+  case "$d" in *.ShipIt|"$HOME/.Trash") continue ;; esac
+  sz=$(bytes "$d"); [ "$sz" -ge 1073741824 ] || continue
+  printf "  모름   %8s  %s\n" "$(human "$sz")" "${d/#$HOME/~}"
+  UNK=$((UNK+1))
 done
+[ "$UNK" -eq 0 ] && echo "  없음"
 
 VARF=$(bytes /private/var/folders)
 for _c in /private/var/folders/*/*/X/com.google.Chrome.code_sign_clone; do

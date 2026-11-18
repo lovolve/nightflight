@@ -51,6 +51,10 @@ def root() -> Path:
         if v and Path(v).is_dir():
             return _등록된곳(Path(v).resolve())
     t = _git맨위(Path.cwd())
+    집 = Path.home().resolve()
+    구름 = 집 / "Library" / "Mobile Documents" / "com~apple~CloudDocs"
+    if t is not None and t in (Path("/"), 집, 집 / "Desktop", 집 / "Documents", 집 / "Downloads", 집 / "Library", 구름, 구름 / "Desktop", 구름 / "Documents"):
+        t = None
     return _등록된곳(t if t else Path.cwd().resolve())
 
 

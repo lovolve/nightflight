@@ -2,9 +2,9 @@
 """턴 끝에 적어 둔 조종석 안내를 다음 말을 받을 때 건넨다. bin/cockpit_next_message.sh 가 부른다."""
 import json, os, sys
 
-if sys.argv[1:] == ["--폴더"]:
+if sys.argv[1:] in (["--폴더"], ["--대화"]):
     try:
-        print(str(json.load(sys.stdin).get("cwd") or ""))
+        print(str(json.load(sys.stdin).get("cwd" if sys.argv[1] == "--폴더" else "session_id") or "").replace("\n", ""))
     except (ValueError, AttributeError):
         pass
     sys.exit(0)

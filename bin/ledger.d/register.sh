@@ -17,6 +17,14 @@ case "$KIND" in
       echo "  [모델]     그 도구가 없으면(터미널) 그 폴더로 클로드를 다시 열라고 알리고, 붙여 넣을 한 줄 cd <새 폴더> && claude 를 줍니다 — 다시 열면 첫 대화로 점검이 시작됩니다."
       exit 0
     fi
+    case "$NF_ROOT" in /var/folders/*|/private/var/folders/*)
+      case "$(mkdir -p "$NF_HOME" 2>/dev/null; cd "$NF_HOME" 2>/dev/null && pwd -P)" in /var/folders/*|/private/var/folders/*) _nf_tmphome=1 ;; *) _nf_tmphome="" ;; esac
+      if [ -z "$_nf_tmphome" ]; then
+        _nf_t "  지금 열린 곳은 시스템 임시 폴더라서 야간비행에 등록하지 않았습니다. 제품 폴더에서 다시 말씀해 주십시오." \
+              "  The folder open now is a system temporary folder, so Nightflight did not register it. Try again from a product folder."
+        exit 0
+      fi ;;
+    esac
     _nf_again=""
     if awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_PERSON" 2>/dev/null; then
       _nf_again=1
@@ -71,6 +79,7 @@ case "$KIND" in
     echo "  [모델]  2) 이미 만들던 제품이면(커밋·화면 파일·기획 메모가 있으면) 가져오기 스킬로 조종석 칸을 코드에서 채웁니다."
     echo "  [모델]  3) 아직 아무것도 안 만든 제품이면 진단 뒤 «기획부터 하자»고 제안하고, 받아들이면 1-기획 스킬로 갑니다."
     echo "  [모델]  4) 이 턴이 끝나면 조종석을 만들라는 안내가 뜹니다 — 그대로 따르십시오."
+    echo "  [모델]  ⭐ 물을 것(대화 범위 · 제품 이름 · 기획 제안 · 조종석 올리기)은 한 번에 하나씩 묻습니다. 선택형 질문 도구가 있으면 그것으로 묻고 답을 받은 뒤 다음으로 갑니다. 답 끝에 질문을 여럿 늘어놓지 않습니다."
     echo "  [모델]  ⭐ 큰 단계(진단 · 가져오기 · 단계 하나)마다 과정을 보이십시오:"
     echo "  [모델]     시작할 때 대화창에 «지금 ~하고 있습니다» 한 줄 + ledger.sh 하는중 \"<그 말>\" --화면 \"<그 말>\" (조종석의 «지금 하는 일» 줄이 됩니다)"
     echo "  [모델]     끝나면 대화창에 «~이 끝났습니다» 한 줄 + ledger.sh 조종석지금 (조종석이 있으면 그 칸을 바로 올립니다 · 작은 걸음마다는 부르지 않습니다)"

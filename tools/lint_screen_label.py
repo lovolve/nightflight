@@ -32,6 +32,7 @@ def _금지말():
 def 검사(문구: str, 종류: str = None, 기록: str = None, 숨김: bool = False) -> list:
     t = (문구 or "").strip()
     bad = []
+    종류 = _lb.종류맞춤(종류)
     허용 = _lb.종류표.get(기록, 종류들) if 기록 else 종류들
     if 종류 is not None and 종류 not in 허용:
         bad.append(f"종류는 {' · '.join(허용)} 중 하나입니다 — 받은 것: 「{종류}」")

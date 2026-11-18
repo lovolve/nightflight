@@ -81,7 +81,7 @@ screen_need() {
      && awk -F'\t' -v x="$2" '$1==x{f=1} END{exit !f}' "$_LBL"; then SCR_OLD=1; return 0; fi
   SCR_OLD=0
   local kinds="새 기능|문제 고침|안 보이는 작업"
-  case "${3-}" in 남은것) kinds="새 기능|문제 고침|대표님 결정 필요|안 보이는 작업" ;;
+  case "${3-}" in 남은것) kinds="새 기능|문제 고침|결정 필요|안 보이는 작업" ;;
                   표준|시도|영향) kinds="사용자에게 보이는 것|안 보이는 작업" ;; esac
   local how='--화면 「사용자가 겪는 일을 정확히」'
   [ "$1" = 1 ] && how="$how --종류 「$kinds」"

@@ -113,8 +113,67 @@ def 잰다(느린것도=True) -> dict:
     return d
 
 
+_기준표 = pathlib.Path(__file__).resolve().parent.parent / "data" / "cleanup_memory.tsv"
+
+
+def 프로그램갈래() -> list[tuple[str, "re.Pattern", str, str]]:
+    out = []
+    try:
+        lines = _기준표.read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return out
+    for l in lines:
+        if not l.strip() or l.startswith("#"):
+            continue
+        c = l.split("\t")
+        if len(c) < 4:
+            continue
+        try:
+            out.append((c[0].strip(), re.compile(c[1], re.I), c[2].strip(), c[3].strip()))
+        except re.error:
+            continue
+    return out
+
+
+def 갈래찾기(args: str, 표=None):
+    for 등급, 말, 이름, 닫으면 in (표 if 표 is not None else 프로그램갈래()):
+        if 말.search(args):
+            return 등급, 이름, 닫으면
+    return None
+
+
+def _운영체제인가(경: str) -> bool:
+    return 경.startswith(("/System/", "/usr/", "/sbin/", "/bin/", "/Library/Apple/")) or "/" not in 경
+
+
+def 개발프로그램(쓴=None) -> list[dict]:
+    쓴 = 쓴 if 쓴 is not None else _쓴양MB()
+    표 = 프로그램갈래()
+    xs = []
+    for l in _run(["ps", "-axo", "pid=,args="]).splitlines():
+        l = l.strip()
+        if " " not in l:
+            continue
+        pid, args = l.split(" ", 1)
+        if not pid.isdigit() or int(pid) == os.getpid():
+            continue
+        경 = args.split(" --")[0]
+        if "/claude-code/" in 경 or re.match(r"(\S*/)?claude(\.exe)?( |$)", args) or "/Claude.app/" in 경:
+            continue
+        g = 갈래찾기(args, 표)
+        if not g:
+            continue
+        mb = 쓴.get(int(pid), 0.0)
+        if mb < 30:
+            continue
+        xs.append({"번호": int(pid), "MB": round(mb), "등급": g[0], "이름": g[1], "닫으면": g[2],
+                   "폴더": _폴더(int(pid)), "켠날": _켠날(int(pid))})
+    return sorted(xs, key=lambda x: -x["MB"])
+
+
 def 메모리쓴곳(n=8) -> list[dict]:
     out = _run(["ps", "-axo", "rss=,command="])
+    표 = 프로그램갈래()
     묶 = {}
     for l in out.splitlines():
         l = l.strip()
@@ -126,18 +185,23 @@ def 메모리쓴곳(n=8) -> list[dict]:
         except ValueError:
             continue
         경 = cmd.split(" --")[0]
+        갈 = None if ("/claude-code/" in 경 or "/Claude.app/" in 경) else 갈래찾기(cmd, 표)
         if "/claude-code/" in 경:
             이름, 닫기 = "클로드 앱 안의 대화", "대화"
         elif 경 == "claude" or 경.endswith("/claude"):
             이름, 닫기 = "터미널에서 연 클로드 대화", "대화"
+        elif 갈:
+            이름, 닫기 = 갈[1], "개발"
         elif ".app/" in 경:
             이름, 닫기 = os.path.basename(경.split(".app/")[0]), "앱"
             if 경.startswith("/System/"):
                 닫기 = ""
             if 이름 == "Claude":
                 이름, 닫기 = "클로드 앱 (지금 쓰는 앱)", ""
-        else:
+        elif _운영체제인가(경):
             이름, 닫기 = "운영체제 기본 프로그램", ""
+        else:
+            이름, 닫기 = "그 밖의 프로그램", ""
         g = 묶.setdefault(이름, {"이름": 이름, "MB": 0.0, "개수": 0, "닫기": 닫기})
         g["MB"] += mb
         g["개수"] += 1
@@ -282,9 +346,26 @@ def main() -> int:
         if x["작은창"]:
             print(f"     · 작은 화면 칸 {x['작은창']}개 — 대화 옆 창 · 내장 브라우저 탭 · 미리보기. 안 보이는데 열린 것이 있을 수 있습니다")
         print()
+        dev = 개발프로그램()
+        print("  개발 프로그램 (닫으면 무엇이 멈추는지 보고 고르십시오)")
+        if not dev:
+            print("     30MB 넘게 쓰는 것이 없습니다")
+        뜻 = {"닫아도됨": "닫아도 됩니다", "물어봄": "고르십시오", "닫지않음": "닫지 않습니다"}
+        안닫음 = [c for c in dev if c["등급"] == "닫지않음"]
+        dev = [c for c in dev if c["등급"] != "닫지않음"]
+        if not dev and not 안닫음:
+            pass
+        elif not dev:
+            print("     닫을 만한 것이 없습니다")
+        for c in dev[:15]:
+            print(f"  {c['MB']:>6,}MB  {c['이름']} · {뜻.get(c['등급'], c['등급'])} · {c['폴더'] or '?'} · {c['켠날']}에 켬 · 번호 {c['번호']}")
+            print(f"           └ 닫으면: {c['닫으면']}")
+        if 안닫음:
+            print(f"  {sum(c['MB'] for c in 안닫음):>6,}MB  {안닫음[0]['이름']} {len(안닫음)}개 · 닫지 않습니다 — {안닫음[0]['닫으면']}")
+        print()
         print("  그 밖의 앱")
         for g in 메모리쓴곳():
-            if g["이름"].startswith("클로드") or g["이름"].startswith("터미널에서 연 클로드"):
+            if g["이름"].startswith("클로드") or g["이름"].startswith("터미널에서 연 클로드") or g["닫기"] == "개발":
                 continue
             뒤 = {"대화": "", "앱": "앱을 닫을 수 있습니다", "": "닫지 않습니다"}[g["닫기"]]
             print(f"  {g['MB']:>6,}MB  {g['이름']} · {뒤}")
