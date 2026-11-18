@@ -23,6 +23,15 @@ def 흔적(결과, 남은="", 하루=""):
         pass
 
 
+if sys.argv[1:2] == ["--목록"]:
+    import brain_names
+    try:
+        _목 = json.loads(sys.stdin.read() or "{}")
+    except Exception:
+        _목 = {}
+    print(" · ".join(brain_names.보일것(_목.get("이_단계에_있는_갈래"))))
+    raise SystemExit(0)
+
 try:
     d = json.loads(sys.stdin.read() if sys.argv[1:] in ([], ["-"]) else sys.argv[1])
 except Exception:
@@ -68,7 +77,8 @@ if d.get("내려줌"):
 elif d.get("이_단계에_있는_갈래"):
     흔적("없는갈래")
     print("그 갈래는 없습니다. 이 단계에서 물을 수 있는 것:")
-    for g in d["이_단계에_있는_갈래"]:
+    import brain_names
+    for g in brain_names.보일것(d["이_단계에_있는_갈래"]):
         print(f"  · {g}")
 else:
     기본 = "We cannot provide this right now." if os.environ.get("NF_LANG_NOW") == "en" else "지금은 받을 수 없습니다."
@@ -109,7 +119,7 @@ else:
         print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
     elif 코드 == "메일확인필요":
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
-    elif 코드 in ("너무잦음", "하루한도"):
+    elif 코드 in ("너무잦음", "하루한도", "새안내한도", "격리"):
         pass
     else:
         if 코드 == "미결제" and d.get("무료앱"):

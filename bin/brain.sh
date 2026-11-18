@@ -53,11 +53,7 @@ ANSWER="$(nf_post "$BRAIN" "$BODY" -H "apikey: $DOORKEY" 2>/dev/null)" || ANSWER
 
 if [ -n "$LISTONLY" ]; then
   [ -n "$ANSWER" ] || { echo "  (이 단계의 안내 목록을 서버에서 못 받았습니다 — 아는 것만으로 진행합니다)"; exit 0; }
-  ANSWER="$ANSWER" python3 -I -c 'import json,os
-try: d=json.loads(os.environ["ANSWER"])
-except Exception: d={}
-g=d.get("이_단계에_있는_갈래") or []
-print(" · ".join(g) if g else "")'
+  printf '%s' "$ANSWER" | python3 -I "$NF_PYDIR/brain_table.py" --목록
   exit 0
 fi
 

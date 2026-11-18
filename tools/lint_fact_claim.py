@@ -13,6 +13,7 @@ import facts
 TAIL = 2 * 1024 * 1024
 바로잡힘_사용자 = re.compile(r"이미 (했|해 ?놨|해 ?뒀|있|출시|만들|받|올렸|넣었|켜|연결|등록|끝났)|벌써 (했|있|출시)|했잖아|있잖아|틀렸어|잘못 알고")
 바로잡힘_AI = re.compile(r"바로잡습니다|제가 틀렸|잘못 말씀|잘못 알려|잘못 보고")
+태그덩어리 = re.compile(r"<([A-Za-z][\w-]*)[^>]*>.*?</\1>", re.S)
 더한흔적 = re.compile(r"facts\.py[\"']?\s+더하기")
 ADMITTED = ("확인 못 했", "확인하지 않았", "재지 않았", "재 보지 않았", "안 재", "모릅니다", "모름", "추정입니다")
 
@@ -30,9 +31,12 @@ def 읽기(path: Path) -> tuple[list[str], list[str], str, list[str]]:
             continue
         content = (d.get("message") or {}).get("content") or []
         if d.get("type") == "user":
+            if d.get("isCompactSummary"):
+                continue
             글 = content if isinstance(content, str) else " ".join(
                 p.get("text") or "" for p in content if isinstance(p, dict) and p.get("type") == "text")
-            if 글.strip() and not 글.lstrip().startswith("<"):
+            글 = 태그덩어리.sub(" ", 글).strip()
+            if 글 and not 글.startswith("<"):
                 사용자, 이번부름 = 글, []
             continue
         if d.get("type") != "assistant":
