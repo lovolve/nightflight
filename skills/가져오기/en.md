@@ -48,7 +48,7 @@ In an import test on a copy of an app with its records deleted, all twelve rejec
 - Phase names: `0. 진단` (Diagnose), `1. 기획` (Plan), `2. 검증` (Validate), `3. 설계` (Design), `4. 개발` (Build), `5. 확인` (Test), `6. 출시` (Launch), `7. 수정` (Fix), `8. 출시후` (After launch).
   Record `0. 진단` first. Record the current phase last: the last line is the current phase.
   Do not record `4. 개발` or any later phase until the screen flow and the feature impact entries exist. The order is: feature table, features already built (`설치전`), screen flow, impact, phase.
-- Screen wording (`--화면`) and a decision's `--값` are written as noun phrases. A clause ending in a verb is rejected (the tool checks Korean sentence endings). Example: "three screens sharing one distance value" (correct); "three screens use the same distance value" (wrong).
+- Screen wording (`--화면`) and a decision's `--값` are written as noun phrases. The tool only catches Korean sentence endings, so it will not reject an English sentence — keep to noun phrases yourself. Example: "three screens sharing one distance value" (correct); "three screens use the same distance value" (wrong).
 - The 4 in `기능추가 4` is the phase where the feature lives (4 = Build). Put the app's features at 4.
 - The Plan, Validate, and Design tables (1, 2, 3) split the decisions into groups and items. Write an item's "what was decided" in the fourth field of `세부상태 ... 완료 "<text>"`. The cockpit shows this text when the user opens that phase. At the end of the text, put the evidence in parentheses (document name, file:line, decision date).
   Do not create items you did not find. If you found nothing for a whole phase, use `가져오기 없음 "<field>" "<reason>"` (`가져오기 없음` = import none).
@@ -81,6 +81,9 @@ If the app has no such field (for example a server with no screens), record the 
 1. When everything is filled, show the user a short summary: current phase, feature table, screen flow.
 2. Sub-features that exist in the code and work become `완료` (done) through `설치전`. Do not enter them as "needs confirmation": that would cover the user's "what to do now" list with features of a product that already works.
 3. Fix a sub-feature with `세부상태` only if the user said it is wrong.
+4. End the same reply with what to do next, so the user does not have to wait for the next conversation.
+   Run `"${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 따라잡기`. If it returns suggestions, summarize them and ask "These are from earlier phases. Do you want to do them before you continue?" Let the user pick more than one, put the recommended one first, and include "Skip".
+   Record the answer with `따라잡기 고름 <chosen>` or `따라잡기 건너뜀`. If there are no suggestions, name one next task in the current phase.
 
 ## Prohibitions
 

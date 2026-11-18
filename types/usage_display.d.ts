@@ -5,6 +5,6 @@ export type Usage = {
 
 declare module 'claude-code' {
   interface PluginState {
-    nightflight: { usage: Usage | null; usageIsOn: boolean }
+    nightflight: { usage: Usage | null; usageIsOn: boolean; usageIsEnglish: boolean }
   }
 }

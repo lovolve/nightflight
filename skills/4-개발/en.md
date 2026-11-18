@@ -4,7 +4,7 @@ This file says only what this stage is for. The symptom tables, causes and the o
 
 ## What this stage does
 
-This is the longest stretch, and you do not talk to the user during it. Collect everything that needs a human hand and ask it once, in one batch.
+This is the longest stretch, and you do not interrupt the user during it. Collect everything that needs a human hand and ask it once, in one batch.
 
 Fill in the design table's slots. Each time you finish one sub-feature, change the status of its slot:
 
@@ -55,7 +55,7 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 
 ## Do not do these in this stage
 
-1. Do not talk to the user. The only places to ask are decision points designed in advance.
+1. Do not interrupt the user. Ask only at the decision points designed in advance, and batch everything that needs a human into one request.
 2. Do not ask "Shall I cut or change it?". Both options shrink the product.
 3. Do not go down the same path three times and then say "it can't be done".
 4. If a value lives in two places, fix it by structure, not by a check. If it lives in one place, there is nothing to check.

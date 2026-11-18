@@ -92,7 +92,7 @@ else:
         print("[모델] 괄호 안이 제품 번호입니다. 빼려면 사용자가 고른 제품으로 license_key.sh 앱빼기 <제품 번호> (사용자 답을 들은 뒤에만)")
         if not 플러스:
             print("플러스 플랜(제품등록 15개 — 무료 1 + 유료 14)으로 바꾸시면 이 제품에도 바로 적용됩니다.")
-            print("[모델] 플러스로 바꾸는 것은 내 계정 화면(https://account.lovolve.app)에서 합니다 — 그 주소와 플랜 안내 주소를 사용자에게 전하십시오: https://www.lovolve.app/nightflight/#price")
+            print("[모델] 플러스로 바꾸는 것은 내 계정 화면(https://nightflight.lovolve.app/account/)에서 합니다 — 그 주소와 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
     elif 코드 == "다시넣기기다림":
         날 = str(d.get("다시넣는날") or "")[:10]
         바로 = str(d.get("바로다시되는날") or "")[:10]
@@ -106,7 +106,7 @@ else:
         print("이 컴퓨터의 계정 연결이 풀렸습니다. «야간비행 로그인»으로 다시 연결하시면 됩니다.")
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
     elif 코드 in ("무료기간끝", "무료끝유료필요"):
-        print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://www.lovolve.app/nightflight/#price")
+        print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
     elif 코드 == "메일확인필요":
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
     elif 코드 in ("너무잦음", "하루한도"):
@@ -115,6 +115,6 @@ else:
         if 코드 == "미결제" and d.get("무료앱"):
             print("이 컴퓨터의 무료 제품: " + str(d.get("무료앱")))
         if 코드 in ("미결제", "만료"):
-            print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://www.lovolve.app/nightflight/#price")
+            print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
         print(os.environ.get("KEYLINE_EXPIRED" if 코드 == "만료" else "KEYLINE_DEFAULT", ""))
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")

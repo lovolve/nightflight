@@ -4,13 +4,13 @@
     "name": "Lovolve",
     "email": "support@lovolve.app"
   },
-  "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계",
+  "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계 / When AI says \"done,\" Nightflight checks that it really is — nine stages from planning to after launch",
   "plugins": [
     {
       "name": "nightflight",
       "source": ".",
-      "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계",
-      "version": "0.1.29"
+      "description": "AI가 「다 됐습니다」라고 한 것, 정말 됐는지까지 확인합니다 — 기획부터 출시 뒤까지 아홉 단계 / When AI says \"done,\" Nightflight checks that it really is — nine stages from planning to after launch",
+      "version": "0.1.30"
     }
   ]
 }

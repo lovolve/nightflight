@@ -21,7 +21,7 @@ ledger.sh 고치기전 "<the feature you are about to fix>"
 | "Not on the map" (the tool says this in its own words) | Never read it as "independent". It means nobody wrote it down. |
 
 - After the fix, check the things that change with it, one by one.
-- If something else breaks while you fix, write it down on the spot with `ledger.sh 영향 … 깨졌다` (`깨졌다` means broke). That is the strongest way the map grows. It is a measured fact, and from the second time on it is visible in advance.
+- If something else breaks while you fix, write it down on the spot with `ledger.sh 영향 … 깨졌다` (`깨졌다` means broke). That is the strongest way the map grows. It records what actually broke, so the next time someone touches this feature, the warning shows up in advance.
 - Write the text values in these commands in English. The Korean words in the commands are what the tool reads. Never show them to the user.
 
 ## How to ask the user, and tools

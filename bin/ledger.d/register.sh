@@ -39,6 +39,7 @@ case "$KIND" in
         _nf_t "  이 폴더에 들어 있던 조종석 주소를 지웠습니다. 이 제품의 조종석을 새로 만듭니다." \
               "  Removed the cockpit address that came with this folder. A new cockpit will be made for this product."
       fi
+      mkdir -p "$NF_HOME" 2>/dev/null; nf_lang > "$NF_HOME/language" 2>/dev/null || true
       if [ -n "$(nf_conv_id)" ]; then
         nf_conv_add "$NF_ROOT" "$(nf_conv_id)" 2>/dev/null || true
         _nf_t "  야간비행은 이 대화에서만 움직입니다. 같은 폴더의 다른 대화(메일 · 조사 같은 것)에는 끼어들지 않습니다." \

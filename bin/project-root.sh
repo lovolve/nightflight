@@ -59,6 +59,21 @@ for k in NIGHTFLIGHT_PROJECT_DIR CLAUDE_PROJECT_DIR CODEX_PROJECT_DIR CURSOR_PRO
   [ -n "$v" ] && [ -d "$v" ] && NF_ROOT="$v" && break
 done
 [ -n "$NF_ROOT" ] || NF_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || printf '%s' "$PWD")"
+_nf_ppl="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/people.tsv"
+if [ -f "$_nf_ppl" ] && ! awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$_nf_ppl" 2>/dev/null; then
+  _nf_r1="$(cd "$NF_ROOT" 2>/dev/null && pwd -P)"
+  _nf_t="$(git -C "$NF_ROOT" rev-parse --show-toplevel 2>/dev/null)"; _nf_r2="$( [ -n "$_nf_t" ] && cd "$_nf_t" 2>/dev/null && pwd -P)"
+  for _nf_want in "$_nf_r1" "$_nf_r2"; do
+    [ -n "$_nf_want" ] || continue
+    _nf_hit=""
+    while IFS= read -r _nf_e; do
+      [ -n "$_nf_e" ] && [ -d "$_nf_e" ] && [ "$(cd "$_nf_e" 2>/dev/null && pwd -P)" = "$_nf_want" ] && { _nf_hit="$_nf_e"; break; }
+    done < <(awk -F'\t' '$2=="프로젝트"{print $3}' "$_nf_ppl" 2>/dev/null | sort -u)
+    [ -n "$_nf_hit" ] && { NF_ROOT="$_nf_hit"; break; }
+  done
+  unset _nf_r1 _nf_r2 _nf_t _nf_want _nf_hit _nf_e
+fi
+unset _nf_ppl
 NF_STATE=""
 if [ -d "$NF_ROOT/.nightflight" ]; then NF_STATE="$NF_ROOT/.nightflight"
 elif [ -f "$NF_ROOT/.claude/ledger.tsv" ]; then NF_STATE="$NF_ROOT/.claude"
@@ -151,6 +166,19 @@ NF_GI_MARK2="야간비행이 더한 줄 (2)"
 
 nf_not_product_root() {
   local r="${1:-$NF_ROOT}"
+  case "$r" in
+    "$HOME/Library/Mobile Documents/com~apple~CloudDocs"|"$HOME/Library/Mobile Documents/com~apple~CloudDocs/"|\
+    "$HOME/Library/Mobile Documents/com~apple~CloudDocs/Desktop"|"$HOME/Library/Mobile Documents/com~apple~CloudDocs/Documents") return 0 ;;
+    "$HOME/Library/Mobile Documents/com~apple~CloudDocs/"*) return 1 ;;
+    "$HOME/Library/CloudStorage/"*)
+      local rest="${r#"$HOME/Library/CloudStorage/"}"; rest="${rest%/}"
+      case "$rest" in
+        */*/*) return 1 ;;
+        */"My Drive"|*/"내 드라이브"|*/"Shared drives"|*/"공유 드라이브"|*/"Other computers"|*/"다른 컴퓨터") return 0 ;;
+        */*) return 1 ;;
+        *) return 0 ;;
+      esac ;;
+  esac
   case "$r" in
     "$HOME"|"$HOME/"|"$HOME/Desktop"|"$HOME/Documents"|"$HOME/Downloads"|"$HOME/Library"|"$HOME/Library/"*|/|/tmp|/tmp/*|/private/tmp|/private/tmp/*) return 0 ;;
   esac

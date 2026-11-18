@@ -16,7 +16,7 @@
 {n}개 미완료	{n} not done
 완료	Done
 진행 중	In progress
-확인 필요	Needs check
+확인 필요	Needs review
 방법 찾는 중	Finding a way
 시작 전	Not started
 넘어감	Skipped
@@ -24,9 +24,9 @@
 {q} · 기록 전	{q} · not yet recorded
 되돌리기	Undo
 넘어가기	Skip
-{q} {n}개	{q} · {n} items
+{q} {n}개	{q} ({n})
 방법 찾는 중 {n}	Finding a way {n}
-확인 필요 {n}	Needs check {n}
+확인 필요 {n}	Needs review {n}
 다음 상태	Next states
 현재 상태와 다음 상태	Current state and next state
 {q} → {q}	{q} → {q}
@@ -38,12 +38,11 @@
 「{q}」에서 다음 동작이 하나뿐입니다 — 실패 또는 취소 시 이동할 상태를 추가해 주십시오	"{q}" has only one next action. Please add a state to move to on failure or cancel.
 「{q}」이 기록되지 않은 상태(「{q}」)으로 갑니다	"{q}" goes to a state that is not recorded ("{q}").
 시작하는 자리가 {n}개입니다 — 하나로 결정해 주십시오	There are {n} starting states. Please decide on one.
-AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} states. They need your check.
+AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI picked {n} states — please review them.
 상자 색의 뜻	What the box colors mean
 색상 안내	Color key
 새 버전이 있습니다	New version available
 업데이트하기	Update
-눌러서 복사 — {q}	Click to copy — {q}
 최신 버전입니다	Up to date
 확인 당시 최신 버전	Latest at last check
 · {q} · {q} 확인	· {q} · checked {q}
@@ -70,7 +69,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 지금 상태 — {q}	Current status — {q}
 마지막 측정 상태 — 모두 정상	Last measured status — all normal
 지금 상태 — 모두 정상	Current status — all normal
-메모리 {q}	Memory {q}
+메모리 {q}	Memory: {q}
 양호	Good
 주의	Caution
 위험	Critical
@@ -84,9 +83,9 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 작동 중인 시뮬레이터	Running simulators
 없음	None
 {n}개	{n}
-종료 후 남은 프로세스 {n}개	{n} leftover processes after shutdown
-종료 후 남은 프로세스 {n}개 · {n}MB	{n} leftover processes after shutdown · {n} MB
-종료 후 남은 프로세스 미측정	Leftover processes after shutdown: not measured
+종료 후 남은 프로세스 {n}개	{n} simulator processes still running after closing
+종료 후 남은 프로세스 {n}개 · {n}MB	{n} simulator processes still running after closing · {n} MB
+종료 후 남은 프로세스 미측정	Simulator processes still running after closing: not measured
 화면 없이 실행 중입니다	Running without a window
 창이 열려 있습니다	Window is open
 창만 열려 있습니다	Only the window is open
@@ -94,7 +93,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 시뮬레이터 {n}대 켜짐	Simulators: {n} running
 시뮬레이터 {n}대 꺼짐	Simulators: {n} running
 확보 가능한 저장공간	Reclaimable storage
-하루 {n}회 측정	Measured {n} time(s) a day
+하루 {n}회 측정	Measured {n}× a day
 시뮬레이터 기기 {n}GB 포함	Includes simulator devices: {n} GB
 시뮬레이터 기기 측정하지 못했습니다 포함	Includes simulator devices: not measured
 시뮬레이터 기기 {n}GB 포함 · {q}	Includes simulator devices: {n} GB · measured {q}
@@ -187,7 +186,6 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 판매 뒤에 확인 {n}	Check after sales: {n}
 확인 중 {n}	Checking: {n}
 판매 뒤에 확인	Check after sales
-주요 문제	Major problem
 몇 건	Sample size
 출처	Source
 언제 — {q}	When: {q}
@@ -206,9 +204,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 기능별로 방지한 문제	Problems prevented, by feature
 아직 설명을 기록하지 않았습니다 ·	No description recorded yet ·
 설명 요청 말 복사	Copy request for a description
-실패했을 때 사용자가 멈출 수 있는 곳이 있습니다 ·	A user could get stuck here when something fails ·
 확인 요청 말 복사	Copy request to check
-아직 결정하지 않은 다음 동작이 있습니다.	Some next steps are not decided yet.
 설계 단계 > 상태머신 구현 > «{q}»	Design stage > State machine implementation > "{q}"
 실패했을 때 사용자가 멈추는 곳이 있는지 먼저 확인해 주세요.	Please first check whether a user can get stuck when something fails.
 문제가 맞으면 사용자가 겪는 일로 말해 주세요.	If it is a real problem, describe it as what the user experiences.
@@ -372,10 +368,10 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 이 일을 이어서 해 주세요.	Please continue this task.
 남은 항목부터 순서대로 진행하고 기록해 주세요.	Please work through the remaining items in order and record each one.
 끝나면 {q} 단계 일로 돌아가 주세요.	When you finish, please go back to the work of the {q} stage.
-시작할 때 ledger.sh 따라잡기 선택 {q}	When starting, run: ledger.sh catch-up select {q}
-- 시작할 때 ledger.sh 따라잡기 선택 {q}	- When starting, run: ledger.sh catch-up select {q}
-야간비행 안내를 받아 그 순서대로 진행합니다: brain.sh {q}	Get the Nightflight guidance and follow its steps (brain script, topic {q})
-- 야간비행 안내를 받아 그 순서대로 진행합니다: brain.sh {q}	- Get the Nightflight guidance and follow its steps (brain script, topic {q})
+시작할 때 ledger.sh 따라잡기 고름 {q}	When you start, record the choice: `ledger.sh 따라잡기 고름` {q}
+- 시작할 때 ledger.sh 따라잡기 고름 {q}	- When you start, record the choice: `ledger.sh 따라잡기 고름` {q}
+야간비행 안내를 받아 그 순서대로 진행합니다: brain.sh {q}	Get the Nightflight guidance and follow its steps: brain.sh {q}
+- 야간비행 안내를 받아 그 순서대로 진행합니다: brain.sh {q}	- Get the Nightflight guidance and follow its steps: brain.sh {q}
 하는 중	In progress
 시작하기	Start
 {q} · 권장	{q} · Recommended
@@ -406,7 +402,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 연결하기	Connect
 구글 연결하기	Connect Google
 미리 신청	Apply early
-직접 하실 일	Do it yourself
+직접 하실 일	For you to do
 이 결정의 전제 조건이 변경됐습니다.	The conditions behind this decision have changed.
 변경된 내용을 보여 주고 다시 결정할 수 있게 해 주세요.	Please show me what changed and let me decide again.
 이 질문에 답하려고 합니다.	I want to answer this question.
@@ -423,16 +419,16 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 앱스토어 연결을 준비해 주세요.	Please prepare the App Store connection.
 순서를 안내해 주시고, 제가 API 키를 드리면 연결되는지 확인해 주세요.	Please walk me through the steps, and check that the connection works once I give you the API key.
 구글 플레이 연결을 준비해 주세요.	Please prepare the Google Play connection.
-다음 단계 기록: ledger.sh 단계	Record the next stage: ledger.sh stage
-- 다음 단계 기록: ledger.sh 단계	- Record the next stage: ledger.sh stage
+다음 단계 기록: ledger.sh 단계	Record the next stage: `ledger.sh 단계`
+- 다음 단계 기록: ledger.sh 단계	- Record the next stage: `ledger.sh 단계`
 차례 안내: 야간비행 플러그인 폴더의 asc.py 준비	Steps: set up asc.py in the Nightflight plugin folder
 - 차례 안내: 야간비행 플러그인 폴더의 asc.py 준비	- Steps: set up asc.py in the Nightflight plugin folder
 차례 안내: 야간비행 플러그인 폴더의 gplay.py 준비	Steps: set up gplay.py in the Nightflight plugin folder
 - 차례 안내: 야간비행 플러그인 폴더의 gplay.py 준비	- Steps: set up gplay.py in the Nightflight plugin folder
 먼저 결정할 사항 {n}개	Decisions to make first: {n}
-직접 하실 일 {n}개	Things to do yourself: {n}
+직접 하실 일 {n}개	For you to do: {n}
 직접 테스트할 일 {n}개	Things to test yourself: {n}
-확인 필요 {n}개	Needs check: {n}
+확인 필요 {n}개	Needs review: {n}
 항목을 누르면 작업 요청문이 복사됩니다. 여러 항목을 요청하려면 체크박스를 선택한 뒤 그 아래에 나오는 버튼을 누르십시오.	Click an item to copy its work request. To request several items, select their checkboxes and click the button that appears below them.
 신청한 지 {q}	Time since applying: {q}
 {n} / 최대 {n}일	{n} / up to {n} days
@@ -450,7 +446,7 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 플랜을 아직 확인하지 못했습니다	The plan could not be checked yet
 현재 프로젝트	Current project
 아이디어 · 검증 단계의 프로젝트는 제품등록을 쓰지 않습니다.	Projects in the idea and validation stages do not use a product slot.
-이 컴퓨터의 무료 {n}년 동안 아이디어 · 검증과 제품 {n}개를 무료로 쓰실 수 있습니다. 설계를 시작하면 제품 {n}개가 등록됩니다.	During the {n}-year free period on this computer, you can use idea and validation work and {n} product for free. Starting design registers {n} product.
+이 컴퓨터의 무료 {n}년 동안 아이디어 · 검증과 제품 {n}개를 무료로 쓰실 수 있습니다. 설계를 시작하면 제품 {n}개가 등록됩니다.	For your {n}-year free period on this computer, ideas, validation, and {n} product are free. Starting the Design stage uses {n} product slot.
 점검 항목을 모두 끝냈습니다	All checks are done
 점검 항목을 모두 끝냈습니다 · 넘어감 {n}개	All checks are done · Skipped: {n}
 남은 점검 항목 {n}개 · {q}	Checks left: {n} · {q}
@@ -559,9 +555,9 @@ AI가 지정한 상태 {n}가지 — 확인이 필요합니다	The AI chose {n} 
 나머지 출시 절차 {n}개 — 출시 단계에서 자세히 안내합니다	{n} other launch steps. Details appear in the Launch stage.
 해당	Applies
 해당 없음	Does not apply
-모름 이유	Reason unknown
+모름 이유	Why it's unknown
 답 안 한 질문 {n}개	{n} unanswered questions
-그 밖에 직접 하실 절차	Other steps you do yourself
+그 밖에 직접 하실 절차	Other steps for you to do
 개발 기능 {n}개 중 표준방식 확인 {q} · 실패경로 확인 {q} · 상태머신(기능의 진행 순서를 정의한 설계) 구현 {q}	Of {n} Build features, standard methods checked: {q} · failure paths checked: {q} · state machine (a design that defines the order of steps in a feature) built: {q}
 이 기능은 확인한 표준방식이 아직 없습니다.	No standard method has been checked for this feature yet.
 표준방식	Standard method
@@ -644,7 +640,7 @@ AI가 같은 부분을 다시 수정한 횟수	Times the AI edited the same part
 이용권 필요	Pass required
 서버 오류	Server error
 표준방식 확인 {n} · 다시 확인 필요 {n} · 우리가 배운 규칙 {n}	Standard method checks {n} · Need recheck {n} · Rules we learned {n}
-«{q}» 이미 완료했습니다	"{q}" I have already done this.
+«{q}» 이미 완료했습니다	I've already done "{q}".
 이미 완료했습니다	I have already done this.
 테스트 단계 «{q} / {q}» 완료로 표시해	Please mark "{q} / {q}" in the Test stage as Done.
 테스트 단계 «{q} / {q}» 넘어감으로 표시해	Please mark "{q} / {q}" in the Test stage as Skipped.
@@ -665,7 +661,6 @@ AI가 같은 부분을 다시 수정한 횟수	Times the AI edited the same part
 기록에 연결되지 않음 — 이 화면은 기록에 연결되어야 내용이 보입니다	Not connected to the records. This screen shows content only when it is connected to the records.
 연결되지 않음	Not connected
 저장된 버전	Saved version
-{n}-{n} {n}:{n} 판	Version from {n}-{n} {n}:{n}
 실시간	Live
 끊김	Disconnected
 모름	Unknown
@@ -940,14 +935,14 @@ AI 답하기	AI replies
 독립 확인 대기	Waiting for an independent check
 독립 확인 실패	Independent check failed
 사람 확인 필요	Needs a person to check
-합격 기준: {q}	Pass check: {q}
+합격 기준: {q}	Done when: {q}
  · AI 초안	 · AI draft
 안 정한 것 {n}개	Not decided yet: {n}
-«{q}» 정하기 — 선택지로 물어 주세요	Decide «{q}» — ask me with choices
-(추측했다면: {q})	(would have guessed: {q})
+«{q}» 정하기 — 선택지로 물어 주세요	Decide "{q}" — ask me with choices
+(추측했다면: {q})	(my guess would have been: {q})
 클로드 코드	Claude Code
 작동하지 않는 기능	Features that do not work
-출시 전에 고칠 곳입니다 · 누르면 고치는 요청문이 복사됩니다	Fix these before launch · tap to copy a fix request
+출시 전에 고칠 곳입니다 · 누르면 고치는 요청문이 복사됩니다	Fix these before launch · click to copy a fix request
 눌러도 반응이 없습니다	Nothing happens when tapped
 이 화면으로 가는 버튼이 없습니다	No button leads to this screen
 이름을 읽지 못한 버튼	Button with no readable name
@@ -962,7 +957,7 @@ AI 답하기	AI replies
 코드 위치: 	Code location:
 지금 할 세부기능을 모두 완료했습니다	All sub-features for now are done
 추후 확인	Check later
-AI가 하는 확인	Checks AI does
+AI가 하는 확인	Checks the AI does
 직접 하실 확인	Checks for you
 자동 시험 통과	Automated tests pass
 작동 안 하는 버튼과 못 가는 화면 없음	No buttons that do nothing and no screens without a way in
@@ -975,5 +970,17 @@ AI가 하는 확인	Checks AI does
 직접 테스트 — 어색한지는 직접 판단함	Test it yourself — only you can judge what feels awkward
 · 추후 확인	· check later
 · 직접 하실 일	· for you to do
-· 그중 추후 확인	· of which check later
-· 그중 직접 하실 일	· of which for you to do
+· 그중 추후 확인	· of them, to check later
+· 그중 직접 하실 일	· of them, for you to do
+컴퓨터 상태 — 눌러서 자세히 보기	Computer status — click for details
+컴퓨터 상태 — 눌러서 접기	Computer status — click to collapse
+컴퓨터 상태 측정하지 못했습니다	Couldn't measure this computer's status
+여유 저장공간 측정하지 못했습니다	Couldn't measure free storage
+여유 저장공간 {q}	Free storage: {q}
+작동 중인 시뮬레이터 {q}	Running simulators: {q}
+{q} · 종료 후 남은 프로세스 {q}	{q} · still running after closing: {q}
+종료 후 남은 프로세스	Still running after closing
+다른 프로젝트 보기	Show other projects
+{q} · 그중 추후 확인 {n}개	{q} · {n} of them to check later
+{q} · 그중 직접 하실 일 {n}개	{q} · {n} of them for you to do
+합격 기준: {q} · AI 초안	Done when: {q} · AI draft

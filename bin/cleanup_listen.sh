@@ -60,5 +60,9 @@ if 말:
   exit 0
 fi
 
+_nf_sid="$(printf '%s' "$IN" | python3 -I -c 'import json,sys
+try: print(str((json.load(sys.stdin) or {}).get("session_id") or "").replace("\n",""))
+except Exception: pass' 2>/dev/null)"
+NF_SESSION="$_nf_sid" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
 printf '%s' "$IN" | HERE="$HERE" python3 -I "$NF_PYDIR/cleanup_words.py" 2>/dev/null || true
 exit 0

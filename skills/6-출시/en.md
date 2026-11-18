@@ -12,7 +12,7 @@ When you need to ask the user something, follow `${CLAUDE_PLUGIN_ROOT}/data/aski
 
 ## What to ask the brain server
 
-The checklist of the most common rejection reasons and the App Review durations come from the brain server.
+The checklist of the most common rejection reasons and store review times come from the brain server.
 
 On entering this stage, query the brain server first:
 
@@ -36,14 +36,14 @@ Google Play works the same way: `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 준비`.
 ## What the AI makes for the user
 
 - Privacy policy draft: `ledger.sh 개인정보초안`. It writes the draft from the records and the code, and leaves the fields it cannot know as `확인 필요` (needs checking). The user publishes it.
-- Screenshots for the store: `SHOT_STORE=1 "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <screens…>`. It shoots on the mid-size iPhone that Apple always accepts and cleans up the status bar. If the large size is also needed, set `SHOT_STORE_DEVICE="Pro Max"`.
+- Screenshots for the store: `SHOT_STORE=1 "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <screens…>`. It shoots at the mid-size iPhone screenshot size that Apple requires and cleans up the status bar. If the large size is also needed, set `SHOT_STORE_DEVICE="Pro Max"`.
 - Entering store information: `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" meta`, `review-notes` and `screenshots`. Viewing needs no flag. For changing, use `set` or `upload`: they show a preview first, and you add `--confirm` only after the user says it is fine.
   - Use these only on a version that has not been submitted yet.
-  - The user presses the submit button (sending to App Review) on the web.
+  - Never submit for review yourself. Only the user clicks Submit for Review, on the web.
 
 ## Do not do these in this stage
 
 1. "Upload" and "it arrived" are two steps. Combine them and a false success slips through.
-2. The user presses every action that leaves this computer for the outside.
+2. Never perform an action that reaches the outside world yourself (uploading, submitting, publishing, sending). The user presses that button.
 3. Do not show the rejection text as it is. Explain what the problem is and what to fix.
 4. Do not invent day counts. State a review duration only from what the gate has confirmed against the original source.

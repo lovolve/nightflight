@@ -14,10 +14,10 @@ if [ "$#" -gt 0 ]; then
   set -- "${_a[@]}"
 fi
 
-UNVERIFIED_TOKENS="안함 안봄 못봄 못봤 못했 못함 못확인 미확인 빌드만 코드에있 코드를읽 코드읽 기존코드 README에 적혀있"
+UNVERIFIED_TOKENS="안함 안봄 못봄 못봤 못했 못함 못확인 미확인 빌드만 코드에있 코드를읽 코드읽 기존코드 README에 적혀있 notdone notverified notchecked nottested unverified untested couldnot couldn't didnot didn't buildonly codeonly readthecode"
 unverified() {
-  local h t; h=$(printf '%s' "${1:-}" | tr -d ' ')
-  for t in $UNVERIFIED_TOKENS; do case "$h" in *"$t"*) return 0 ;; esac; done
+  local h t; h=$(printf '%s' "${1:-}" | tr -d ' ' | tr '[:upper:]' '[:lower:]')
+  for t in $(printf '%s' "$UNVERIFIED_TOKENS" | tr '[:upper:]' '[:lower:]'); do case "$h" in *"$t"*) return 0 ;; esac; done
   return 1
 }
 

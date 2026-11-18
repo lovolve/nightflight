@@ -5,8 +5,8 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 ## Show a plan first
 
 - When: a big change that is not in the design table, a data structure change, a fix that spans several features.
-- How: use `EnterPlanMode` to write the plan and show it, and make the fix after the user approves.
-- When not: while building the design table's sub-features in order. Do not talk to the user during the Build stage.
+- How: use `EnterPlanMode` to write the plan and show it, and make the changes after the user approves.
+- When not: while building the design table's sub-features in order. Do not interrupt the user during the Build stage.
 
 ## Progress display
 
@@ -18,7 +18,7 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 
 - When: after you build or change a web screen. Only if the desktop app's browser tool is available.
 - How:
-  1. Write the dev server in `.claude/launch.json`. Do not write secrets in it.
+  1. Add the dev server to `.claude/launch.json`. Do not write secrets in it.
   2. Start the server with `preview_start`.
   3. Read the content and the errors with `read_page` and `read_console_messages`.
   4. Click the buttons. If something is wrong, fix it and look again.
@@ -27,7 +27,7 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 ## Code review
 
 - When: before leaving the Build stage for the Test stage, and before entering the Launch stage.
-- Ask the user first, and run it only after approval. Say together with the question that it uses more of their quota. Ask as `data/asking.en.md` says.
+- ⛔ Ask the user first and run it only after they approve. When you ask, mention that it uses more of their quota. Ask as `data/asking.en.md` says.
 - How: after approval, call the `code-review` skill. If that skill does not exist, hand the review to the `code-reviewer` agent.
 - If the user declines, do not ask again; move on. Ask only once at the same point.
 
@@ -37,7 +37,7 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 - How:
   1. Run the `independent_check.py 설명 <feature> <sub-feature>` command from the notice. It writes a brief file.
   2. Start the `feature-verifier` agent with the Agent tool. Give it only that brief file path. Do not add your own explanation or say it is done.
-  3. The agent records the result. A pass marks it done. A fail or a person check leaves it as needing a check.
+  3. The agent records the result. A pass marks it done. A fail, or a verdict that a person must check, leaves it marked "needs review".
 - It does not block. On a fail, tell the user and continue.
 - If this tool cannot start agents, tell the user the independent check could not run. Do not record the result yourself.
 - If the user says a feature is also important, run `ledger.sh 중요기능 <feature>`. If they say it is not, run `ledger.sh 중요기능뺌 <feature>`.

@@ -119,6 +119,8 @@ run_one acceptance.py          "개발 세부기능에 합격 기준이 있나 �
 run_dev lint_board_wiring.py     "계산은 되는데 화면에 안 가는 것이 있나"       -
 run_dev lint_cockpit_classes.py  "조종석에서 막대 전용 이름을 다른 자리에 썼나"   -
 run_dev lint_cockpit_scale.py    "조종석 글자 크기·굵기·간격이 정한 단계 안인가"   -
+run_dev lint_cockpit_english.py  "조종석 새 글에 영어 글이 있나"                 -
+run_dev lint_bilingual.py        "한국어 · 영어 두 판이 빠진 곳이 있나"           -
 run_dev lint_cockpit_shape.py    "조종석 꼴 표가 지금 기록 자료를 다 덮나"   -
 run_dev lint_cockpit_words.py    "조종석 화면 글에 «앱»을 썼나(«제품»으로)"      -
 run_dev lint_file_names.py      "파일 이름에 한글이 들어갔나(영어로 통일)"      -

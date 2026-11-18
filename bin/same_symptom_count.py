@@ -8,7 +8,7 @@ seen = f"🔴 같은 자리를 {n}번째 고치고 있습니다."
 try:
     with open(os.path.join(os.environ.get("NIGHTFLIGHT_HOME") or os.path.expanduser("~/.nightflight"), "language"), encoding="utf-8") as _언어파일:
         if _언어파일.read(2) == "en":
-            seen = f"🔴 The same place has now been changed {n} times."
+            seen = f"🔴 The same file has now been edited {n} times."
 except OSError:
     pass
 

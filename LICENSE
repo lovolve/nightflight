@@ -1,6 +1,6 @@
 야간비행 라이선스
 
-Copyright (c) 주식회사 포그리드 (Pawgrid Co., Ltd.). All rights reserved.
+Copyright (c) 주식회사 포그리드 (Pawgrid Co., Ltd., 이하 「회사」). All rights reserved.
 
 이 저장소의 코드와 글(이하 「소프트웨어」)은 공개되어 있지만 오픈소스가 아닙니다.
 한국어판이 공식이며, 영어판은 참고용입니다.
@@ -23,7 +23,7 @@ Copyright (c) 주식회사 포그리드 (Pawgrid Co., Ltd.). All rights reserved
 
 3. 이용약관과의 관계
    야간비행 서버와 이용권 이용에는 이용약관이 함께 적용됩니다.
-   https://lovolve.app/nightflight/legal/terms.html
+   https://nightflight.lovolve.app/legal/terms.html
 
 4. 보증과 책임
    소프트웨어는 있는 그대로 제공됩니다. 회사는 관련 법이 허용하는 범위에서
@@ -42,9 +42,10 @@ Copyright (c) 주식회사 포그리드 (Pawgrid Co., Ltd.). All rights reserved
 
 Nightflight License (English, for reference)
 
-Copyright (c) Pawgrid Co., Ltd. All rights reserved.
+Copyright (c) Pawgrid Co., Ltd. (the "Company"). All rights reserved.
 
-The code and text in this repository (the "Software") are publicly viewable but are not open source.
+The code and text in this repository (the "Software") are publicly available but are not open source.
+The Korean version is the official version of this license. This English version is provided for reference only.
 
 1. You may
    - download, install and run the Software on your own computer
@@ -54,7 +55,7 @@ The code and text in this repository (the "Software") are publicly viewable but 
 
 2. You may not
    - publish, distribute, sell or rent the Software, original or modified
-   - build or distribute a version that removes or bypasses the subscription or product registration checks
+   - distribute a version of the Software that removes or bypasses the license (pass) or product registration checks
    - offer a similar product or service based on the Software
    - collect and publish, distribute or sell guidance received from the Nightflight server
 
@@ -62,18 +63,18 @@ The code and text in this repository (the "Software") are publicly viewable but 
    A fork grants no other rights under this license.
 
 3. Terms of Service
-   The Terms of Service also apply to the Nightflight server and subscriptions.
-   https://lovolve.app/nightflight/legal/terms.html
+   The Terms of Service also apply to your use of the Nightflight server and of any Nightflight pass.
+   https://nightflight.lovolve.app/legal/en/terms.html
 
 4. Warranty and liability
    The Software is provided "as is". To the extent permitted by law, the Company disclaims all
    warranties, including fitness for a particular purpose, and is not liable for damages from its use.
 
 5. Termination
-   Your rights end if you breach this license.
+   If you breach this license, your right to use the Software ends.
 
-6. Governing law
-   This license is governed by the laws of the Republic of Korea. The Seoul Central District Court has jurisdiction.
+6. Governing law and jurisdiction
+   This license is governed by the laws of the Republic of Korea. Any dispute under this license will be brought before the Seoul Central District Court.
 
 7. Contact
    support@lovolve.app

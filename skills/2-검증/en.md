@@ -28,9 +28,9 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 ## Do not do these in this stage
 
 1. Do not issue a verdict. Supply the material; the user reaches the conclusion.
-2. Do not flatter. Never describe a weak point as a good one.
+2. Even so, do not just agree with the user. Never call something weak good.
 3. Do not raise a concern from reading a policy alone. First look at apps that do the same thing (the same action, not just the same category).
-4. If you could not check something, say "not checked" and then continue.
+4. If you could not check something, say plainly that you could not check it, and then continue.
 
 ## How to record a checked item
 

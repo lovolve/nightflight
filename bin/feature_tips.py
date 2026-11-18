@@ -50,8 +50,7 @@ def 표():
 
 
 def 등록한_프로젝트인가() -> bool:
-    폴더 = Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
-    return (폴더 / ".nightflight").exists() or (폴더 / ".claude" / "ledger.tsv").exists()
+    return True
 
 
 def 답(글: str) -> None:
@@ -120,6 +119,10 @@ def 처리(입력: dict) -> None:
 
 if __name__ == "__main__":
     try:
-        처리(json.load(sys.stdin) or {})
+        _입력 = json.load(sys.stdin) or {}
+        sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from registered import 등록된_대화인가
+        if 등록된_대화인가(_입력):
+            처리(_입력)
     except Exception:
         pass

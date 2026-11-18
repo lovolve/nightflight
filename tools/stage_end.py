@@ -136,6 +136,18 @@ def 조건(idx, lp=None):
     return out
 
 
+def 첫가져오기(lp=None):
+    lp = Path(lp) if lp else _기록()
+    if not any((Path(lp).parent / d / "import.tsv").is_file() for d in ("internal", ".")):
+        return False
+    for c in _줄들(lp):
+        if len(c) > 2 and c[1] == "단계":
+            n = 번호(c[2], lp)
+            if n is not None and n > 0:
+                return False
+    return True
+
+
 def 넘기(목표이름, 이유="", lp=None, 적기=False):
     lp = Path(lp) if lp else _기록()
     to = 번호(목표이름, lp)
@@ -145,7 +157,7 @@ def 넘기(목표이름, 이유="", lp=None, 적기=False):
         print("     프로젝트가 따로 쓰는 이름이면 먼저 ledger.sh 단계연결 \"<이름>\" <0~8> 로 이으십시오.", file=sys.stderr)
         return 2
     cur = 지금(lp)
-    if cur is None or to <= cur or (cur >= 6 and to >= 6):
+    if cur is None or to <= cur or (cur >= 6 and to >= 6) or 첫가져오기(lp):
         return 0
     안됨 = [(cur, x) for x in 조건(cur, lp) if not x["됨"]]
     for k in range(cur + 1, to):
@@ -193,6 +205,8 @@ if __name__ == "__main__":
     if a[:1] == ["앱설정빈것"]:
         print(" · ".join(앱설정빈것()))
         sys.exit(0)
+    if a[:1] == ["첫가져오기"]:
+        sys.exit(0 if 첫가져오기() else 1)
     if a[:1] == ["넘기"]:
         sys.exit(넘기(a[1] if len(a) > 1 else "", a[2] if len(a) > 2 else ""))
     if a[:1] == ["건너뜀적기"]:

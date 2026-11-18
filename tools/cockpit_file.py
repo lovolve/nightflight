@@ -86,7 +86,7 @@ def 짓는다(뿌리: Path) -> Path | None:
     나갈곳.parent.mkdir(parents=True, exist_ok=True)
     박음 = json.dumps(판, ensure_ascii=False).replace("</", "<\\/")
     몸 = 글.replace(자리, "/*__BOARD__*/" + 박음, 1)
-    껍질 = ('<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n'
+    껍질 = ('<!DOCTYPE html>\n<html lang="' + 언어() + '">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
             '</head>\n<body>\n')
     임시 = 나갈곳.with_name(나갈곳.name + ".tmp.%d" % os.getpid())

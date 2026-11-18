@@ -51,6 +51,14 @@ def 영어인가():
 
 
 def main():
+    try:
+        _입력 = json.load(sys.stdin) or {}
+    except Exception:
+        _입력 = {}
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from registered import 등록된_대화인가
+    if not 등록된_대화인가(_입력):
+        return
     지금 = 지금판()
     if not 지금:
         return

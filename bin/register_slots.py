@@ -10,7 +10,7 @@ def 말(ko, en):
     return en if 영어 else ko
 
 
-주소 = "https://www.lovolve.app/nightflight/#price"
+주소 = "https://nightflight.lovolve.app/#price"
 열쇠 = os.environ["KEYSH"]
 try:
     d = json.loads(os.environ.get("KAN") or "")
@@ -40,16 +40,16 @@ else:
         print(말("  이 제품은 이미 제품등록돼 있습니다(" + ("무료 제품" if bid == 무료 else "플랜") + ").",
                  "  This product already has a product slot (" + ("free slot" if bid == 무료 else "plan") + ")."))
     elif not 무료 and 끝 and 끝 < 오늘 and not d.get("있나"):
-        print(말("  이 컴퓨터의 무료 1년이 끝났습니다(" + 끝 + "). 설계 단계부터는 이용권이 필요합니다. 플랜 안내: " + 주소,
-                 "  The free year on this computer ended on " + 끝 + ". From Design on, you need a plan. Plans: " + 주소))
+        print(말("  이 컴퓨터의 무료 1년이 끝났습니다(" + 끝 + "). 설계 단계부터는 이용권이 필요합니다. 플랜 안내: " + 주소 + " · 이미 사셨으면 «야간비행 로그인»이라고 말씀하십시오.",
+                 "  The free year on this computer ended on " + 끝 + ". From Design on, you need a plan. Plans: " + 주소 + " · If you already bought one, say “Nightflight login”."))
     elif not 무료:
         print(말("  설계 단계에 들어가면 이 제품이 이 컴퓨터의 무료 제품으로 제품등록됩니다(이 컴퓨터의 무료 1년 동안" + ((" · " + 끝 + "까지") if 끝 else "") + ").",
                  "  When this product reaches Design, it takes this computer's free product slot (free for one year on this computer" + ((", until " + 끝) if 끝 else "") + ")."))
     elif not d.get("있나"):
         print(말("  ⚠️ 이 컴퓨터의 무료 제품은 이미 «%s» 입니다(컴퓨터 한 대에 1개)." % 보임(무료),
                  "  ⚠️ This computer's free slot is already used by \"%s\" (one per computer)." % 보임(무료)))
-        print(말("     아이디어 · 검증 단계는 그대로 쓰실 수 있고, 설계 단계부터는 이 제품에 이용권이 필요합니다. 플랜 안내: " + 주소,
-                 "     Plan and Validate still work. From Design on, this product needs a plan. Plans: " + 주소))
+        print(말("     아이디어 · 검증 단계는 그대로 쓰실 수 있고, 설계 단계부터는 이 제품에 이용권이 필요합니다. 플랜 안내: " + 주소 + " · 이미 사셨으면 «야간비행 로그인»이라고 말씀하십시오.",
+                 "     Plan and Validate still work. From Design on, this product needs a plan. Plans: " + 주소 + " · If you already bought one, say “Nightflight login”."))
     elif 칸 is not None and len(앱들) + len(접은) >= int(칸):
         _쓴것 = ", ".join([보임(a) for a in 앱들] + [보임(a) + 말("(접음)", " (paused)") for a in 접은])
         print(말("  ⚠️ 플랜의 제품등록 %d개를 이미 다 쓰셨습니다(무료 제품 %s · 유료 %s)." % (int(칸) + 1, 보임(무료), _쓴것),

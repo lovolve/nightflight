@@ -27,7 +27,7 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 
 ## Do not do these in this stage
 
-1. Do not end with "not enough". For each blocked item, give one action that undoes the block.
+1. Do not end with "not enough". For each blocked item, give one action that clears it.
 2. Do not ask about anything a machine can read.
 3. For what you cannot read, do not ask a question. Give a notice that says only when it will be needed.
 4. Do not end with "this won't work". Give the path that does work (Android, web) alongside.

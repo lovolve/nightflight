@@ -13,19 +13,45 @@ _ENV = ("NIGHTFLIGHT_PROJECT_DIR",
 _DIRS = (".nightflight", ".claude")
 
 
-def root() -> Path:
-    for k in _ENV:
-        v = os.environ.get(k)
-        if v and Path(v).is_dir():
-            return Path(v).resolve()
+def _git맨위(곳: Path):
     try:
-        out = subprocess.run(["git", "-c", "core.fsmonitor=false", "rev-parse", "--show-toplevel"],
+        out = subprocess.run(["git", "-c", "core.fsmonitor=false", "-C", str(곳), "rev-parse", "--show-toplevel"],
                              capture_output=True, text=True, timeout=3)
         if out.returncode == 0 and out.stdout.strip():
             return Path(out.stdout.strip()).resolve()
     except Exception:
         pass
-    return Path.cwd().resolve()
+    return None
+
+
+def _등록된곳(r: Path) -> Path:
+    ppl = Path(os.environ.get("NIGHTFLIGHT_HOME") or (Path.home() / ".nightflight")) / "people.tsv"
+    try:
+        등록 = sorted({c[2] for c in (l.split("\t") for l in ppl.read_text(encoding="utf-8").splitlines())
+                     if len(c) > 2 and c[1] == "프로젝트" and c[2]})
+    except OSError:
+        return r
+    if not 등록:
+        return r
+    for 원함 in (r, _git맨위(r)):
+        if 원함 is None:
+            continue
+        for e in 등록:
+            try:
+                if Path(e).is_dir() and Path(e).resolve() == 원함:
+                    return Path(e).resolve()
+            except OSError:
+                continue
+    return r
+
+
+def root() -> Path:
+    for k in _ENV:
+        v = os.environ.get(k)
+        if v and Path(v).is_dir():
+            return _등록된곳(Path(v).resolve())
+    t = _git맨위(Path.cwd())
+    return _등록된곳(t if t else Path.cwd().resolve())
 
 
 _표식 = "야간비행이 더한 줄"

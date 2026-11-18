@@ -6,7 +6,7 @@ case "$KIND" in
     _WHY=""; [ "${3:-}" = "--이유" ] && _WHY="${4:-}"
     _SN=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 번호 "$NAME" 2>/dev/null) || _SN=""
     NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 넘기 "$NAME" "$_WHY" || exit 1
-    if [ "$_SN" = 4 ] && ! printf '%s\n' "$@" | grep -qx -- '--물었음'; then
+    if [ "$_SN" = 4 ] && ! printf '%s\n' "$@" | grep -qx -- '--물었음' && ! NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 첫가져오기 2>/dev/null; then
       _UD="$(NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/acceptance.py" 넘어가기전 4 2>/dev/null)"
       if [ -n "$_UD" ]; then printf '%s\n' "$_UD"; exit 1; fi
     fi

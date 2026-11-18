@@ -62,7 +62,7 @@ CKEY="$(nf_ckey)"
 몸() { local v; for v in "$@"; do case "$v" in *$'\x1f'*) echo "{}"; return 1 ;; esac; done
   local IFS=$'\x1f'; NF_PAIRS="$*" python3 -I -c 'import json,os; a=os.environ["NF_PAIRS"].split("\x1f"); print(json.dumps(dict(zip(a[::2], a[1::2])), ensure_ascii=False))'; }
 못닿음() {
-  echo "$(두말 "지금 서버에 닿지 못했습니다. 라이선스 키가 틀린 것이 아닙니다 — 잠시 뒤에 다시 해 주십시오." "Couldn't reach the Nightflight server. Your key is fine — please try again in a moment.")" >&2
+  echo "$(두말 "지금 서버에 닿지 못했습니다. 계정이나 이용권에 문제가 있는 것이 아닙니다. 잠시 뒤에 다시 해 주십시오." "Couldn't reach the Nightflight server. Your account and plan are fine. Please try again in a moment.")" >&2
   exit 1
 }
 
@@ -86,7 +86,8 @@ sys.path.insert(0, os.environ["NF_PYDIR"]); import product_name; 표 = product_n
 d = json.loads(os.environ["ANSWER"])
 en = os.environ.get("NFL") == "en"
 if not d.get("있나"):
-    print("  No plan on this computer." if en else "  이 컴퓨터에는 이용권이 없습니다.")
+    print("  No plan on this computer. If you bought one, say “Nightflight login”. To buy: https://nightflight.lovolve.app/account/" if en
+          else "  이 컴퓨터에는 이용권이 없습니다. 사셨으면 «야간비행 로그인»이라고 말씀하십시오. 사려면: https://nightflight.lovolve.app/account/")
     raise SystemExit(0)
 칸 = d.get("칸수")
 앱 = d.get("앱들") or []
@@ -111,7 +112,7 @@ PY
     exit 0 ;;
   등급)
     echo "  $(두말 "플랜 바꾸기 · 다시 사기 · 다른 컴퓨터 해제는 내 계정 화면에서 합니다. 이 컴퓨터를 연결한 계정으로 로그인해 주십시오:" "Change your plan, renew, or disconnect other computers on your account page. Sign in with the account this computer is connected to:")"
-    echo "    https://account.lovolve.app"
+    echo "    https://nightflight.lovolve.app/account/"
     exit 0 ;;
   앱빼기)
     BID="${2:?비울 제품 번호를 적어 주십시오 — 「license_key.sh 보기」에 나옵니다}"

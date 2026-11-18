@@ -6,7 +6,7 @@ This file says only what this stage is for. The symptom tables, the actual proce
 
 Decision 4: check the screens.
 
-**Do the checks AI can do first.** Test slots come in two groups.
+**Do every check you can do yourself first.** Test slots come in two groups.
 - `AI가 하는 확인` (AI checks): one full run from launch to finish · automated tests pass · no buttons that do nothing or screens with no way in · screens shown on failure · other screen sizes
 - `직접 하실 확인` (checks for the user): a real phone · real account sign-in and live payment · finding what feels awkward. They show right away under "test it yourself" in the cockpit.
 Do not hand AI checks to the user. Only when you tried and got stuck, hand it over with `ledger.sh 세부상태 <feature> <sub> "확인 필요" "직접 — <why it is blocked>"`.

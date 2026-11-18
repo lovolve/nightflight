@@ -21,7 +21,7 @@ Keep every confirmed feature in the design table. Create its slots now: stage, t
 - Line 4 prints the list to get confirmed.
 
 - Get the user to confirm the list you made. What goes in and what is cut is the user's decision.
-- When you enter planning or design, a checklist of features most apps have but plans often miss arrives. Propose the rows that apply **before the user asks**, and record each answer: `ledger.sh 빠진기능 "<item>" 넣음|해당없음|다음번 "<why>"`. Without these records, design does not count as finished.
+- When you enter planning or design, a checklist of features most apps have but plans often miss arrives. Propose the rows that apply **before the user asks**, and record each answer: `ledger.sh 빠진기능 "<item>" 넣음|해당없음|다음번 "<why>"`. Without these records, the missing-features check shows as unfinished when you close the Design stage.
 - The cockpit's progress shows how far these slots are filled. Never report progress from the log of finished work.
 
 ## Screen flow: the cockpit's "screen flow" is drawn from these commands
@@ -68,7 +68,7 @@ Tasks:
 
 - Write each task in the user's words, such as "Get started", "Log what I spent", "Review this month". A task is not a feature name.
 - You derive tasks from the plan, from each screen's "when seen" and from the transitions. Do not add questions to the user for this.
-- Every screen must belong to some task. The end-of-conversation check reports screens that are missing and tasks that have none.
+- Every screen must belong to some task. The end-of-conversation check reports screens that belong to no task, and tasks that point to a screen that does not exist.
 
 Changing screens:
 
@@ -146,5 +146,5 @@ Write the text in quotes in these commands in English. The Korean words in the c
 2. "It feels like X" is reference language. It means bring that reference, not remake it.
 3. For the first release, the minimum is the default.
 4. Do not show the technical design. Give only the result: "I can build it" or "It is hard, because …".
-5. Do not turn the user's words into a finished product by your own interpretation. Offer topics to choose from.
+5. Do not turn the user's words into a finished product by your own interpretation. Offer two or three directions for the user to choose from or combine.
 6. Do not stop at a feature list. If you record the points and not the lines between them, "fixing one thing breaks another" stays exactly as it is. One chat product hit this almost 100 times.

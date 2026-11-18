@@ -227,7 +227,7 @@ if isinstance(문, dict) and 문.get("까닭") == "끝남":
     except OSError:
         pass
     say("⚠️ **이 컴퓨터의 무료 1년이 끝났습니다**" + ((" (" + _끝 + ")") if _끝 else "") + " — 단계 안내를 받으려면 이용권이 필요합니다.")
-    say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 컴퓨터의 무료 1년이 끝났습니다. 계속 쓰시려면 이용권이 필요합니다. 이미 사셨으면 «야간비행 로그인»이라고 말씀해 주십시오.» 플랜 안내: https://www.lovolve.app/nightflight/#price")
+    say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 컴퓨터의 무료 1년이 끝났습니다. 계속 쓰시려면 이용권이 필요합니다. 이미 사셨으면 «야간비행 로그인»이라고 말씀해 주십시오.» 플랜 안내: https://nightflight.lovolve.app/#price")
 elif isinstance(문, dict) and 문.get("까닭") in ("이용권", "무료기간"):
     try:
         _끝남표 and os.path.exists(_끝남표) and os.remove(_끝남표)
@@ -240,7 +240,7 @@ elif isinstance(문, dict) and 문.get("까닭") in ("이용권", "무료기간"
         except ValueError:
             _남 = None
         if _남 is not None and 0 <= _남 <= 30 and (_남 <= 7 or _남 % 7 == 0 or _남 == 30):
-            say("⏳ 이 컴퓨터의 무료 1년이 **%d일 뒤(%s)** 끝납니다. 첫 답에서 사용자에게 한 줄로 알리십시오(플랜 안내: https://www.lovolve.app/nightflight/#price · 이미 사셨으면 «야간비행 로그인»)." % (_남, _끝))
+            say("⏳ 이 컴퓨터의 무료 1년이 **%d일 뒤(%s)** 끝납니다. 첫 답에서 사용자에게 한 줄로 알리십시오(플랜 안내: https://nightflight.lovolve.app/#price · 이미 사셨으면 «야간비행 로그인»)." % (_남, _끝))
 if isinstance(문, dict) and 문.get("까닭") == "무료앱등록":
     say("⭐ 이 제품이 이 컴퓨터의 **무료 제품**으로 등록됐습니다" + ((" — 무료 1년은 " + _끝 + "까지") if _끝 else "") + ".")
     say("   첫 답에서 사용자에게 한 줄로 알리십시오: «이 제품을 무료 제품으로 등록했습니다. 이 컴퓨터의 무료 1년 동안 쓰실 수 있습니다.»")
@@ -334,6 +334,11 @@ say()
 _pt = (J("features.json") or {}).get("설계표") or {}
 _ps = _pt.get("단계") or {}
 _stg = now.get("stage") if isinstance(now.get("stage"), int) else None
+_단계스킬 = {0: "0-진단", 1: "1-기획", 2: "2-검증", 3: "3-설계", 4: "4-개발", 5: "5-테스트", 6: "6-출시", 7: "7-수정", 8: "8-출시후"}
+if _stg in _단계스킬:
+    say("🧭 **지금 단계: %s** — 이 단계의 일은 `nightflight:%s` 스킬대로 하십시오(본문: %s/skills/%s/SKILL.md · 영어 사용자는 en.md)."
+        % (적음(str(now.get("stageLabel") or _단계스킬[_stg]), 30), _단계스킬[_stg], os.path.dirname(os.environ.get("HERE", "")) or "${CLAUDE_PLUGIN_ROOT}", _단계스킬[_stg]))
+    say()
 if not _ps:
     if _stg is not None and _stg >= 3:
         say("📐 **설계표가 비었습니다** — 조종석의 진행경과가 빈칸으로 보입니다.")

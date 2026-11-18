@@ -2,7 +2,7 @@
 
 Run this only after Nightflight recommended a red team and the user agreed to run it. Typical moments: before development starts, before launch, and the first time payment, login, personal data, or server-permission features go in. A development team and a security team review the design and the code separately and look for holes. If the user wants to skip, do not run it.
 
-Design stability and security must not be left thin. The red team is only recommended. Explain why it is needed. The user may skip it.
+Design stability and security are the two areas never to leave half-done. The red team is only recommended. Explain why it is needed. The user may skip it.
 
 ## When
 

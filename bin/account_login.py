@@ -189,7 +189,7 @@ def 기다림읽기():
 
 
 def 우리주소(주):
-    return 주 == 계정주소() + "/link" or 주.startswith(계정주소() + "/link?")
+    return any(주 == 뿌리 + "/link" or 주.startswith(뿌리 + "/link?") for 뿌리 in (계정주소(), "https://nightflight.lovolve.app/account"))
 
 
 def 주소보임(d):
@@ -286,7 +286,7 @@ def 대기(최대=100):
                     if 상태 == "넘침":
                         찍기("이 계정에는 컴퓨터가 이미 3대 연결돼 있습니다. 내 계정 화면에서 한 대를 해제하신 뒤 다시 로그인해 주십시오.",
                             "This account already has 3 computers. Disconnect one on your account page, then sign in again.")
-                        print("    " + 계정주소())
+                        print("    " + 계정화면주소())
                     elif 상태 == "횟수":
                         찍기("최근 30일 동안 새 컴퓨터를 너무 많이 연결했습니다. 나중에 다시 해 주십시오.",
                             "Too many new computers were connected in the last 30 days. Please try again later.")
@@ -307,6 +307,10 @@ def 계정주소():
     return "https://account.lovolve.app"
 
 
+def 계정화면주소():
+    return "https://nightflight.lovolve.app/account/"
+
+
 def 상태():
     k = 열쇠()
     if not k:
@@ -325,8 +329,8 @@ def 상태():
         메일 = str(r.get("메일") or 읽기(메일파일))[:120]
         찍기("%s 계정에 연결돼 있습니다." % 메일, "Connected to %s." % 메일)
         if r.get("이용권있나") is not True:
-            찍기("이 계정에는 이용권이 없습니다. 다른 방법(구글/애플)으로 사셨는지 확인해 주십시오.",
-                "This account has no plan. Check whether you bought it with your other sign-in (Google/Apple).")
+            찍기("이 계정에는 이용권이 없습니다. 다른 방법(구글/애플)으로 사셨는지 확인해 주십시오. 아직 사지 않으셨으면 https://nightflight.lovolve.app/account/ 에서 사실 수 있습니다.",
+                "This account has no plan. Check whether you bought it with your other sign-in (Google/Apple). If you haven't bought one yet, you can buy it at https://nightflight.lovolve.app/account/")
         return 0
     if isinstance(r, dict) and r.get("까닭") in ("없음", "다른컴퓨터"):
         지우기(열쇠파일, 메일파일)

@@ -5,26 +5,34 @@ import type { Usage } from '../types/usage_display'
 
 const usage = atom({ plugin: 'nightflight', key: 'usage' } as const, null)
 const isOn = atom({ plugin: 'nightflight', key: 'usageIsOn' } as const, false)
+const isEnglish = atom({ plugin: 'nightflight', key: 'usageIsEnglish' } as const, false)
 
 const 한도이름: Record<string, string> = { five_hour: '5시간 한도', seven_day: '7일 한도' }
+const 한도이름영어: Record<string, string> = { five_hour: '5-hour limit', seven_day: '7-day limit' }
 
-function 남은시간(끝: string | null, 지금: number): string | null {
+function 남은시간(끝: string | null, 지금: number, 영어 = false): string | null {
   const 때 = 끝 ? Date.parse(끝) : NaN
   if (Number.isNaN(때)) return null
   const 분 = Math.max(0, Math.floor((때 - 지금) / 60000))
+  if (영어) {
+    if (분 >= 1440) return `resets in ${Math.floor(분 / 1440)}d`
+    if (분 >= 60) return `resets in ${Math.floor(분 / 60)}h`
+    return `resets in ${분}m`
+  }
   if (분 >= 1440) return `${Math.floor(분 / 1440)}일 뒤 초기화`
   if (분 >= 60) return `${Math.floor(분 / 60)}시간 뒤 초기화`
   return `${분}분 뒤 초기화`
 }
 
-export function 줄(값: Usage, 지금: number): string {
+export function 줄(값: Usage, 지금: number, 영어 = false): string {
   const 칸: string[] = []
-  if (값.contextPercent !== null) 칸.push(`이 대화 용량 ${Math.round(값.contextPercent)}%`)
+  if (값.contextPercent !== null)
+    칸.push(영어 ? `This chat is ${Math.round(값.contextPercent)}% full` : `이 대화 용량 ${Math.round(값.contextPercent)}%`)
   for (const 한도 of 값.limits) {
-    const 이름 = 한도이름[한도.kind]
+    const 이름 = (영어 ? 한도이름영어 : 한도이름)[한도.kind]
     if (!이름) continue
-    const 남음 = 남은시간(한도.resetsAt, 지금)
-    칸.push(`${이름} ${Math.round(한도.percentUsed)}% 사용${남음 ? ` (${남음})` : ''}`)
+    const 남음 = 남은시간(한도.resetsAt, 지금, 영어)
+    칸.push(`${이름} ${Math.round(한도.percentUsed)}%${영어 ? ' used' : ' 사용'}${남음 ? ` (${남음})` : ''}`)
   }
   return 칸.join(' · ')
 }
@@ -92,6 +100,13 @@ async function 켬확인($: EngineInterface) {
   const 표시 = `${자리 || `${집}/.nightflight`}/app_display_on`
   const 켬 = await $.fs.exists(표시)
   await update($, isOn, () => 켬)
+  let 영어 = false
+  try {
+    영어 = (await $.fs.read(`${자리 || `${집}/.nightflight`}/language`)).trim().startsWith('en')
+  } catch {
+    영어 = false
+  }
+  await update($, isEnglish, () => 영어)
 }
 
 export const register: Register = on => {
@@ -115,7 +130,8 @@ export const register: Register = on => {
     const 값 = await read($, usage)
     const 켬 = await read($, isOn)
     if (e.surface !== 'desktop' || e.props.hasSurvey || !켬 || 값 === null) return next(e)
-    const 글 = 줄(값, await $.clock.now())
+    const 영어 = await read($, isEnglish)
+    const 글 = 줄(값, await $.clock.now(), 영어)
     if (!글) return next(e)
 
     const { Box, Text } = $.ui.resolve(e)
@@ -125,7 +141,11 @@ export const register: Register = on => {
       <Box>
         <Text dimColor={!곧참} weight={곧참 ? 'semibold' : 'regular'} size="footnote">
           {글}
-          {곧참 ? ' — 곧 새 대화로 시작해야 합니다. 새 대화의 첫 말로 «야간비행 시작하자»라고 하십시오' : ''}
+          {곧참
+            ? 영어
+              ? ' — start a new chat soon and make "Let\'s start Nightflight" your first message'
+              : ' — 곧 새 대화로 시작해야 합니다. 새 대화의 첫 말로 «야간비행 시작하자»라고 하십시오'
+            : ''}
         </Text>
       </Box>
     )

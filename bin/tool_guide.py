@@ -6,8 +6,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-폴더 = Path(os.environ.get("CLAUDE_PROJECT_DIR") or os.getcwd())
-if (폴더 / ".nightflight").exists() or (폴더 / ".claude" / "ledger.tsv").exists():
+try:
+    _입력 = json.load(sys.stdin) or {}
+except Exception:
+    _입력 = {}
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from registered import 등록된_대화인가
+if 등록된_대화인가(_입력):
     뿌리 = Path(__file__).resolve().parent.parent
     try:
         끔 = json.loads((Path(os.environ.get("HOME") or Path.home()) / ".nightflight" / "feature_tips.json").read_text(encoding="utf-8")).get("끔") is True

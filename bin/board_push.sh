@@ -74,8 +74,23 @@ fi
 
 nf_page_title() {
   local l; l="$(bash -c '. "$1" >/dev/null 2>&1; nf_lang' _ "$HERE/project-root.sh" 2>/dev/null)"
-  [ "$l" = en ] || return 0
-  python3 -I -c 'import sys,re; p=sys.argv[1]; s=open(p,encoding="utf-8").read(); open(p,"w",encoding="utf-8").write(re.sub(r"<title>[^<]*</title>","<title>Nightflight cockpit</title>",s,count=1))' "$1" 2>/dev/null || true
+  python3 -I -c '
+import sys, re, os, json, html
+p, en = sys.argv[1], sys.argv[2] == "en"
+s = open(p, encoding="utf-8").read()
+이름 = ""
+try:
+    이름 = (json.load(open(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(p))), "board", "now.json"), encoding="utf-8")).get("앱이름") or "").strip()
+except Exception:
+    pass
+if 이름:
+    제목 = html.escape(이름[:40]) + (" cockpit" if en else " 조종석")
+elif en:
+    제목 = "Nightflight cockpit"
+else:
+    sys.exit(0)
+open(p, "w", encoding="utf-8").write(re.sub(r"<title>[^<]*</title>", "<title>" + 제목 + "</title>", s, count=1))
+' "$1" "$l" 2>/dev/null || true
 }
 
 nf_place_page() {
@@ -146,6 +161,7 @@ if [ -z "$URL" ]; then
   PROOT="${CLAUDE_PROJECT_DIR:-$CWD}"
   [ -n "$PROOT" ] && [ -d "$PROOT" ] || exit 0
   PROOT="$(cd "$PROOT" && pwd)"
+  if [ "$PROOT" = "$(cd "$HOME" && pwd)" ] && [ -n "$CWD" ] && [ -d "$CWD" ]; then PROOT="$(cd "$CWD" && pwd)"; fi
   [ "$PROOT" = "$(cd "$HOME" && pwd)" ] && exit 0
   [ "$PROOT" = "$(cd "$HERE/.." && pwd)" ] && exit 0
   PST="$(nf_state_of "$PROOT")"
@@ -238,10 +254,10 @@ except OSError:
     t = None
 if lang == "en":
     when = time.strftime("%b %-d %H:%M", t) if t else "never"
-    msg = "  ⚠️ The cockpit has stopped updating (last updated: " + when + "). Say \"update the cockpit\" in a new conversation."
+    msg = "  ⚠️ The cockpit has stopped updating (last updated: " + when + "). Say \"update the cockpit\"."
 else:
     when = ("%d월 %d일 %s" % (t.tm_mon, t.tm_mday, time.strftime("%H:%M", t))) if t else "아직 없음"
-    msg = "  ⚠️ 조종석이 멈춰 있습니다(마지막 반영: " + when + "). 새 대화에서 «조종석 올려»라고 말씀해 주세요."
+    msg = "  ⚠️ 조종석이 멈춰 있습니다(마지막 반영: " + when + "). «조종석 올려»라고 말씀해 주십시오."
 print(json.dumps({"systemMessage": msg}, ensure_ascii=False))
 PY
 }
