@@ -450,6 +450,25 @@ def _arch_struct(path):
         return None
 
 
+def _arch_out(path):
+    import re as _re
+    try:
+        안, 줄 = False, None
+        for l in open(path, encoding="utf-8"):
+            l = l.rstrip("\n")
+            if l.startswith("## "):
+                안 = l[3:].strip().startswith("밖으로 나가는")
+                if 안: 줄 = []
+                continue
+            if 안 and l.strip().startswith("- "):
+                x = l.strip()[2:].strip()
+                m = _re.match(r"\*\*(.+?)\*\*\s*[:：]\s*(.*)", x)
+                if m: 줄.append({"무엇": m.group(1).strip(), "어디": m.group(2).strip()})
+        return 줄
+    except Exception:
+        return None
+
+
 def _ignore_detail(_r):
     import subprocess, fnmatch
     try:
@@ -516,7 +535,8 @@ def _design_check():
                  if os.path.isfile(os.path.join(_r, x))]
         return {"gitignore": os.path.isfile(os.path.join(_r, ".gitignore")), "구조문서": _arch[0] if _arch else None,
                 "막는것": _ignore_detail(_r), "구조내용": _arch_sections(os.path.join(_r, _arch[0])) if _arch else None,
-                "구조": _arch_struct(os.path.join(_r, _arch[0])) if _arch else None}
+                "구조": _arch_struct(os.path.join(_r, _arch[0])) if _arch else None,
+                "개인정보나감": _arch_out(os.path.join(_r, _arch[0])) if _arch else None}
     except Exception:
         return {"gitignore": None, "구조문서": None}
 

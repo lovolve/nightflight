@@ -34,6 +34,7 @@ A flow diagram carries good information but looks unfamiliar. Being understood a
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면언제 <screen> "<when the user sees this screen>"
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면하는일 <screen> "<what the user does here>"
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면요소 <screen> "<what is visible>" <feature> [sub-feature]
+"${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면그림 <screen> <element number> 글|제목|버튼|입력|목록|사진|그래프|숫자판|탭|비움 "<the exact words shown on screen>"   # right after each element
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면이동 <screen> <next screen> "<what the user does to go there>"
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면갈림 <screen> "<the question that branches after this screen>"
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 화면상태 <screen> "<state>" ["<when it moves on>"] [나쁨]
@@ -50,6 +51,7 @@ What each command does:
 - `화면언제` records when the user sees the screen.
 - `화면하는일` records what the user does on the screen.
 - `화면요소` records one visible element and the feature (and sub-feature) it belongs to.
+- `화면그림` records how that element looks and the exact words on screen. Kinds: `글` text, `제목` title, `버튼` button, `입력` input, `목록` list, `사진` photo, `그래프` chart, `숫자판` keypad, `탭` tabs, `비움` blank. Record it right after each element. The cockpit draws the screen picture from these words; without them it shows only a list of what the screen contains. Do not ask the user to write the words: write them from the plan and the task, and let the user correct them on the picture.
 - `화면이동` records a transition and the user action that triggers it. Writing the transition between the same two screens again changes only its condition.
 - `화면갈림` records the question that branches after a screen. Use it only when the flow branches. The conditions of the transitions out of that screen are "yes" and "no · …" (written in English as the user would see them).
 - `화면상태` records a state of a screen. Use it only for screens that change by time, payment or server. `나쁨` marks a bad state.

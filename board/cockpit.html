@@ -1166,6 +1166,7 @@ header, .n-meta{padding-inline:16px}
 .jf-ar::before{content:"→"; display:block; font-size:var(--fs-2); color:var(--faint)}
 .jf-or{align-self:center; margin-top:-16px; font-size:var(--fs-5); color:var(--faint)}
 .fx{display:grid; grid-template-columns:168px minmax(0,1fr); gap:16px; margin:12px 0 0; align-items:start}
+.fx.solo{grid-template-columns:168px}
 .fx-ph{border:1px solid var(--faint); border-radius:12px; padding:12px 8px; background:var(--ground); min-height:120px}
 .fx-ph.mon{border-radius:6px; min-height:160px}
 .fx-t{margin:0 0 8px; font-size:var(--fs-5); font-weight:600; color:var(--ink); text-align:center}
@@ -1534,7 +1535,7 @@ header, .n-meta{padding-inline:16px}
 
     var 스왑설명=설명글('스왑',['<b>스왑</b>: 메모리가 모자랄 때 저장 공간을 메모리처럼 빌려 쓴 양입니다. 많을수록 느려집니다.']);
     var 메있나=(md['압박']!=null);
-    return 구역상자('이 컴퓨터 상태',설명줄,'<div class="n-res">'+머리+'<div class="rrow">'+(메있나?메모리:'')+용량+시뮬+치움+'</div>'+(메있나?스왑설명:'')+한도줄(md)+'</div>');
+    return 구역상자('이 컴퓨터 상태',설명줄,'<div class="n-res">'+머리+'<div class="rrow">'+(메있나?메모리:'')+용량+시뮬+치움+'</div>'+(메있나?스왑설명:'')+한도줄(md)+깃줄('줄')+'</div>');
   }
 
   function 이미했어요(g){
@@ -1756,7 +1757,7 @@ header, .n-meta{padding-inline:16px}
           var q=문(n), 시킬=q.length?지시(['개발 단계','화면 흐름',j.이름,n+' 화면'],'이 화면의 문제를 수정해 주세요.',문글(n).join(' / ')):(다(n)?'':지시(['개발 단계','화면 흐름',j.이름,n+' 화면'],'이 화면을 설계서대로 만들어 주세요.','미개발'));
           return '<span class="jf-chip'+(q.length?' bad':(다(n)?' done':' todo'))+(시킬?시킴(시킬):'"')+(q.length?' title="'+esc(q.join(' · '))+'"':'')+'>'+esc(n)+'</span>'; }).join('<span class="jf-sep">또는</span>'); }).join('<span class="jf-sep">→</span>');
       var 진=(!개발||j.이름==='어느 일에도 안 든 화면')?'':(탈.length?'<span class="jf-st nw'+시킴(지시(['개발 단계','화면 흐름',j.이름],'이 흐름에서 문제가 있는 화면 '+탈.length+'곳을 수정해 주세요.',탈.map(function(n){ return n+' 화면: '+문글(n).join(' / '); }).join(' / ')))+'>문제 '+탈.length+'</span>':(남.length?'<span class="jf-st nw'+시킴(지시(['개발 단계','화면 흐름',j.이름],'이 흐름에서 아직 안 만든 화면을 설계서대로 만들어 주세요.','안 만든 화면: '+남.join(', ')))+'>남은 화면 '+남.length+'</span>':'<span class="jf-st ok">모두 완료</span>'));
-      h+='<div class="jf-row'+(열?' on':'')+((개발&&!남.length&&!탈.length)?' alldone':'')+'"><button type="button" class="jf-h" data-job="'+k+'" aria-expanded="'+열+'"><span class="jf-n">'+(k+1)+'</span><span class="jf-q">'+esc(j.이름)+(j.때?'<small>'+esc(j.때)+'</small>':'')+'</span>'+진+'<span class="jf-c">'+(열?'접기 ⌃':'펴기 ›')+'</span></button><div class="jf-p">'+칩줄+'</div>';
+      h+='<div class="jf-row'+(열?' on':'')+((개발&&!남.length&&!탈.length)?' alldone':'')+'"><button type="button" class="jf-h" data-job="'+k+'" aria-expanded="'+열+'"><span class="jf-n">'+(k+1)+'</span><span class="jf-q">'+esc(j.이름)+(j.때?'<small>'+esc(j.때)+'</small>':'')+'</span>'+진+'<span class="jf-c">'+(열?'접기 ⌃':'펴기 ›')+'</span></button>'+((열&&!개발)?'':'<div class="jf-p">'+칩줄+'</div>');
       if(열){
         var b='', 앞=null;
         j.차례.forEach(function(s, i){
@@ -1769,7 +1770,8 @@ header, .n-meta{padding-inline:16px}
       }
       h+='</div>'; });
     var 흐름말=['하는 일을 누르면 그때 지나는 화면이 열립니다','화면을 누르면 그 화면의 예시와 설명이 아래에 나옵니다','그림 속 글은 예시입니다. 완료는 AI가 만들고 기록했다는 뜻입니다.'].concat(개발?['점선 · 빨간 점 항목을 누르면 수정 요청문이 복사됩니다']:[]);
-    return '<p class="sv-group">'+(개발?'개발 진행 현황':'화면 흐름')+설명단추('화면 흐름')+'</p>'+설명글('화면 흐름',흐름말)+'<div class="jf">'+h+'</div>';
+    if(!개발) return '<p class="sv-group">화면 흐름</p><div class="jf">'+h+'</div>';
+    return '<p class="sv-group">개발 진행 현황'+설명단추('화면 흐름')+'</p>'+설명글('화면 흐름',흐름말)+'<div class="jf">'+h+'</div>';
 
     function 설계서(n){
       var g=이름표[n]; if(!g) return '';
@@ -1793,18 +1795,18 @@ header, .n-meta{padding-inline:16px}
         if(꼴==='숫자판') return (글?'<span class="fx-tx">'+글+'</span>':'')+'<span class="fx-kp">'+['1','2','3','4','5','6','7','8','9','','0','←'].map(function(k){ return '<u>'+k+'</u>'; }).join('')+'</span>';
         if(꼴==='탭') return '<span class="fx-tb">'+글.split(/\s*·\s*/).map(function(k){ return '<u>'+k+'</u>'; }).join('')+'</span>';
         return '<span class="fx-tx">'+글+'</span>'; }
-      var 문구없음=요.filter(function(e){ return !(e['그림']||[]).length; }).length;
-      var 그림=요.length?'<div class="fx-ph'+(g['종류']==='모니터'?' mon':'')+'"><p class="fx-t">'+esc(화면이름(g))+'</p>'
-        +요.map(function(e){ return '<div class="fx-el"><i class="fx-no">'+esc(e['번호'])+'</i><div class="fx-pt">'+부품들(e).map(부품).join('')+'</div></div>'; }).join('')+'</div>':'';
+      var 그린=요.filter(function(e){ return (e['그림']||[]).length; }), 안그린=요.filter(function(e){ return !(e['그림']||[]).length; });
+      var 그림=그린.length?'<div class="fx-ph'+(g['종류']==='모니터'?' mon':'')+'"><p class="fx-t">'+esc(화면이름(g))+'</p>'
+        +그린.map(function(e){ return '<div class="fx-el">'+(개발?'<i class="fx-no">'+esc(e['번호'])+'</i>':'')+'<div class="fx-pt">'+부품들(e).map(부품).join('')+'</div></div>'; }).join('')+'</div>':'';
       var 설명=요.map(function(e){ var 된=요소몫(e)>=1;
         return '<li><i class="fx-no">'+esc(e['번호'])+'</i><span>'+esc(e['설명'])+'<small>'+(e['기능']?esc(e['기능'])+' 기능 · ':'')+(된?'완료'+(e['세부기능']?' · '+확인종류(세부찾기(e['기능'],e['세부기능'])):''):'아직')+'</small></span></li>'; }).join('');
       var 이동=(g['이동']||[]).map(function(m){ return '<li>'+esc(m['조건']||'다음으로')+' → '+esc(m['다음'])+'</li>'; }).join('');
       return '<div class="fs one"><div><h4>'+esc(화면이름(g))+'</h4>'
         +'<p class="fs-wh"><b>하는 일</b>'+(g['하는일']?esc(g['하는일']):빈)+'</p>'
-        +'<p class="fs-wh"><b>표시 시점</b>'+(g['언제']?esc(g['언제']):빈)+'</p>'
-        +(요.length?'<div class="fx">'+그림+'<ol class="fx-l">'+설명+'</ol></div>'+(문구없음?'<p class="jf-note'+시킴(지시(['화면 흐름',n+' 화면','화면 예시'],'이 화면에 실제로 표시되는 문구와 형태를 기록해 주세요.',null,['기록: ledger.sh 화면그림 «화면» «번호» «꼴» «문구»']))+'><span class="n-see">실제 문구 요청 말 복사</span></p>':''):'')
-        +(이동?'<p class="fs-lb">다음 화면</p>'+(g['갈림']?'<p class="fs-wh">'+esc(g['갈림'])+'</p>':'')+'<ul class="fx-mv">'+이동+'</ul>':'')
-        +(요.length&&끝<요.length?'<p class="fs-wh'+시킴(지시(['화면 흐름',n+' 화면','구성 요소'],'이 화면에 아직 안 들어간 것을 만들어 주세요.',(요.length-끝)+'개 미완료'))+'><b>남은 항목</b>'+(요.length-끝)+'개 · <span class="n-see">만들기 요청 말 복사</span></p>':'')
+        +(개발?'<p class="fs-wh"><b>표시 시점</b>'+(g['언제']?esc(g['언제']):빈)+'</p>':'')
+        +(요.length?((그린.length?'<div class="fx'+(개발?'':' solo')+'">'+그림+(개발?'<ol class="fx-l">'+설명+'</ol>':'')+'</div>':'')+(안그린.length?'<p class="fs-lb">이 화면에 들어가는 것</p><ul class="fx-mv">'+안그린.map(function(e){ return '<li>'+esc(문구(e))+'</li>'; }).join('')+'</ul>':'')):'')
+        +(이동&&개발?'<p class="fs-lb">다음 화면</p>'+(g['갈림']?'<p class="fs-wh">'+esc(g['갈림'])+'</p>':'')+'<ul class="fx-mv">'+이동+'</ul>':'')
+        +(개발&&요.length&&끝<요.length?'<p class="fs-wh'+시킴(지시(['화면 흐름',n+' 화면','구성 요소'],'이 화면에 아직 안 들어간 것을 만들어 주세요.',(요.length-끝)+'개 미완료'))+'><b>남은 항목</b>'+(요.length-끝)+'개 · <span class="n-see">만들기 요청 말 복사</span></p>':'')
         +'</div></div>';
     }
   }
@@ -1838,7 +1840,7 @@ header, .n-meta{padding-inline:16px}
         return {이름:z['이름'], 된:된, 값:근[0], 근거:근[1], 뒤:만드는말.test(z['이름']+' '+근[0])}; });
       줄=줄.filter(function(r){return !/검사( 네 모양)? 통과/.test(r.값);});
       if(!줄.length) return;
-      줄=줄.filter(function(r){return !r.뒤;}).concat(줄.filter(function(r){return r.뒤;}));
+      줄=(제목==='설계 결정 사항')?줄.filter(function(r){return !r.뒤;}):줄.filter(function(r){return !r.뒤;}).concat(줄.filter(function(r){return r.뒤;}));
       function 한줄(r){ return '<div class="dc-it"><span class="k">'+esc(r.이름)+'</span><div class="v">'+(r.된&&r.값?칩들(r.값):'<ul class="dc-vl"><li class="no">'+(r.된?'결정 완료로 기록되어 있지만 내용이 없습니다':'미결정 사항')+'</li></ul>')
           +(function(){ var 날짜=String(r.근거||'').match(/\d{4}-\d{2}-\d{2}/); return 날짜?'<p class="dc-src">결정일 '+날짜[0]+'</p>':''; })()+'</div></div>'; }
       if(!o) o='<p class="dc-intro"><b>'+esc(제목)+'</b>'+설명단추(제목)+'</p>'+설명글(제목,['이 제품의 개발 방향으로 결정한 내용입니다. 변경하려면 대화창에 «○○를 변경해 주세요»라고 입력하면 됩니다.']);
@@ -1856,13 +1858,13 @@ header, .n-meta{padding-inline:16px}
     t+=안정함상자()+정한것상자(p, 짝, '설계 결정 사항');
     t+=상태도();
     var dc=((last.features||{})['설계점검'])||{};
-    var 구=dc['구조내용']||[], g구=dc['구조'];
-    var 아요약=g구?('부품 '+g구['부품'].length+' · 흐름 '+g구['흐름'].length):(dc['구조문서']?'문서 있음 — 그림 틀 없음':(dc['gitignore']==null?'확인 불가':'아직 없음'));
-    t+=카드('arch','사용자 데이터 처리 흐름', (g구||dc['구조문서'])?'':아요약, !g구 && !dc['구조문서'],
-      '<p class="pc-ex">제품 구성과 사용자 데이터 처리 흐름</p>'
-      +(g구?아키그림(g구)
-        :(구.length?'<p class="pc-ex">설계 문서에 «부품» 절과 «흐름» 절이 없어 그림으로 못 그립니다.</p>'
-          :'<p class="pc-ex">아직 문서가 없습니다 — 설계 단계에서 코드를 읽고 만듭니다.</p>')));
+    var 나감=dc['개인정보나감']||[];
+    if(나감.length) t+='<p class="sv-meta">'+'개인정보가 밖으로 나갑니다'+' — '+esc(나감.map(function(x){ return x['무엇']+' → '+x['어디']; }).join(' · '))+'</p>';
+    return t;
+  }
+  function 깃줄(꼴){
+    var dc=((last.features||{})['설계점검'])||null; if(!dc) return '';
+    var t='';
     var mg=dc['막는것']||null, 비=(mg&&mg['비밀파일'])||[], 샘=비.filter(function(f){return f['올라감'];}).length, 열=비.filter(function(f){return !f['막힘']&&!f['올라감'];}).length;
     var 실=(mg&&mg['안올린것'])?mg['안올린것'].filter(function(x){ return !비.some(function(f){return f['파일']===x['이름'];}); }):null;
     if(실) 실.sort(function(a,b){ return 안올림무게(a['이름'])-안올림무게(b['이름']); });
@@ -1880,53 +1882,15 @@ header, .n-meta{padding-inline:16px}
       var 할=f['올라감']?(번호만?'이 파일을 저장소에서 제외해 주세요.':'이 파일의 키를 새로 바꿔 주세요.\n저장소 기록에서 이 파일을 지워 주세요.\n교체 순서를 먼저 보여 주세요.'):(f['막힘']?'':'이 파일이 깃허브에 업로드되지 않도록 제외해 주세요.');
       return '<span class="n'+(할?시킴(지시(['컴퓨터 상태','비밀값 파일',f['파일']],할,st[1])):'"')+'>'+esc(안올림이름(f['파일']))+'</span><span class="d '+st[0]+'">'+st[1]
         +(f['올라감']&&!번호만&&(f['키이름']||[]).length?' · 교체할 키: '+f['키이름'].map(esc).join(' · '):'')+'</span>'; }).join('')+'</div>';
-    if(샘>0||열>0||!dc['gitignore']) t+=카드('git', 깃제목, 깃요약, true, 깃몸||'<p class="pc-ex">깃허브 업로드 제외 목록을 만들어야 합니다.</p>');
-    else t+='<p class="sv-meta">'+esc(깃제목)+'</p>';
-    return t;
+    var 문제=(샘>0||열>0||!dc['gitignore']);
+    if(문제) return 꼴==='카드'?카드('git', 깃제목, 깃요약, true, 깃몸||'<p class="pc-ex">깃허브 업로드 제외 목록을 만들어야 합니다.</p>'):'';
+    return 꼴==='줄'?'<p class="sv-meta">'+esc(깃제목)+'</p>':'';
   }
   var 열린카드={};
   function 카드(키, 제목, 요약, 경고, 몸){
     return '<details class="pc" data-card="'+esc(키)+'"'+(열린카드[키]?' open':'')+'><summary><b>'+esc(제목)+'</b><span class="s'+(경고?' nw':'')+'">'+esc(요약)+'</span></summary><div class="pc-body">'+몸+'</div></details>';
   }
   document.addEventListener('toggle', function(ev){ var d=ev.target; if(d && d.getAttribute && d.getAttribute('data-card')) 열린카드[d.getAttribute('data-card')]=d.open; }, true);
-  var 고른흐름=0;
-  document.addEventListener('click', function(ev){ var g=ev.target.closest ? ev.target.closest('[data-flow]') : null; if(!g) return; 고른흐름=+g.getAttribute('data-flow')||0; 열린카드['arch']=true; 첫화면(); });
-  function 부품찾기(g, 단계){
-    var 후보=[];
-    g['부품'].forEach(function(b, i){
-      var 말=[b['이름']].concat((b['칸']||[]).map(function(c){return c['이름'];}));
-      String(b['설명']||'').split(/·|,/).forEach(function(x){ x=x.trim(); var m=x.match(/^([^(]+)\(([^)]*)\)/); if(m){ 말.push(m[1].trim()); 말.push(m[2].trim()); } else if(x) 말.push(x.replace(/\.$/,'')); });
-      var 끝=b['이름'].split(' ').pop(); if(끝.length>=2) 말.push(끝);
-      말.forEach(function(w){ if(w && w.length>=2 && 단계.indexOf(w)>=0) 후보.push([w.length, i]); });
-    });
-    후보.sort(function(a,b){return b[0]-a[0];});
-    return 후보.length?후보[0][1]:-1;
-  }
-  function 아키그림(g){
-    var P=g['부품'], n=P.length, 열수=2, W=600, bw=190, bh=62, 행=Math.ceil(n/열수), H=행*bh+(행-1)*56+8;
-    var 자리=P.map(function(b,i){ var c=i%열수, r=Math.floor(i/열수); return {x: c===0?6:W-bw-6, y: 4+r*(bh+56)}; });
-    var f=g['흐름'][Math.min(고른흐름, g['흐름'].length-1)]||{단계:[]};
-    var 앞=-1, 줄=[], 길=[];
-    f['단계'].forEach(function(x, k){ var 적힌=(f['단계부품']||[])[k]||'', i=-1;
-      if(적힌) P.forEach(function(b, j){ if(i<0 && (b['이름']===적힌 || b['이름'].indexOf(적힌)>=0 || 적힌.indexOf(b['이름'])>=0)) i=j; });
-      if(i<0) i=부품찾기(g,x); if(i<0) i=앞; if(i<0) i=0; 줄.push([x, 앞, i]); if(앞>=0 && i!==앞) 길.push([앞,i]); 앞=i; });
-    var 지난=P.map(function(_,i){ return 줄.some(function(z){return z[2]===i;}); });
-    var svg='<svg class="pc-map" viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="부품 지도"><defs><marker id="pc-ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M2 1L8 5L2 9" fill="none" stroke="currentColor" stroke-width="1.5"/></marker></defs>';
-    var 쌍={};
-    길.forEach(function(e, k){ var a=자리[e[0]], b=자리[e[1]], 키=Math.min(e[0],e[1])+'-'+Math.max(e[0],e[1]), 겹=(쌍[키]=(쌍[키]||0)+1)-1, 비켜=(겹%2?1:-1)*겹*10;
-      var x1=a.x+bw/2, y1=a.y+bh/2, x2=b.x+bw/2, y2=b.y+bh/2, dx=x2-x1, dy=y2-y1, L=Math.sqrt(dx*dx+dy*dy)||1, ux=dx/L, uy=dy/L;
-      function 끝점(cx,cy,sx){ var tx=Math.abs(ux)>0.001?(bw/2)/Math.abs(ux):1e9, ty=Math.abs(uy)>0.001?(bh/2)/Math.abs(uy):1e9, t=Math.min(tx,ty)+4; return [cx+sx*ux*t, cy+sx*uy*t]; }
-      var p1=끝점(x1,y1,1), p2=끝점(x2,y2,-1), ox=-uy*비켜, oy=ux*비켜;
-      svg+='<line x1="'+(p1[0]+ox)+'" y1="'+(p1[1]+oy)+'" x2="'+(p2[0]+ox)+'" y2="'+(p2[1]+oy)+'" class="pc-ln" marker-end="url(#pc-ar)"/>'
-        +'<text x="'+((p1[0]+p2[0])/2+ox-uy*12)+'" y="'+((p1[1]+p2[1])/2+oy+ux*12+4)+'" text-anchor="middle" class="pc-no">'+(k+1)+'</text>'; });
-    P.forEach(function(b,i){ var zx=Math.round(자리[i].x), zy=Math.round(자리[i].y), 부=((b['칸']||[]).length?b['칸'].slice(0,3).map(function(c){return c['이름'];}):String(b['설명']||'').split(/·/).slice(0,2).map(function(x){return x.replace(/\(.*?\)/g,'').replace(/\.$/,'').trim();})).join(' · ');
-      svg+='<g class="pc-nd'+(지난[i]?' on':'')+'"><rect x="'+zx+'" y="'+zy+'" width="'+bw+'" height="'+bh+'" rx="8"/><text x="'+(zx+bw/2)+'" y="'+(zy+26)+'" text-anchor="middle" class="t1">'+esc(b['이름'])+'</text><text x="'+(zx+bw/2)+'" y="'+(zy+45)+'" text-anchor="middle" class="t2">'+esc(부.length>22?부.slice(0,21)+'…':부)+'</text></g>'; });
-    svg+='</svg>';
-    var 탭='<div class="pc-tabs">'+g['흐름'].map(function(x,i){ return '<button type="button" class="'+(i===Math.min(고른흐름,g['흐름'].length-1)?'on':'')+'" data-flow="'+i+'">'+esc(x['이름'])+'</button>'; }).join('')+'</div>';
-    var 순='<ol class="pc-steps">'+줄.map(function(z, k){ var 곳=(z[1]>=0 && z[1]!==z[2])?esc(P[z[1]]['이름'])+' → '+esc(P[z[2]]['이름']):esc(P[z[2]]['이름']);
-      return '<li><i>'+(k+1)+'</i><span class="w">'+esc(z[0])+'</span><span class="at">'+곳+'</span></li>'; }).join('')+'</ol>';
-    return svg+탭+순;
-  }
   var 안올림표=[
     [/\.env|secret|비밀/i, '비밀값 모음 파일', '유출되면 타인이 내 결제·메일·서버를 사용할 수 있습니다'],
     [/\.p8|\.p12|\.pem|\.key$|\.keystore|\.jks|\.mobileprovision|\.cer/i, '인증서·서명 키', '유출되면 타인이 내 이름으로 제품을 배포할 수 있습니다'],
@@ -2285,6 +2249,7 @@ header, .n-meta{padding-inline:16px}
       +'<div class="n-plb"><span class="n-plx">'+esc(플랜글(last.plan))+'</span>'+(프로젝트열림?플랜목록(last.plan):'')+'</div></div>';
 
     if(컴퓨터열림) h+=리소스줄(last.machine);
+    h+=깃줄('카드');
     h+=사용자차례(cur, 따라잡기카드(n['따라잡기']), 때가되면()+가져오기줄(n['가져오기'])+작동안함줄(n['작동안함']));
 
     if(cur===null){
@@ -2664,7 +2629,7 @@ header, .n-meta{padding-inline:16px}
     안내띄움(t, 칸); }
 
   function setLive(on,t){var e=$('live'); e.className=on?'on':''; $('live-t').textContent=t; e.style.display=on?'none':'';}
-  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"},"5":{"줄":["A","O"]},"6":{"줄":["A","O"]}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":"O","features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","안정함":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":"A","오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","한도":{"한도":["A","O"]},"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"고름":"A","끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O","작동안함":{"줄":["A","O"]}},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A","실패확인기능":"A","표준확인기능":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}},"설명들":"O"},"stuck":{"items":["A","O"]}};
+  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"},"5":{"줄":["A","O"]},"6":{"줄":["A","O"]}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":"O","features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"개인정보나감":["A","O"],"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","안정함":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":"A","오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","한도":{"한도":["A","O"]},"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"고름":"A","끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O","작동안함":{"줄":["A","O"]}},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A","실패확인기능":"A","표준확인기능":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}},"설명들":"O"},"stuck":{"items":["A","O"]}};
   function 상자(x){ return x!==null && typeof x==='object' && !Array.isArray(x); }
   function 맞추기(v, f){
     if(f==='A'||Array.isArray(f)){ if(!Array.isArray(v)) return [];
