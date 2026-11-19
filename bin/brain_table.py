@@ -112,6 +112,12 @@ else:
             print("한 달 한 번 바로 다시 넣기를 다시 쓰실 수 있는 날: " + 바로)
     elif 코드 in ("새컴퓨터몰림", "컴퓨터확인못함"):
         pass
+    elif 코드 == "신규멈춤":
+        if os.environ.get("NF_LANG_NOW") == "en":
+            print("If your account already has a pass, say «Nightflight login» to connect this computer.")
+        else:
+            print("이미 이용권이 있는 계정이라면 «야간비행 로그인»이라고 말씀하시면 이 컴퓨터가 연결됩니다.")
+        print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
     elif 코드 == "다시켜기":
         print("이 컴퓨터의 계정 연결이 풀렸습니다. «야간비행 로그인»으로 다시 연결하시면 됩니다.")
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
