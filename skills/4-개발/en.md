@@ -1,6 +1,6 @@
 # 4 Build
 
-This file says only what this stage is for. The symptom tables, causes and the order of countermeasures come from the brain server (plan §43-6 names this file directly). Do not write them here. `tools/lint_skill_leak.py` enforces this.
+This file says only what this stage is for. The symptom tables, causes and the order of countermeasures come from the brain server. Do not write them here. `tools/lint_skill_leak.py` enforces this.
 
 ## What this stage does
 
@@ -50,7 +50,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install (plan §43-6).
+- Do not save what you receive to a file. Saving it ships the know-how out to every install.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## Do not do these in this stage

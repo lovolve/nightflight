@@ -2,6 +2,7 @@ import { atom, read, update } from 'claude-code'
 import type { EngineInterface, Register } from 'claude-code'
 
 import type { Usage } from '../types/usage_display'
+import { 명령등록, 조종석명령 } from './cockpit_open'
 
 const usage = atom({ plugin: 'nightflight', key: 'usage' } as const, null)
 const isOn = atom({ plugin: 'nightflight', key: 'usageIsOn' } as const, false)
@@ -109,9 +110,11 @@ async function 켬확인($: EngineInterface) {
   await update($, isEnglish, () => 영어)
 }
 
-export const register: Register = on => {
+export const register: Register = (on, options) => {
+  조종석명령(on, options)
   on('session.start', async ($, e, next) => {
     const 답 = await next(e)
+    await 명령등록($)
     await 켬확인($)
     const 지금값 = await $.session.usage()
     await update($, usage, () => 값으로(지금값))

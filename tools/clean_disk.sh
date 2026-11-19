@@ -261,8 +261,9 @@ for entry in "cursor|/Applications/Cursor.app" "vscode|/Applications/Visual Stud
   n="${entry%%|*}"; app="${entry#*|}"
   d="$HOME/.$n"; [ -d "$d" ] || continue
   [ -e "$app" ] && continue
+  [ -e "$HOME$app" ] && continue
   sz=$(bytes "$d"); [ "$sz" -gt 52428800 ] || continue
-  printf "  없는 앱? %7s  %-30s  (%s 이 없다)\n" "$(human "$sz")" "~/.$n" "$app"
+  printf "  없는 앱? %7s  %-30s  (%s · ~%s 에서 못 찾았다)\n" "$(human "$sz")" "~/.$n" "$app" "$app"
   ORPHAN=$((ORPHAN+1))
 done
 [ "$SHOWN" -eq 0 ] && [ "$ORPHAN" -eq 0 ] && echo "  판단할 큰 것: 없음"

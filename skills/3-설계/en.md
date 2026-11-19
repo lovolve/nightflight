@@ -1,6 +1,6 @@
 # 3 Design
 
-This file says only what this stage is for. The symptom tables, the actual procedure, the pass/fail criteria and the incident history come from the brain server (plan §43-6). Do not write them here. The body is served from the server. `tools/lint_skill_leak.py` enforces this.
+This file says only what this stage is for. The symptom tables, the actual procedure, the pass/fail criteria and the incident history come from the brain server. Do not write them here. The body is served from the server. `tools/lint_skill_leak.py` enforces this.
 
 ## What this stage does
 
@@ -92,7 +92,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install (plan §43-6).
+- Do not save what you receive to a file. Saving it ships the know-how out to every install.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## After the features are confirmed: record the map between features

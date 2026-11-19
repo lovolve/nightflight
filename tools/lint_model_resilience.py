@@ -56,11 +56,12 @@ def main(argv):
     roots = [pathlib.Path(p) for p in (argv[1:] or ["."])]
     files = []
     for r in roots:
-        for pat in ("**/*.ts", "**/*.swift", "**/*.tsx"):
+        for pat in ("**/*.ts", "**/*.swift", "**/*.tsx", "**/*.kt", "**/*.java", "**/*.dart", "**/*.js", "**/*.jsx"):
             files += [f for f in r.glob(pat)
                       if not {"node_modules", ".build", "build", "dist", "__pycache__",
                               "Tests", "tests", "__tests__"} & set(f.parts)
-                      and not f.name.endswith(("Tests.swift", ".test.ts", ".spec.ts"))]
+                      and not f.name.endswith(("Tests.swift", ".test.ts", ".spec.ts", "Test.kt", "Test.java", "_test.dart", ".test.js", ".spec.js", ".min.js"))
+                      and not {"androidTest", "test", ".dart_tool", "Pods", ".gradle"} & set(f.parts)]
 
     today = datetime.date.today()
 

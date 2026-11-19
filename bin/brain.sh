@@ -23,7 +23,7 @@ if ! [[ "$STAGE" =~ ^[0-8]$ ]] || [ -z "$KIND" ]; then
   echo "쓰는 법: brain.sh <단계 0~8> <갈래>" >&2
   exit 2
 fi
-if [ -f "${NF_HOME:-$HOME/.nightflight}/free_ended" ] && [ -z "$LISTONLY" ]; then
+if [ -f "${NF_HOME:-$HOME/.nightflight}/free_ended" ] && [ -z "$LISTONLY" ] && [ -z "$(nf_ckey 2>/dev/null)" ]; then
   echo "이 컴퓨터의 무료 1년이 끝나 단계 안내를 받지 못했습니다 — 계속 쓰시려면 이용권이 필요합니다(플랜 안내: https://nightflight.lovolve.app/#price). 이미 사셨으면 «야간비행 로그인»으로 이 컴퓨터를 연결하면 됩니다."
   exit 0
 fi

@@ -33,16 +33,26 @@ def _등록된곳(r: Path) -> Path:
         return r
     if not 등록:
         return r
-    for 원함 in (r, _git맨위(r)):
-        if 원함 is None:
+    실제 = {}
+    for e in 등록:
+        try:
+            if Path(e).is_dir():
+                실제.setdefault(Path(e).resolve(), Path(e).resolve())
+        except OSError:
             continue
-        for e in 등록:
-            try:
-                if Path(e).is_dir() and Path(e).resolve() == 원함:
-                    return Path(e).resolve()
-            except OSError:
-                continue
+    집 = Path.home().resolve()
+    후보 = [r] + [p for p in _위들(r, 집)] + [_git맨위(r)]
+    for 원함 in 후보:
+        if 원함 is not None and 원함 in 실제:
+            return 실제[원함]
     return r
+
+
+def _위들(r: Path, 집: Path):
+    for p in r.parents:
+        if p == 집 or p == Path("/"):
+            return
+        yield p
 
 
 def root() -> Path:

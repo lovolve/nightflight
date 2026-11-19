@@ -565,6 +565,7 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 .n-nine button.sel{border-color:var(--muted)}
 .n-nine button:focus-visible{outline:2px solid var(--open); outline-offset:3px}
 @media (max-width:480px){ .n-nine, .n-ninelab{gap:4px} .n-nine button b{font-size:var(--fs-5); letter-spacing:-.3px} .n-ninelab{font-size:var(--fs-5); letter-spacing:-.4px} }
+@media (max-width:540px){ .n-nine button b{letter-spacing:-.7px} .n-nine button b.in{font-weight:400} }
 .n-ninelab{display:grid; grid-template-columns:repeat(9,1fr); gap:8px; margin-top:8px; font-size:var(--fs-4); color:var(--muted); text-align:center; white-space:nowrap}
 .n-ninelab .c{color:var(--alert)}
 .n-ninelab .sel{color:var(--ink); font-weight:600; text-decoration:underline; text-underline-offset:3px}
@@ -2627,6 +2628,7 @@ header, .n-meta{padding-inline:16px}
   function 누른것(){ var d=last.pressed||{}, m={};
     for(var k in d){ if(k!=='적용함' && d[k]) m[k]=d[k]; } return m; }
   function 눌렀다(값, 단추){
+    if(!DB && 서버){ 단추.disabled=true; 서버로보냄('/pressed', {'값':값}, '기록했습니다.', 단추); return; }
     if(!DB){ var 말=(단추.firstChild&&단추.firstChild.textContent||값).trim(), 글='«'+말+'» 이미 완료했습니다';
       var 됨=function(){ 눌림말(복사됨말+' 붙여 넣으시면 기록에 옮깁니다.', 단추); }, 안됨=function(){ 눌림말(복사막힘말+글, 단추); };
       try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(번역글(글)).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
@@ -2645,6 +2647,7 @@ header, .n-meta{padding-inline:16px}
   function 표시눌렀다(버튼){
     var 값=버튼.getAttribute('data-mk'), 기능=버튼.getAttribute('data-mk-f'), 세부=버튼.getAttribute('data-mk-z');
     var 말={'완료':'완료로 표시해','넘어감':'넘어감으로 표시해','되돌리기':'표시를 되돌려'}[값];
+    if(!DB && 서버){ 버튼.disabled=true; 서버로보냄('/mark', {'기능':기능,'세부':세부,'상태':값}, {'완료':'완료로 기록했습니다.','넘어감':'넘어감으로 기록했습니다.','되돌리기':'되돌렸습니다.'}[값], 버튼); return; }
     if(!DB){ var 글='테스트 단계 «'+기능+' / '+세부+'» '+말, 됨=function(){ 눌림말(복사됨말+' 붙여 넣으시면 기록에 옮깁니다.', 버튼); }, 안됨=function(){ 눌림말(복사막힘말+글, 버튼); };
       try { if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(번역글(글)).then(됨, 안됨); else 안됨(); } catch(e){ 안됨(); }
       return; }
@@ -2810,7 +2813,29 @@ header, .n-meta{padding-inline:16px}
   ['click','keydown','scroll'].forEach(function(e){
     window.addEventListener(e, function(){ 마지막손 = Date.now(); }, {passive:true});
   });
+  var 서버=(typeof window!=='undefined'&&window['야간비행서버'])||null, 서버때=서버?서버['바뀐때']:0;
+  function 서버자료(판){
+    for (var k in last) { if (Object.prototype.hasOwnProperty.call(판, k)) last[k] = 판[k]; 들음[k] = true; }
+    if (판.feed && 판.feed.items) last.feed = 판.feed.items;
+  }
+  function 서버로다시(){
+    setInterval(function(){
+      if (document.hidden) return;
+      fetch('/board.json',{cache:'no-store'}).then(function(r){ if(!r.ok) throw r.status; return r.json(); }).then(function(j){
+        var 시각=new Date().toLocaleTimeString(); setLive(false, '자동 갱신 · '+시각+' 확인');
+        if (j['바뀐때']===서버때) return;
+        서버때=j['바뀐때']; 서버자료(j['판']||{}); 그리기();
+      }).catch(function(){ setLive(false,'조종석 서버와 연결이 끊겼습니다 — 대화창에 «조종석 열어»라고 말씀해 주십시오'); });
+    }, 5000);
+  }
+  function 서버로보냄(길, 값, 됨말, 칸){
+    값['열쇠']=서버['열쇠'];
+    return fetch(길,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(값)}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw j; return j; }); })
+      .then(function(j){ return fetch('/board.json',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(b){ 서버때=b['바뀐때']; 서버자료(b['판']||{}); 그리기(); 눌림말(됨말, 칸); }); })
+      .catch(function(){ 눌림말('기록하지 못했습니다. 대화창에 말씀해 주십시오.', 칸); });
+  }
   function 저절로다시(){
+    if (서버) { setLive(false, '자동 갱신'); 서버로다시(); return; }
     try { var y = sessionStorage.getItem('야간비행조종석자리'); if (y) window.scrollTo(0, +y); } catch(e){}
     setInterval(function(){
       if (Date.now() - 마지막손 < 12000) return;

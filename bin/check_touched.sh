@@ -47,6 +47,18 @@ if [ "$ALL" != "--전부" ]; then
   else
     RUN_LINTS=0
   fi
+  if [ "$RUN_LINTS" = 1 ]; then
+    _nf_seen="$NF_STATE/internal/lint-seen.tsv"
+    _nf_n="$(awk -F'\t' -v s="$S" '$1==s{n++} END{print n+0}' "$TOUCHED" 2>/dev/null)"
+    _nf_was="$(awk -F'\t' -v s="$S" '$1==s{v=$2} END{print v+0}' "$_nf_seen" 2>/dev/null)"
+    if [ "${_nf_n:-0}" -le "${_nf_was:-0}" ] 2>/dev/null; then
+      RUN_LINTS=0
+    else
+      { awk -F'\t' -v s="$S" '$1!=s' "$_nf_seen" 2>/dev/null | tail -n 50; printf '%s\t%s\n' "$S" "$_nf_n"; } > "$_nf_seen.$$" 2>/dev/null \
+        && mv -f "$_nf_seen.$$" "$_nf_seen" 2>/dev/null
+    fi
+    unset _nf_seen _nf_n _nf_was
+  fi
 fi
 
 MSG_USER=""; MSG_MODEL=""
@@ -154,6 +166,7 @@ run_dev lint_shell_locale.py    "한국어 지역 설정에서 멈추지 않나"
 run_dev lint_cockpit_escape.py  "조종석이 기록 글을 눕혀서 끼우나"             -
 run_dev lint_distribution.py     "받는 사람에게 나갈 것만 나가나"                   -
 run_dev lint_history_leak.py     "공개 쪽 주석에 남의 앱 이름이 남았나"        -
+run_dev lint_install_paths.py    "개발 도구 설치 자리를 한 곳 밖에 박았나"     -
 run_dev lint_gates_web.py        "웹이 쓸 출시 절차 표가 낡았나"                     -
 
 run_one lint_number_source.py    "돈·기간·비율에 출처가 붙어 있나"            -

@@ -71,15 +71,26 @@ _nf_ppl="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}/people.tsv"
 if [ -f "$_nf_ppl" ] && ! awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$_nf_ppl" 2>/dev/null; then
   _nf_r1="$(cd "$NF_ROOT" 2>/dev/null && pwd -P)"
   _nf_t="$(git -C "$NF_ROOT" rev-parse --show-toplevel 2>/dev/null)"; _nf_r2="$( [ -n "$_nf_t" ] && cd "$_nf_t" 2>/dev/null && pwd -P)"
-  for _nf_want in "$_nf_r1" "$_nf_r2"; do
-    [ -n "$_nf_want" ] || continue
-    _nf_hit=""
-    while IFS= read -r _nf_e; do
-      [ -n "$_nf_e" ] && [ -d "$_nf_e" ] && [ "$(cd "$_nf_e" 2>/dev/null && pwd -P)" = "$_nf_want" ] && { _nf_hit="$_nf_e"; break; }
-    done < <(awk -F'\t' '$2=="프로젝트"{print $3}' "$_nf_ppl" 2>/dev/null | sort -u)
-    [ -n "$_nf_hit" ] && { NF_ROOT="$_nf_hit"; break; }
+  _nf_hm="$(cd "$HOME" 2>/dev/null && pwd -P)"; _nf_hm="${_nf_hm:-$HOME}"
+  _nf_regs="$(awk -F'\t' '$2=="프로젝트"{print $3}' "$_nf_ppl" 2>/dev/null | sort -u | while IFS= read -r _nf_e; do
+      [ -n "$_nf_e" ] && [ -d "$_nf_e" ] && printf '%s\t%s\n' "$(cd "$_nf_e" 2>/dev/null && pwd -P)" "$_nf_e"; done)"
+  _nf_cands="$_nf_r1"; _nf_up="$_nf_r1"
+  while [ -n "$_nf_up" ]; do
+    _nf_up="$(dirname "$_nf_up")"
+    case "$_nf_up" in /|"$_nf_hm"|.) break ;; esac
+    _nf_cands="$_nf_cands
+$_nf_up"
   done
-  unset _nf_r1 _nf_r2 _nf_t _nf_want _nf_hit _nf_e
+  _nf_cands="$_nf_cands
+$_nf_r2"
+  while IFS= read -r _nf_want; do
+    [ -n "$_nf_want" ] || continue
+    _nf_hit="$(printf '%s\n' "$_nf_regs" | awk -F'\t' -v w="$_nf_want" '$1==w{print $2; exit}')"
+    [ -n "$_nf_hit" ] && { NF_ROOT="$_nf_hit"; break; }
+  done <<EOF_NF_CANDS
+$_nf_cands
+EOF_NF_CANDS
+  unset _nf_r1 _nf_r2 _nf_t _nf_want _nf_hit _nf_e _nf_hm _nf_regs _nf_cands _nf_up
 fi
 unset _nf_ppl
 NF_STATE=""
@@ -489,8 +500,8 @@ nf_bundleid() {
   if [ -n "$id" ]; then printf '%s' "$id"; return; fi
   id="$(find "$root" -maxdepth 4 \( -name build.gradle -o -name build.gradle.kts \) -not -path '*/node_modules/*' 2>/dev/null \
     | head -5 \
-    | xargs -I{} grep -h -E '^[[:space:]]*applicationId[[:space:]=]+"[A-Za-z0-9_.]+"' {} 2>/dev/null \
-    | sed -E 's/.*"([A-Za-z0-9_.]+)".*/\1/' \
+    | xargs -I{} grep -h -E "^[[:space:]]*applicationId[[:space:]=]+[\"'][A-Za-z0-9_.]+[\"']" {} 2>/dev/null \
+    | sed -E "s/.*[\"']([A-Za-z0-9_.]+)[\"'].*/\1/" \
     | awk '{ print length($0) "\t" $0 }' | sort -n | head -1 | cut -f2 \
     | tr 'A-Z_' 'a-z-')"
   if [ -n "$id" ]; then printf '%s' "$id"; return; fi

@@ -9,7 +9,13 @@ case "$KIND" in
       _nf_t "  지금 열린 곳($(basename "$NF_ROOT"))은 제품 폴더가 아니라서 여기에는 등록하지 않습니다. 제품 폴더를 새로 만들어 거기에 등록합니다." \
             "  The folder open now ($(basename "$NF_ROOT")) is not a product folder, so Nightflight will not register it. It will create a new product folder and register that instead."
       echo "  [모델] 이 순서로 하십시오:"
-      echo "  [모델]  1) 만들 제품의 이름을 묻습니다. 그 이름이 폴더 이름이 됩니다(영문 소문자 · 숫자 · 하이픈). 등록은 폴더 자리로 묶여 나중에 이름을 바꾸기 어렵다고 한 줄 덧붙입니다."
+      _nf_cands="$(for _d in "$HOME" "$HOME/Desktop" "$HOME/Documents" "$HOME/Developer" "$HOME/Projects" "$HOME/projects" "$HOME/code" "$HOME/dev" "$HOME/src" "$HOME/Library/Mobile Documents/com~apple~CloudDocs"; do
+          [ -d "$_d" ] && find "$_d" -mindepth 2 -maxdepth 3 -name .git -prune -print 2>/dev/null; done \
+        | while IFS= read -r _g; do _r="$(dirname "$_g")"; printf '%s\t%s\n' "$(stat -f %m "$_g" 2>/dev/null || stat -c %Y "$_g" 2>/dev/null || echo 0)" "$_r"; done \
+        | sort -s -rn -k1,1 | cut -f2 | awk '!s[tolower($0)]++' | head -5)"
+      echo "  [모델]  0) 먼저 이미 만들던 제품이 있는지 묻습니다(선택형 질문 도구가 있으면 그것으로). 있으면 그 폴더를 고르게 하고 2)를 건너뛰어 그 폴더를 3)처럼 등록합니다."
+      [ -n "$_nf_cands" ] && printf '%s\n' "$_nf_cands" | sed 's/^/  [모델]     후보(최근에 고친 순): /'
+      echo "  [모델]  1) 새로 만드는 제품이면 만들 제품의 이름을 묻습니다. 그 이름이 폴더 이름이 됩니다(영문 소문자 · 숫자 · 하이픈). 등록은 폴더 자리로 묶여 나중에 이름을 바꾸기 어렵다고 한 줄 덧붙입니다."
       echo "  [모델]  2) 홈 폴더 아래에 그 이름으로 폴더를 만듭니다. 이미 있고 비어 있지 않으면, 이미 만들던 제품인지 묻고 아니면 다른 이름을 받습니다."
       echo "  [모델]  3) 그 폴더를 등록합니다: NIGHTFLIGHT_PROJECT_DIR=<새 폴더의 절대 경로> \"\${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh\" 등록"
       echo "  [모델]  4) 대화를 그 폴더로 옮깁니다. 작업 폴더를 옮기는 도구(change_directory)가 있으면(클로드 앱) 그것으로 옮기고,"
@@ -33,7 +39,16 @@ case "$KIND" in
       if [ "$(nf_conv_scope "$NF_ROOT")" = 대화 ] && [ -n "$(nf_conv_id)" ] && ! nf_conv_ok_at "$NF_ROOT"; then
         nf_conv_add "$NF_ROOT" "$(nf_conv_id)" && _nf_t "  이 대화도 야간비행 대화로 붙였습니다 — 기록과 조종석은 그대로 이어집니다." \
           "  This chat now runs Nightflight too. Your records and cockpit carry on where they were."
-        echo "  [모델] 이 대화는 시작 안내를 받지 못했습니다. 일하기 전에 ledger.sh 결정목록 과 ledger.sh 시도목록 을 읽으십시오."
+        _nf_ss="$(printf '{"source":"startup","session_id":"%s"}' "$(nf_conv_id)" | NIGHTFLIGHT_PROJECT_DIR="$NF_ROOT" NF_SESSION="$(nf_conv_id)" bash "$NF_PYDIR/session_start.sh" 2>/dev/null \
+          | python3 -I -c 'import json,sys
+try: print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])
+except Exception: pass' 2>/dev/null)"
+        if [ -n "$_nf_ss" ]; then
+          echo "  [모델] 이 대화는 시작 안내를 받지 못했습니다. 아래가 새 대화가 받는 시작 안내입니다 — 이것대로 일하십시오."
+          printf '%s\n' "$_nf_ss" | sed 's/^/  [모델] /'
+        else
+          echo "  [모델] 이 대화는 시작 안내를 받지 못했습니다. 일하기 전에 ledger.sh 결정목록 · ledger.sh 시도목록 · ledger.sh 영향목록 을 읽으십시오."
+        fi
       fi
     else
       grep -q $'\t등록\t' "$STATE" 2>/dev/null || printf '%s\t등록\t%s\t\t\t\n' "$(date +%F)" "$(basename "$NF_ROOT" | tr -d '\t\r\n')" >> "$STATE"
@@ -83,6 +98,8 @@ case "$KIND" in
     echo "  [모델]  ⭐ 큰 단계(진단 · 가져오기 · 단계 하나)마다 과정을 보이십시오:"
     echo "  [모델]     시작할 때 대화창에 «지금 ~하고 있습니다» 한 줄 + ledger.sh 하는중 \"<그 말>\" --화면 \"<그 말>\" (조종석의 «지금 하는 일» 줄이 됩니다)"
     echo "  [모델]     끝나면 대화창에 «~이 끝났습니다» 한 줄 + ledger.sh 조종석지금 (조종석이 있으면 그 칸을 바로 올립니다 · 작은 걸음마다는 부르지 않습니다)"
+    _nf_rules="$(printf '{}' | NF_RULES_ONLY=1 NF_STATE="$NF_STATE" HERE="$NF_PYDIR" NF_CALL="$(awk -F'\t' '$2=="호칭"{v=$3; s=1} END{if (s) print v}' "$NF_PERSON" 2>/dev/null | tr -d '\000-\037\177')" python3 -I "$NF_PYDIR/session_start.py" 2>/dev/null)"
+    [ -n "$_nf_rules" ] && printf '\n  [모델] 이 대화는 등록 전에 열려 대화 시작 안내를 받지 못했습니다. 아래를 이 대화에서 지키십시오.\n%s\n' "$_nf_rules" | sed '3,$s/^/  [모델] /'
     ;;
 
   등록범위)

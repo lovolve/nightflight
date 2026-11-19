@@ -24,14 +24,21 @@ def 받기() -> int:
     dst = _받은자리()
     if dst.is_file() and time.time() - dst.stat().st_mtime < 86400:
         return 0
+    tried = dst.with_name(dst.name + ".tried")
+    if tried.is_file() and time.time() - tried.stat().st_mtime < 3600:
+        return 1
     brain = _PLUGIN / "bin" / "brain.sh"
     try:
         out = subprocess.run(["bash", str(brain), "6", "관문/기준값"], capture_output=True, text=True, timeout=20,
-                             env={**os.environ, "NF_BRAIN_TIMEOUT": os.environ.get("NF_BRAIN_TIMEOUT", "10")}).stdout
+                             env={**os.environ, "NF_BRAIN_TIMEOUT": os.environ.get("NF_BRAIN_TIMEOUT", "5")}).stdout
     except (OSError, subprocess.SubprocessError):
-        return 1
+        out = ""
     m = re.search(r"```tsv\n(.*?)```", out, re.S)
     if not m or not m.group(1).startswith("번호\t이름\t출처"):
+        try:
+            tried.parent.mkdir(parents=True, exist_ok=True); tried.touch()
+        except OSError:
+            pass
         return 1
     dst.parent.mkdir(parents=True, exist_ok=True)
     tmp = dst.with_suffix(".tmp")

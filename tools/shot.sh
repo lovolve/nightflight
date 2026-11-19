@@ -20,6 +20,10 @@ rec() {
 
 
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
+if [ "${SHOT_PLATFORM:-}" = android ] || { [ -z "${SHOT_PROJ:-}" ] && [ -z "$(find "$ROOT" -maxdepth 3 -name "*.xcodeproj" -not -path "*/.*" -print -quit)" ] \
+     && [ -n "$(find "$ROOT" -maxdepth 3 \( -name build.gradle -o -name build.gradle.kts \) -not -path "*/.*" -not -path "*/node_modules/*" -print -quit)" ]; }; then
+  exec bash "$(dirname "${BASH_SOURCE[0]}")/shot_android.sh" "$@"
+fi
 PROJ="${SHOT_PROJ:-$(find "$ROOT" -maxdepth 3 -name "*.xcodeproj" -not -path "*/.*" | head -1)}"
 [ -n "$PROJ" ] || die "*.xcodeproj 를 못 찾았다. SHOT_PROJ 로 지정할 것."
 SCHEME=$(basename "$PROJ" .xcodeproj)

@@ -136,7 +136,17 @@ def 고치기전(topic: str, ledger: Path = None) -> dict:
     d = compute(ledger)
     _t = (topic or "").strip()
     if _uw: _t = _uw.사용자말(_t)
-    rows = [] if d["못쟀다"] else d["고치는쪽별"].get(_t, [])
+    rows = [] if d["못쟀다"] else list(d["고치는쪽별"].get(_t, []))
+    if not d["못쟀다"]:
+        있음 = {r["같이볼쪽"] for r in rows}
+        for 쪽, 줄들 in d["고치는쪽별"].items():
+            if 쪽 == _t or 쪽 in 있음:
+                continue
+            for r in 줄들:
+                if r["같이볼쪽"] == _t and r["종류"] in ("같은것을쓴다", "같은화면"):
+                    rows.append(dict(r, 같이볼쪽=쪽, 거꾸로=True))
+                    있음.add(쪽)
+                    break
     stop = [r for r in rows if r["종류"] in STOP_KINDS]
     tell = [r for r in rows if r["종류"] not in STOP_KINDS]
     if stop:

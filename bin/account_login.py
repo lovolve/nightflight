@@ -212,6 +212,7 @@ def 안내(d, 열었나):
 def 시작():
     if 열쇠():
         찍기("이 컴퓨터는 이미 계정에 연결돼 있습니다.", "This computer is already connected to your account.")
+        플랜바뀜()
         모델("다른 계정으로 바꾸려면 사용자가 원할 때만 `license_key.sh 해제` 뒤 다시 로그인합니다. 지금 상태는 `license_key.sh 계정` 으로 봅니다.")
         return 0
     with 잠그기():

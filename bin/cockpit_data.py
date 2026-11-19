@@ -329,8 +329,11 @@ def _diagnosis():
     v = platform.mac_ver()[0]
     if v: out["운영체제"] = "macOS " + v
     try:
-        with open("/Applications/Xcode.app/Contents/version.plist", "rb") as f:
-            out["Xcode"] = plistlib.load(f).get("CFBundleShortVersionString", "")
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "tools"))
+        import find_dev
+        _xc = find_dev.find(os.getcwd())["Xcode"]
+        if _xc.get("판"):
+            out["Xcode"] = _xc["판"]
     except Exception:
         pass
     rts = sorted({os.path.basename(x).replace(".simruntime", "")

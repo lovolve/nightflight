@@ -62,7 +62,7 @@ In an import test on a copy of an app with its records deleted, all twelve rejec
 - App setting values: platform is one of `iPhone`, `안드로이드` (Android), `웹` (web), `스토어에 안 낸다` (not published to a store), `모름` (unknown). Payments is one of `앱안에서` (inside the app), `밖에서` (outside the app), `안받는다` (no payments), `모름` (unknown). For features, enter any value and the command returns the list of allowed values.
 - The next states of a state are an existing state name or `끝` (end). Separate several with commas (`"사용 중,만료"` is the form: in use, expired; in the real call the state names are in English). If there is nowhere further to go, use `끝`.
   Recording the same state again overwrites it. To change where it can go, write the whole list again. If a target state is not recorded yet, record that state first.
-- An app setting takes one value per call. Calling the same axis several times accumulates values, for axes that hold several (like features).
+- Only `이미한것` (already done) accumulates across calls. Every other axis keeps the last value written. When an axis has several values, write them in one call joined by a middle dot (`플랫폼 "iPhone·안드로이드"`, `기능 "A·B"`). Two separate calls drop the first value.
 - Evidence for a decision: a place in a document, commit message, or code comment that says why. Put that place (file:line) in the evidence field.
 - If the README and the code disagree, follow the code. Do not record the disagreement as a decision; tell the user about the difference.
 - A screen's short name need not be spaced words. The human-readable name goes in `화면이름` (screen name), recorded separately.

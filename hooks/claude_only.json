@@ -20,6 +20,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}\"/bin/cockpit_open.py",
+            "timeout": 20
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

@@ -18,6 +18,11 @@ case "$KIND" in
         echo "  ⛔ 조종석 주소 꼴이 아닙니다. Artifact 게시 결과로 받은 claude.ai 주소를 그대로 적으십시오." >&2
         exit 1
       fi
+      if [ -z "$(nf_board_url)" ] && [ "$(head -1 "$NF_HOME/cockpit_consent" 2>/dev/null)" != "네" ]; then
+        echo "  ⛔ 사용자가 조종석 올리기에 동의하지 않아 주소를 등록하지 않았습니다." >&2
+        echo "  [모델] 먼저 사용자에게 선택지로 물으십시오(무엇이 올라가는지 함께 알립니다). «올립니다»면 ledger.sh 조종석동의 네 뒤에 다시 등록하십시오. «올리지 않습니다»면 ledger.sh 조종석동의 아니오 를 돌리고, 방금 만든 조종석 페이지는 지워도 되는지 사용자에게 물으십시오." >&2
+        exit 1
+      fi
       mkdir -p "$(dirname "$BOARD")" 2>/dev/null; printf '%s\n' "$2" > "$BOARD"; echo "  · 조종석 주소를 기억했습니다: $2"
     elif [ -n "$(nf_board_url)" ]; then
       echo "  조종석: $(nf_board_url)"

@@ -88,6 +88,8 @@ def _judger(axes, asked):
         got = vals(ax)
         if got == ["모름"] or not got:
             return "모름"
+        if ax == "계정종류" and [x.replace(" ", "") for x in got] == ["아직없음"]:
+            return "걸림" if want == "개인" else "모름"
         if op in ("has", "="):
             return "걸림" if want in got else "안걸림"
         if op == "!=":
@@ -126,7 +128,7 @@ def _judger(axes, asked):
     return judge
 
 
-범위밖 = "사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(스토어의 연령 등급 설문은 AI가 대신 넣습니다)"
+범위밖 = "사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(앱스토어 연령 등급 설문은 AI가 대신 넣고, 구글 플레이 콘텐츠 등급 설문은 직접 하십시오)"
 
 
 def compute(state=None, person=None, gates=None, brain=None, 플랫폼필요=True) -> dict:

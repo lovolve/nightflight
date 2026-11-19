@@ -83,4 +83,6 @@ if __name__ == "__main__":
     명령 = sys.argv[1] if len(sys.argv) > 1 else "상태"
     if 명령 == "받기":
         sys.exit(받기())
+    if 명령 == "뒤에서받기":
+        sys.exit(뒤에서받기() or 0)
     print(json.dumps(상태(), ensure_ascii=False))

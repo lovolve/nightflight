@@ -88,7 +88,7 @@ support@lovolve.app
 
 | Folder | What |
 |---|---|
-| `hooks/` | Registers eleven automatic checks. Seven run in any tool: conversation start (picking up records) · three when you send a message (word list · listening for cleanup requests · handing over cockpit notes) · after a file is edited (repeated-edit warning) · two at the end of each turn (checks · cockpit). Four run only in Claude Code (`hooks/claude_only.json`): two at conversation start (how to use tools · Claude version notice) · one when you send a message (feature tips) · a notice when input is needed. |
+| `hooks/` | Registers twelve automatic checks. Seven run in any tool: conversation start (picking up records) · three when you send a message (word list · listening for cleanup requests · handing over cockpit notes) · after a file is edited (repeated-edit warning) · two at the end of each turn (checks · cockpit). Five run only in Claude Code (`hooks/claude_only.json`): three at conversation start (how to use tools · Claude version notice · starting the cockpit) · one when you send a message (feature tips) · a notice when input is needed. |
 | `bin/` | The scripts the automatic checks call, and the record tool (`ledger.sh`). |
 | `tools/` | The checks. They run at the end of every turn. |
 | `skills/` | The nine stage skills, the license key skill, and the import skill that fills in records for a product you were already building. |

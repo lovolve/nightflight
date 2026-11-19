@@ -721,8 +721,8 @@ iPhone · 안드로이드 · 한국	iPhone · Android · Korea
 누구를 위한 앱인지 · 첫 판에 무엇을 뺄지 · 무엇이 되면 성공인지를 정해 두면 범위가 흔들리지 않습니다	Deciding who the app is for, what to leave out of the first version, and what counts as success keeps the scope from drifting.
 기획 항목 {n}/{n} 정함	Plan items decided: {n}/{n}
 기획 표가 비어 있습니다	The plan table is empty.
-사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(스토어의 연령 등급 설문은 AI가 대신 넣습니다).	This tool does not cover laws that differ by country, such as business registration, privacy law, and game rating classification. (The AI fills in the store's age rating questionnaire for you.)
-사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(스토어의 연령 등급 설문은 AI가 대신 넣습니다)	This tool does not cover laws that differ by country, such as business registration, privacy law, and game rating classification. (The AI fills in the store's age rating questionnaire for you.)
+사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(앱스토어 연령 등급 설문은 AI가 대신 넣고, 구글 플레이 콘텐츠 등급 설문은 직접 하십시오).	This tool does not cover laws that differ by country, such as business registration, privacy law, and game rating classification. (The AI fills in the App Store age rating questionnaire for you. Fill in the Google Play content rating questionnaire yourself.)
+사업자 신고 · 개인정보 보호법 · 게임 등급분류처럼 나라마다 다른 법은 이 도구가 다루지 않습니다(앱스토어 연령 등급 설문은 AI가 대신 넣고, 구글 플레이 콘텐츠 등급 설문은 직접 하십시오)	This tool does not cover laws that differ by country, such as business registration, privacy law, and game rating classification. (The AI fills in the App Store age rating questionnaire for you. Fill in the Google Play content rating questionnaire yourself.)
 안드로이드 테스터 {n}명을 {n}일 연속 모으기	Recruit {n} Android testers for {n} days in a row
 애플 개발자 프로그램 가입	Join the Apple Developer Program
 회사 이름으로 받는 번호(D-U-N-S)	Company ID number (D-U-N-S)
@@ -984,3 +984,11 @@ AI가 하는 확인	Checks the AI does
 {q} · 그중 추후 확인 {n}개	{q} · {n} of them to check later
 {q} · 그중 직접 하실 일 {n}개	{q} · {n} of them for you to do
 합격 기준: {q} · AI 초안	Done when: {q} · AI draft
+기록하지 못했습니다. 대화창에 말씀해 주십시오.	Couldn't record it. Please tell the AI in the chat.
+기록했습니다.	Recorded.
+넘어감으로 기록했습니다.	Recorded as skipped.
+되돌렸습니다.	Undone.
+완료로 기록했습니다.	Recorded as done.
+자동 갱신	Updates automatically
+자동 갱신 ·	Updates automatically ·
+조종석 서버와 연결이 끊겼습니다 — 대화창에 «조종석 열어»라고 말씀해 주십시오	Lost connection to the cockpit — type "open the cockpit" in the chat

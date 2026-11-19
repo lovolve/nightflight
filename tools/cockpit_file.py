@@ -49,7 +49,7 @@ def 언어() -> str:
         return "ko"
 
 
-def 짓는다(뿌리: Path) -> Path | None:
+def 원본글() -> str | None:
     원본 = 여기.parent / "board" / "cockpit.html"
     if not 원본.exists():
         print("  ⛔ 조종석 원본을 못 찾았습니다: %s" % 원본)
@@ -59,7 +59,10 @@ def 짓는다(뿌리: Path) -> Path | None:
         print("  ⛔ 조종석에 자료를 박을 자리가 없습니다 — 짓지 않았습니다.")
         print("     (원본이 바뀌었을 수 있습니다. 그 자리를 되살린 뒤 다시 부르십시오.)")
         return None
+    return 글
 
+
+def 판모으기(뿌리: Path) -> dict:
     집 = 기록집(뿌리)
     판 = {}
     칸집 = 집 / "board"
@@ -81,16 +84,27 @@ def 짓는다(뿌리: Path) -> Path | None:
             판["now"] = dict(판.get("now") or {}, 언어="en")
         except OSError:
             pass
+    return 판
 
-    나갈곳 = 집 / "cockpit.html"
-    나갈곳.parent.mkdir(parents=True, exist_ok=True)
+
+def 쪽짓기(글: str, 판: dict, 머리덧: str = "") -> str:
     박음 = json.dumps(판, ensure_ascii=False).replace("</", "<\\/")
     몸 = 글.replace(자리, "/*__BOARD__*/" + 박음, 1)
     껍질 = ('<!DOCTYPE html>\n<html lang="' + 언어() + '">\n<head>\n<meta charset="utf-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-            '</head>\n<body>\n')
+            + 머리덧 + '</head>\n<body>\n')
+    return 껍질 + 몸 + "\n</body>\n</html>\n"
+
+
+def 짓는다(뿌리: Path) -> Path | None:
+    글 = 원본글()
+    if 글 is None:
+        return None
+    판 = 판모으기(뿌리)
+    나갈곳 = 기록집(뿌리) / "cockpit.html"
+    나갈곳.parent.mkdir(parents=True, exist_ok=True)
     임시 = 나갈곳.with_name(나갈곳.name + ".tmp.%d" % os.getpid())
-    임시.write_text(껍질 + 몸 + "\n</body>\n</html>\n", encoding="utf-8")
+    임시.write_text(쪽짓기(글, 판), encoding="utf-8")
     os.replace(임시, 나갈곳)
     print("  ✅ 조종석을 파일로 지었습니다 — 칸 %d개 · %s" % (len(판) - 1, 나갈곳))
     if len(판) - 1 == 0:

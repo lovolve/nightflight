@@ -47,7 +47,7 @@ for dp, dn, fn in os.walk(뿌리):
         dn[:] = []
     for f in fn:
         if f in ("package.json", "Package.swift", "Package.resolved", "Podfile", "pubspec.yaml", "build.gradle",
-                 "requirements.txt", "pyproject.toml", "project.pbxproj"):
+                 "build.gradle.kts", "libs.versions.toml", "requirements.txt", "pyproject.toml", "project.pbxproj"):
             try:
                 글 += Path(dp, f).read_text(encoding="utf-8", errors="replace").lower()[:400000]
             except OSError:

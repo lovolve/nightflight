@@ -17,7 +17,7 @@ def 깨끗(v):
 후보 = []
 for dp, dn, fn in os.walk(뿌리):
     dn[:] = [d for d in dn if d not in 안봄 and not d.endswith((".xcassets", ".lproj"))]
-    if dp[len(뿌리):].count(os.sep) >= 4:
+    if dp[len(뿌리):].count(os.sep) >= 6:
         dn[:] = []
     for f in fn:
         p = os.path.join(dp, f)
@@ -32,6 +32,14 @@ for dp, dn, fn in os.walk(뿌리):
                 m = re.search(r"CFBundleDisplayName:\s*[\"']?([^\"'\n]+)", open(p, encoding="utf-8", errors="replace").read())
                 if m and 깨끗(m.group(1)):
                     후보.append((0, 깨끗(m.group(1))))
+            elif f == "strings.xml" and os.sep + "values" + os.sep in p + os.sep and os.path.basename(dp) == "values":
+                m = re.search(r'<string\s+name="app_name"[^>]*>([^<]+)</string>', open(p, encoding="utf-8", errors="replace").read())
+                if m and 깨끗(m.group(1)):
+                    후보.append((0, 깨끗(m.group(1))))
+            elif f == "pubspec.yaml" and dp == 뿌리:
+                m = re.search(r"^name:\s*[\"']?([^\"'\n]+)", open(p, encoding="utf-8", errors="replace").read(), re.M)
+                if m and 깨끗(m.group(1)):
+                    후보.append((2, 깨끗(m.group(1))))
             elif f == "app.json":
                 d = json.load(open(p, encoding="utf-8"))
                 n = (d.get("expo") or {}).get("name") if isinstance(d.get("expo"), dict) else d.get("displayName") or d.get("name")

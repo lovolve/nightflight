@@ -1,6 +1,6 @@
 # 5 Test
 
-This file says only what this stage is for. The symptom tables, the actual procedure, the pass/fail criteria and the incident history come from the brain server (plan §43-6). Do not write them here. The body is served from the server. `tools/lint_skill_leak.py` enforces this.
+This file says only what this stage is for. The symptom tables, the actual procedure, the pass/fail criteria and the incident history come from the brain server. Do not write them here. The body is served from the server. `tools/lint_skill_leak.py` enforces this.
 
 ## What this stage does
 
@@ -28,7 +28,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install (plan §43-6).
+- Do not save what you receive to a file. Saving it ships the know-how out to every install.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## Do not do these in this stage
@@ -36,4 +36,4 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 1. Take a screenshot only when the user tells you to. One screenshot takes 1 to 2 minutes, and the user waits that whole time.
 2. Do every check that needs no screenshot. For anything you could not see, write "not checked visually".
 3. Stop after two simulator failures. Report what you tried to do and what the error was.
-4. Use `${CLAUDE_PLUGIN_ROOT}/tools/shot.sh`. Do not assemble the commands yourself.
+4. Use `${CLAUDE_PLUGIN_ROOT}/tools/shot.sh`. Do not assemble the commands yourself. For an Android app it hands over to the emulator tool (`tools/shot_android.sh`) by itself. For an app that ships on both iPhone and Android, add `SHOT_PLATFORM=android` to shoot the Android side.

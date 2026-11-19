@@ -127,7 +127,7 @@ def _파일(roots, exts):
     for r in roots:
         for ext in exts:
             for p in Path(r).rglob("*" + ext):
-                if any(x in SKIP_DIRS for x in p.parts) or ".test." in p.name or ".spec." in p.name:
+                if any(x in SKIP_DIRS for x in p.parts) or ".test." in p.name or ".spec." in p.name or p.name.endswith("_test.dart") or ".dart_tool" in p.parts:
                     continue
                 yield p
 
@@ -143,6 +143,12 @@ _찍기만 = r"\{\s*(?:print|console\.log|debugPrint|NSLog|Log\.\w)\s*\([^()]*\)
             re.compile(r"setOnClickListener\s*" + _빈몸, re.S),
             re.compile(r"\.clickable\s*" + _빈몸, re.S),
             re.compile(r"onClick\s*=\s*" + _찍기만, re.S)],
+    ".java": [re.compile(r"setOnClickListener\s*\(\s*(?:\w+|\(\s*\w*\s*\))\s*->\s*" + _빈몸, re.S),
+              re.compile(r"public\s+void\s+onClick\s*\([^()]*\)\s*" + _빈몸, re.S),
+              re.compile(r"setOnClickListener\s*\(\s*(?:\w+|\(\s*\w*\s*\))\s*->\s*" + _찍기만, re.S)],
+    ".dart": [re.compile(r"on(?:Pressed|Tap|LongPress|Changed)\s*:\s*\(\s*\w*\s*\)\s*(?:async\s*)?" + _빈몸, re.S),
+              re.compile(r"on(?:Pressed|Tap|LongPress)\s*:\s*\(\s*\)\s*=>\s*\{\s*\}", re.S),
+              re.compile(r"on(?:Pressed|Tap|LongPress)\s*:\s*\(\s*\)\s*(?:async\s*)?" + _찍기만, re.S)],
     "web": [re.compile(r"on(?:Click|Press|Submit)=\{\s*\(\s*\w*\s*\)\s*=>\s*" + _빈몸 + r"\s*\}", re.S),
             re.compile(r"on(?:Click|Press|Submit)=\{\s*\(\s*\w*\s*\)\s*=>\s*(?:" + _찍기만 + r"|(?:console\.log|alert)\([^()]*\))\s*\}", re.S),
             re.compile(r"on(?:Click|Press)=\{\s*(?:undefined|null)\s*\}"),
@@ -153,7 +159,7 @@ WEB = (".tsx", ".jsx", ".vue", ".svelte", ".html")
 
 
 def 빈_버튼(roots, allow):
-    for ext, rxs in (( ".swift", 빈버튼[".swift"]), (".kt", 빈버튼[".kt"])) + tuple((e, 빈버튼["web"]) for e in WEB):
+    for ext, rxs in (( ".swift", 빈버튼[".swift"]), (".kt", 빈버튼[".kt"]), (".java", 빈버튼[".java"]), (".dart", 빈버튼[".dart"])) + tuple((e, 빈버튼["web"]) for e in WEB):
         for p in _파일(roots, (ext,)):
             if ".stories." in p.name:
                 continue

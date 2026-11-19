@@ -190,6 +190,17 @@ _확인상태 = {"봤음": ("완료", "직접 봤음"), "안됨": ("확인 필�
             "읽음": ("진행 중", ""), "답초안": ("진행 중", ""), "올림": ("완료", "올림")}
 
 
+def _앱조건():
+    try:
+        import gates as _g
+        축, 때 = {}, {}
+        _g._load(축, 때, str(_file().with_name("ledger.tsv")), 1, 2, 3, 0)
+        _g._load(축, 때, os.environ.get("PERSON") or "", None, 1, 2, 0)
+        return _g._judger(축, set(축))
+    except Exception:
+        return lambda 조건: "모름"
+
+
 def 단계기본깔기(단계):
     단계 = _단계(str(단계))
     rows = 읽기()
@@ -197,9 +208,16 @@ def 단계기본깔기(단계):
         return 0
     오늘 = date.today().isoformat()
     n = 0
+    맞나 = _앱조건()
     for l in _단계기본.read_text(encoding="utf-8").splitlines():
         c = l.split("\t")
         if len(c) >= 3 and c[0] == 단계:
+            조건 = c[5].strip() if len(c) > 5 else ""
+            if 조건:
+                꼭 = 조건.startswith("?")
+                판정 = 맞나(조건.lstrip("?").strip())
+                if 판정 == "안걸림" or (꼭 and 판정 != "걸림"):
+                    continue
             처음 = c[3].strip() if len(c) > 3 and c[3].strip() in 상태들 else "시작 전"
             rows.append({"단계": 단계, "기능": c[1].strip(), "세부기능": c[2].strip(), "상태": 처음,
                          "이름표": c[4].strip() if len(c) > 4 else "", "출처": "단계 기본", "바뀐날": 오늘})
