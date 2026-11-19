@@ -122,15 +122,16 @@ else:
         print("이 컴퓨터의 계정 연결이 풀렸습니다. «야간비행 로그인»으로 다시 연결하시면 됩니다.")
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
     elif 코드 in ("무료기간끝", "무료끝유료필요"):
-        print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
+        print("[모델] 결제는 내 계정 화면에서 합니다 — 이 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/account/" + ("?lang=en" if os.environ.get("NF_LANG_NOW") == "en" else ""))
     elif 코드 == "메일확인필요":
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
     elif 코드 in ("너무잦음", "하루한도", "새안내한도", "격리"):
         pass
     else:
+        _en = os.environ.get("NF_LANG_NOW") == "en"
         if 코드 == "미결제" and d.get("무료앱"):
-            print("이 컴퓨터의 무료 제품: " + str(d.get("무료앱")))
+            print(("This computer's free product: " if _en else "이 컴퓨터의 무료 제품: ") + product_name.보임(d.get("무료앱"), product_name.목록(), _en))
         if 코드 in ("미결제", "만료"):
-            print("[모델] 플랜 안내 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/#price")
+            print("[모델] 결제는 내 계정 화면에서 합니다 — 이 주소를 사용자에게 전하십시오: https://nightflight.lovolve.app/account/" + ("?lang=en" if _en else ""))
         print(os.environ.get("KEYLINE_EXPIRED" if 코드 == "만료" else "KEYLINE_DEFAULT", ""))
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")

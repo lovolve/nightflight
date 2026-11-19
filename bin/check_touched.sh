@@ -167,6 +167,7 @@ run_dev lint_cockpit_escape.py  "조종석이 기록 글을 눕혀서 끼우나"
 run_dev lint_distribution.py     "받는 사람에게 나갈 것만 나가나"                   -
 run_dev lint_history_leak.py     "공개 쪽 주석에 남의 앱 이름이 남았나"        -
 run_dev lint_install_paths.py    "개발 도구 설치 자리를 한 곳 밖에 박았나"     -
+run_dev lint_brain_gates.py      "공개 출시 절차 표와 두뇌 서버 표가 어긋났나"  -
 run_dev lint_gates_web.py        "웹이 쓸 출시 절차 표가 낡았나"                     -
 
 run_one lint_number_source.py    "돈·기간·비율에 출처가 붙어 있나"            -
