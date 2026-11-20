@@ -2793,10 +2793,13 @@ header, .n-meta{padding-inline:16px}
       }).catch(function(){ setLive(false,'조종석 서버와 연결이 끊겼습니다 — 대화창에 «조종석 열어»라고 말씀해 주십시오'); });
     }, 5000);
   }
-  function 서버로보냄(길, 값, 됨말, 칸){
+  function 새열쇠(){ return fetch('/',{cache:'no-store'}).then(function(r){ return r.text(); }).then(function(t){ var m=t.match(/야간비행서버=(\{[^<]*\})/); var s=m&&JSON.parse(m[1]); if(!s||!s['열쇠']) throw {}; 서버['열쇠']=s['열쇠']; }); }
+  function 서버로보냄(길, 값, 됨말, 칸, 다시){
     값['열쇠']=서버['열쇠'];
-    return fetch(길,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(값)}).then(function(r){ return r.json().then(function(j){ if(!r.ok) throw j; return j; }); })
-      .then(function(j){ return fetch('/board.json',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(b){ 서버때=b['바뀐때']; 서버자료(b['판']||{}); 그리기(); 눌림말(됨말, 칸); }); })
+    return fetch(길,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(값)}).then(function(r){
+        if(r.status===403 && !다시) return 새열쇠().then(function(){ return {다시보냄:true}; });
+        return r.json().then(function(j){ if(!r.ok) throw j; return j; }); })
+      .then(function(j){ if(j&&j['다시보냄']) return 서버로보냄(길, 값, 됨말, 칸, true); return fetch('/board.json',{cache:'no-store'}).then(function(r){ return r.json(); }).then(function(b){ 서버때=b['바뀐때']; 서버자료(b['판']||{}); 그리기(); 눌림말(됨말, 칸); }); })
       .catch(function(){ 눌림말('기록하지 못했습니다. 대화창에 말씀해 주십시오.', 칸); });
   }
   function 저절로다시(){

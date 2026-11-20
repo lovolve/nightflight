@@ -80,7 +80,11 @@ while IFS= read -r f; do
 done <<EOF
 $FILES
 EOF
-[ -n "$HIT" ] || exit 0
+if [ -z "$HIT" ]; then
+  PAIRTXT="$(printf '%s\n' "$FILES" | NF_LEDGER="$NF_STATE/ledger.tsv" python3 -I "$NF_PYDIR/../tools/file_pairs.py" 알림 "$SESSION" 2>/dev/null)"
+  [ -n "$PAIRTXT" ] && printf '%s' "$PAIRTXT" | python3 -I -c 'import json,sys; print(json.dumps({"hookSpecificOutput":{"hookEventName":"PostToolUse","additionalContext":sys.stdin.read()}}, ensure_ascii=False))'
+  exit 0
+fi
 
 BASE=$(basename "$HIT")
 

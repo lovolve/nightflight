@@ -155,6 +155,9 @@ if [ "$RUN_LINTS" != 1 ] && [ -f "$NF_STATE/internal/import.tsv" ] \
 fi
 run_one lint_import.py         "개발 중간에 깐 앱이면 조종석 칸을 다 가져왔나(가져왔음 · 이 앱엔 없음 · 아직)"   -
 RUN_LINTS="$_nf_run_was"
+_nf_run_was="$RUN_LINTS"; RUN_LINTS=1
+run_one lint_pending_claim.py  "«안 한 일»을 말하고 기록의 남은 것에 안 적었나"   -
+RUN_LINTS="$_nf_run_was"
 run_dev lint_screen_words.py   "화면에 목록에 없는 새 말이 생겼나" -
 run_dev lint_shell_hangul.py   "셸에 한글 변수 이름이 있나"                   -
 run_dev lint_python_isolated.py "파이썬을 글로 넘길 때 열린 폴더를 끊었나"      -
@@ -167,6 +170,7 @@ run_dev lint_cockpit_escape.py  "조종석이 기록 글을 눕혀서 끼우나"
 run_dev lint_distribution.py     "받는 사람에게 나갈 것만 나가나"                   -
 run_dev lint_history_leak.py     "공개 쪽 주석에 남의 앱 이름이 남았나"        -
 run_dev lint_install_paths.py    "개발 도구 설치 자리를 한 곳 밖에 박았나"     -
+run_one lint_pairs.py            "짝 파일 중 한쪽만 고치고 끝냈나"              -
 run_dev lint_brain_gates.py      "공개 출시 절차 표와 두뇌 서버 표가 어긋났나"  -
 run_dev lint_gates_web.py        "웹이 쓸 출시 절차 표가 낡았나"                     -
 

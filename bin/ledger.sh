@@ -169,6 +169,7 @@ case "$KIND" in
   등록|등록범위) _NFP="$(nf_part register)" || exit 1; . "$_NFP" ;;
   바로잡기) _NFP="$(nf_part correction)" || exit 1; . "$_NFP" ;;
   따라잡기) python3 -I "$NF_PYDIR/../tools/catch_up.py" "${@:2}" ;;
+  짝파일|짝확인|짝목록) NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/file_pairs.py" "$1" "${@:2}" ;;
   개인정보초안) python3 -I "$NF_PYDIR/../tools/privacy_draft.py" "${NF_ROOT:-$PWD}" ;;
   레드팀) _NFP="$(nf_part redteam)" || exit 1; . "$_NFP" ;;
   독립확인) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" "${@:2}" ;;

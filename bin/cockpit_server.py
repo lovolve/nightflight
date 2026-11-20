@@ -208,6 +208,9 @@ def main(argv) -> int:
         return 1
     if "--뒤에서" in argv:
         return 뒤에서(뿌리)
+    if "--살아있나" in argv:
+        표 = _뿌리표(뿌리)
+        return 0 if any(_누구(자리) == 표 for 자리 in _자리들(뿌리)) else 1
     표 = _뿌리표(뿌리)
     for 자리 in _자리들(뿌리):
         누구 = _누구(자리)

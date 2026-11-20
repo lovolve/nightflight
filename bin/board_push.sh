@@ -193,6 +193,7 @@ B="$ST/board"
 
 NOWSUM="$(nf_sums "$B")"
 [ -n "$NOWSUM" ] || exit 0
+python3 -I "$HERE/cockpit_server.py" "$ROOT" --살아있나 >/dev/null 2>&1 && exit 0
 WAS="$(cat "$ST/internal/board.sent" 2>/dev/null || true)"
 PAGENOW="$(shasum "$HERE/../board/cockpit.html" 2>/dev/null | cut -d' ' -f1)"
 PAGEWAS="$(cat "$ST/internal/board.page" 2>/dev/null || true)"
