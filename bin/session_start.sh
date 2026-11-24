@@ -1,0 +1,69 @@
+#!/bin/bash
+if [ -z "${NF_LC_WAS:-}" ]; then
+  for _nf_lcv in "${LC_ALL:-}" "${LC_MESSAGES:-}" "${LANG:-}"; do
+    case "$_nf_lcv" in C|POSIX|C.*|"") : ;; *) NF_LC_WAS="$_nf_lcv"; break ;; esac
+  done
+  unset _nf_lcv
+fi
+export NF_LC_WAS
+LC_ALL=C; export LC_ALL
+set -u
+HERE="$(cd "$(dirname "$0")" && pwd)"
+_nf_py_ok=""
+if . "$HERE/python_ok.sh" 2>/dev/null && nf_python_ok; then _nf_py_ok=1; fi
+if [ -z "$_nf_py_ok" ]; then
+  printf '%s\n' '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"야간비행: 이 컴퓨터에서 파이썬 3을 찾지 못해 이번 대화에서는 기록 이어받기·진단·조종석·검사·라이선스 키 확인이 돌지 않습니다. 사용자에게 한 번 알리고, 원하시면 맥 개발자 도구를 깔아 드리겠다고(xcode-select --install) 물으십시오."}}'
+  exit 0
+fi
+unset _nf_py_ok
+IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || true)"
+NF_SESSION="$(printf '%s' "$IN" | python3 -I -c 'import json,sys
+try: d=json.load(sys.stdin)
+except Exception: d={}
+print(str((d if isinstance(d,dict) else {}).get("session_id") or ""))' 2>/dev/null || true)"
+export NF_SESSION
+
+. "$HERE/project-root.sh" 2>/dev/null || exit 0
+nf_registered || { printf '%s' "$IN" >/dev/null; exit 0; }
+python3 -I "$NF_PYDIR/trusted_text.py" 열쇠준비 >/dev/null 2>&1 || true
+_nf_kan="$NF_HOME/license.json"
+if [ ! -f "$_nf_kan" ] || [ -n "$(find "$_nf_kan" -mmin +60 2>/dev/null)" ]; then
+  if nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; then printf '%s\n' "$NF_KAN_ANSWER" > "$_nf_kan" 2>/dev/null
+  else
+  ( _a="$(bash "$HERE/license_key.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$_nf_kan.$$" && mv -f "$_nf_kan.$$" "$_nf_kan" ) >/dev/null 2>&1 &
+  fi
+fi
+unset _nf_kan
+
+if [ -d "$NF_STATE/tools" ]; then
+  for _nf_l in "$NF_STATE/tools/"*; do
+    [ -L "$_nf_l" ] && [ ! -e "$_nf_l" ] || continue
+    _nf_b="$(basename "$_nf_l")"
+    if [ -e "$HERE/../tools/$_nf_b" ]; then ln -sfn "$(cd "$HERE/../tools" && pwd -P)/$_nf_b" "$_nf_l" 2>/dev/null
+    elif [ -e "$HERE/$_nf_b" ]; then ln -sfn "$HERE/$_nf_b" "$_nf_l" 2>/dev/null
+    else rm -f "$_nf_l" 2>/dev/null; fi
+  done
+  unset _nf_l _nf_b
+fi
+
+python3 -I "$HERE/../tools/gate_thresholds.py" 받기 >/dev/null 2>&1 || true
+python3 -I "$HERE/../tools/version_check.py" 뒤에서받기 >/dev/null 2>&1 || true
+bash "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 || true
+
+if ! { nf_dev 2>/dev/null && [ -n "${NF_PID:-}" ]; }; then NF_PID="$(nf_personid 2>/dev/null | tr -d "[:space:]")"; fi
+NF_MPRINT="$(nf_macprint 2>/dev/null | tr -d "[:space:]")"
+NF_BID="$(nf_productid 2>/dev/null | tr -d "[:space:]")"
+NF_DEV="$(nf_dev 2>/dev/null && printf 1 || printf 0)"
+NF_CALL="$(awk -F'\t' '$2=="호칭"{v=$3; s=1} END{if (s) print v}' "$NF_PERSON" 2>/dev/null | tr -d '\000-\037\177')"
+NF_UI_LANG="$(nf_lang 2>/dev/null)"; printf '%s\n' "$NF_UI_LANG" > "$NF_HOME/language" 2>/dev/null
+printf '%s' "$IN" | NF_UI_LANG="$NF_UI_LANG" NF_STATE="$NF_STATE" HERE="$HERE" NF_PID="$NF_PID" NF_DOORKEY="${NF_DOORKEY:-}" NF_KEYFILE="$NF_HOME/license_state" \
+  NF_MPRINT="$NF_MPRINT" NF_BID="$NF_BID" NF_DEV="$NF_DEV" NF_CALL="$NF_CALL" \
+  NF_HOME="$NF_HOME" NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
+( NIGHTFLIGHT_HOME="$NF_HOME" NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" python3 -I "$HERE/tool_tips.py" 받기; NIGHTFLIGHT_HOME="$NF_HOME" NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" python3 -I "$HERE/tool_tips.py" 효과보내기 ) >/dev/null 2>&1 &
+if [ -f "$NF_HOME/license.new" ]; then
+  rm -f "$NF_HOME/license.new"
+  if ! { nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; }; then
+    ( _a="$(bash "$HERE/license_key.sh" 칸읽기 2>/dev/null)" && [ -n "$_a" ] && printf '%s\n' "$_a" > "$NF_HOME/license.json.$$" && mv -f "$NF_HOME/license.json.$$" "$NF_HOME/license.json" ) >/dev/null 2>&1 &
+  fi
+fi
+exit 0

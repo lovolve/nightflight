@@ -1,0 +1,73 @@
+#!/bin/bash
+if [ -z "${NF_LC_WAS:-}" ]; then
+  for _nf_lcv in "${LC_ALL:-}" "${LC_MESSAGES:-}" "${LANG:-}"; do
+    case "$_nf_lcv" in C|POSIX|C.*|"") : ;; *) NF_LC_WAS="$_nf_lcv"; break ;; esac
+  done
+  unset _nf_lcv
+fi
+export NF_LC_WAS
+LC_ALL=C; export LC_ALL
+set -u
+_nf_me="${BASH_SOURCE[0]:-$0}"; _nf_i=0
+while [ -L "$_nf_me" ] && [ "$_nf_i" -lt 20 ]; do
+  _nf_t="$(readlink "$_nf_me" 2>/dev/null)" || break
+  case "$_nf_t" in /*) _nf_me="$_nf_t" ;; *) _nf_me="$(cd "$(dirname "$_nf_me")" 2>/dev/null && pwd -P)/$_nf_t" ;; esac
+  _nf_i=$((_nf_i + 1))
+done
+if [ -L "$_nf_me" ]; then NF_PYDIR=""; else NF_PYDIR="$(cd "$(dirname "$_nf_me")" 2>/dev/null && pwd -P)"; fi
+unset _nf_me _nf_i _nf_t
+HERE="${NF_PYDIR:-$(cd "$(dirname "$0")" && pwd)}"
+. "$HERE/python_ok.sh" 2>/dev/null && { nf_python_ok || exit 0; }
+TOOLNAME="클로드"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --도구) TOOLNAME="${2:-클로드}"; shift 2 ;;
+    *) shift ;;
+  esac
+done
+IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || true)"
+
+if [ "$TOOLNAME" = "커서" ]; then
+  printf '%s' "$IN" | HERE="$HERE" python3 -I -c '
+import json, os, re, subprocess, sys
+try:
+    prompt = (json.load(sys.stdin) or {}).get("prompt", "") or ""
+except Exception:
+    prompt = ""
+here = os.environ["HERE"]
+sys.path.insert(0, here)
+from trusted_text import 사용자가_쓴_말
+prompt = 사용자가_쓴_말(prompt)
+tools = os.path.join(os.path.dirname(here), "tools")
+from cleanup_words import 표읽기, 알아듣나
+낱말, 말들 = 표읽기(os.path.join(os.path.dirname(here), "data", "spoken_words.tsv"))
+글 = prompt.strip()
+안함 = 낱말.get("안함", (None, False))[0]
+def 맞음(이름):
+    return (not (안함 and 안함.search(글))) and any(줄["이름"] == 이름 and 알아듣나(줄, 낱말, 글) for 줄 in 말들)
+말 = []
+if 맞음("시뮬레이터 정리"):
+    try:
+        r = subprocess.run(["bash", os.path.join(here, "resources.sh"), "--정리"],
+                           capture_output=True, text=True, timeout=30)
+        말.append((r.stdout or "").strip() or "정리할 것이 없었습니다.")
+    except Exception:
+        말.append("정리하지 못했습니다. 잠시 뒤에 다시 말씀해 주십시오.")
+if 맞음("저장공간 정리"):
+    말.append("저장공간은 지우기 전에 무엇을 지울지 보셔야 합니다. 아래 줄을 터미널에 넣어 보시고, "
+             "지우실 것이면 끝에 --apply 를 붙여 다시 넣으십시오:  " + os.path.join(tools, "clean_disk.sh"))
+if 말:
+    print(json.dumps({"continue": False, "user_message": "\n\n".join(말)}, ensure_ascii=False))
+' 2>/dev/null || true
+  exit 0
+fi
+
+_nf_sid="$(printf '%s' "$IN" | python3 -I -c 'import json,sys
+try: print(str((json.load(sys.stdin) or {}).get("session_id") or "").replace("\n",""))
+except Exception: pass' 2>/dev/null)"
+if ! NF_SESSION="$_nf_sid" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh"; then
+  printf '%s' "$IN" | HERE="$HERE" python3 -I "$NF_PYDIR/cleanup_words.py" --등록전 2>/dev/null || true
+  exit 0
+fi
+printf '%s' "$IN" | HERE="$HERE" python3 -I "$NF_PYDIR/cleanup_words.py" 2>/dev/null || true
+exit 0

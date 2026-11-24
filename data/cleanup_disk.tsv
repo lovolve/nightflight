@@ -1,0 +1,56 @@
+# RULE-0: 사용자 문구 칸 = 4,5
+
+금지	~/.ssh	없음	서버 접속 열쇠	다시 만들 수 없습니다. 서버와 깃허브에 못 들어갑니다
+금지	~/.gnupg	없음	서명 열쇠	다시 만들 수 없습니다
+금지	~/Library/Keychains	없음	키체인(저장된 비밀번호)	모든 로그인이 풀립니다
+금지	~/.claude/projects	없음	클로드 대화 기록	지난 대화를 다시 열 수 없습니다
+금지	~/.claude/plugins	없음	깔린 플러그인	플러그인을 다시 깔아야 합니다
+금지	~/.nightflight	없음	야간비행 기록과 이용권	정한 것 · 이용권이 사라집니다
+금지	~/Documents	없음	문서	사용자 파일입니다
+금지	~/Desktop	없음	바탕화면	사용자 파일입니다
+금지	~/Pictures	없음	사진	사용자 파일입니다
+금지	~/Movies	없음	동영상	사용자 파일입니다
+금지	~/Music	없음	음악	사용자 파일입니다
+금지	~/Library/Mobile Documents	없음	iCloud 드라이브	다른 기기에서도 지워집니다
+금지	~/Library/Messages	없음	메시지	대화가 사라집니다
+금지	~/Library/Mail	없음	메일	내려받은 메일이 사라집니다
+금지	~/Library/Developer/Xcode/Archives	없음	스토어에 올린 앱의 보관본	올린 판의 오류 기록을 못 읽습니다
+금지	~/Library/Developer/CoreSimulator/Runtimes	없음	시뮬레이터 운영체제	다시 받는 데 수 GB · 수십 분이 듭니다
+금지	~/Library/Application Support/Google/Chrome	없음	크롬 프로필	로그인이 풀립니다
+금지	~/Library/Application Support/Firefox	없음	파이어폭스 프로필	로그인이 풀립니다
+금지	~/Library/Safari	없음	사파리 자료	방문 기록 · 로그인이 사라집니다
+금지	~/.docker	없음	가상 컴퓨터 도구의 설정	그 앱이 지워졌어도 다른 도구가 씁니다
+금지	~/.colima	없음	내 컴퓨터 안의 가상 컴퓨터	그 안의 데이터베이스가 사라질 수 있습니다
+
+지움	~/Library/Caches/pip	없음	파이썬 도구 내려받기 임시 파일	다음 설치 때 다시 받습니다
+지움	~/Library/Caches/Homebrew	없음	개발 도구 설치기의 내려받기 임시 파일	다음 설치 때 다시 받습니다
+지움	~/Library/Caches/node-gyp	없음	웹 개발 도구가 받아 둔 파일	다음 설치 때 다시 받습니다
+지움	~/Library/Caches/deno	없음	웹 개발 도구(deno)의 임시 파일	다음 실행 때 다시 받습니다
+지움	~/Library/Caches/Yarn	없음	웹 개발 도구(yarn)의 내려받기 임시 파일	다음 설치 때 다시 받습니다
+지움	~/.npm/_cacache	없음	웹 개발 도구의 내려받기 임시 파일	다음 설치 때 다시 받습니다
+지움	~/Library/Caches/CocoaPods	없음	아이폰 앱 부품 내려받기 임시 파일	다음 설치 때 다시 받습니다
+지움	~/Library/Caches/org.swift.swiftpm	없음	아이폰 앱 부품 임시 파일	다음에 앱을 만들 때 한 번 느립니다
+지움	~/Library/Caches/notion-updater	없음	노션 업데이터가 받아 둔 설치본	다음 업데이트 때 다시 받습니다
+지움	~/Library/Developer/Xcode/UserData/IB Support	없음	화면 편집기 임시 파일	다시 생깁니다
+지움	~/Library/Developer/Xcode/UserData/IB%20Support	없음	같은 폴더가 다른 이름으로 하나 더	다시 생깁니다
+
+조건	~/.npm/_npx/*	날수:30	웹 개발 도구가 한 번 쓰고 남긴 것	다음에 쓸 때 다시 받습니다
+조건	~/Library/Caches/ms-playwright/*	날수:30	화면 시험용 브라우저	다음 시험 때 다시 받습니다(약 500MB)
+조건	~/Library/Developer/Xcode/iOS DeviceSupport/*	날수:90	아이폰 연결용 지원 파일	그 아이폰을 다시 연결하면 다시 받습니다
+조건	~/Library/Developer/Xcode/watchOS DeviceSupport/*	날수:90	애플워치 연결용 지원 파일	그 워치를 다시 연결하면 다시 받습니다
+조건	~/Library/Logs/*	날수:30	프로그램이 남긴 기록	지난 오류 기록을 못 봅니다
+조건	~/Library/Caches/Google/Chrome	앱꺼짐	크롬 임시 파일	크롬이 처음 몇 번 조금 느립니다. 로그인은 그대로입니다
+조건	~/Library/Caches/Google/Chrome-headless	날수:30	화면 시험용 크롬	다음 시험 때 다시 받습니다
+조건	~/Library/Logs/DiagnosticReports/*	날수:30	앱이 갑자기 꺼진 기록	지난 기록을 못 봅니다
+
+판단	~/Library/Developer/Xcode/DerivedData/*	날수:30	30일 넘게 안 연 앱의 만들다 남은 파일	그 앱을 다음에 만들 때 처음부터 다시 만듭니다(수 분 · 부품 다시 받음)
+판단	~/Library/Developer/CoreSimulator/Devices	없음	시뮬레이터 기기	야간비행이 30일 넘게 안 쓴 기기를 스스로 지웁니다. 지금 비우려면 «시뮬레이터를 정리해 주세요»라고 말씀하십시오
+판단	~/Library/Developer/CoreSimulator/Caches	없음	시뮬레이터 임시 파일	다음 실행이 한 번 느립니다
+판단	~/Library/pnpm/store	없음	웹 개발 도구의 공용 보관함	지워도 쓰는 프로젝트가 있으면 공간이 거의 안 돌아옵니다
+판단	~/.gradle	없음	안드로이드 앱 만드는 도구 보관함	다음에 안드로이드 앱을 만들 때 약 640MB 를 다시 받습니다
+판단	~/.android/avd	없음	안드로이드 가짜 폰	만든 가짜 폰과 그 안의 앱이 사라집니다
+판단	~/Library/Application Support/Claude/vm_bundles	없음	클로드 앱이 쓰는 가상 컴퓨터	클로드 앱이 다시 받습니다
+판단	~/Library/Containers/com.docker.docker	없음	가상 컴퓨터 앱 데이터	그 안의 데이터베이스와 이미지가 사라집니다
+판단	~/.claude/file-history	없음	클로드가 고친 파일의 되돌리기 기록	지난 대화에서 고친 것을 되돌릴 수 없습니다
+판단	~/.Trash	없음	휴지통	비우면 되살릴 수 없습니다. Finder 에서 직접 비우십시오
+판단	~/Downloads	없음	다운로드 폴더	사용자 파일입니다. 직접 고르십시오

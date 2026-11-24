@@ -1,0 +1,26 @@
+# RULE-0: 사용자 문구 칸 = 2
+1	Play Console에서 비공개 테스트를 만들고 테스터 12명이 14일 연속 참여하게 하십시오.	https://support.google.com/googleplay/android-developer/answer/14151465?hl=ko
+2	애플 개발자 프로그램에 등록하십시오.	https://developer.apple.com/programs/enroll/
+3	회사 정보로 D-U-N-S 번호를 조회하십시오.	https://developer.apple.com/enroll/duns-lookup/
+4	App Store Connect에서 앱을 심사에 제출하십시오.	https://appstoreconnect.apple.com/
+5	Play Console에서 앱을 심사에 제출하십시오.	https://play.google.com/console/
+8	애플 도움말의 요청 링크로 개인 계정을 조직 계정으로 바꿔 달라고 요청하십시오. 회사 설립자여야 하고 D-U-N-S 번호가 필요합니다.	https://developer.apple.com/help/account/membership/updating-your-account-information/
+12	만드는 방식을 바꿔야 합니다. AI에게 바꾸는 방법을 물어보십시오.	
+13	만드는 방식을 바꿔야 합니다. AI에게 바꾸는 방법을 물어보십시오.	
+15	App Store Connect의 비즈니스 › 계약 › 규정 준수에서 판매자 여부를 고르십시오. 유럽에 내지 않으면 애플 안내상 판매자가 아닙니다.	https://appstoreconnect.apple.com/business
+16	App Store Connect의 비즈니스에서 유료 앱 계약에 서명하고 은행과 세금 정보를 입력하십시오.	https://appstoreconnect.apple.com/business
+17	Play Console에서 판매자 결제 프로필을 만드십시오.	https://play.google.com/console/
+18	Play Console에서 개발자 계정을 만들고 본인 확인을 마치십시오.	https://support.google.com/googleplay/android-developer/answer/6112435?hl=ko
+19	AI에게 앱을 Android 16 이상에 맞추고 구글 플레이에 올리는 파일(AAB)로 만들어 달라고 하십시오.	https://developer.android.com/google/play/requirements/target-sdk?hl=ko
+20	Play Console의 앱 콘텐츠에서 데이터 보안 · 콘텐츠 등급 · 개인정보처리방침 · 앱 액세스를 채우십시오.	https://support.google.com/googleplay/android-developer/answer/10787469?hl=ko
+21	결제 대행 서비스에 판매할 사이트를 내고 심사를 받으십시오.	https://www.paddle.com/help/start/account-verification/what-is-domain-verification
+22	결제대행사에 가맹을 신청하고 사업자 서류를 내십시오.	https://www.tosspayments.com/blog/articles/53711
+23	메일 서비스에 보내는 도메인을 등록하고 확인을 마치십시오.	https://resend.com/docs/dashboard/domains/introduction
+24	Google Cloud 콘솔에서 로그인 앱을 정식으로 공개하고 브랜드 확인을 받으십시오.	https://developers.google.com/identity/protocols/oauth2/production-readiness/brand-verification
+25	내려는 마켓의 제출 안내를 읽고 제출하십시오.	https://claude.com/docs/plugins/pre-submission-checklist
+26	광고 회사 계정을 만들고, 앱이 스토어에 나오면 광고 회사에 앱을 연결하십시오.	https://support.google.com/admob/answer/10564477
+27	문자 서비스에서 사업자와 문자 용도를 등록하십시오.	https://www.twilio.com/docs/messaging/compliance/a2p-10dlc
+28	Google Cloud에서 결제 계정을 만들고 지도 키를 이 앱에서만 쓰도록 잠그십시오.	https://developers.google.com/maps/get-started
+29	Developer ID 인증서를 만들고 앱을 애플 공증에 올리십시오. 앱스토어로 내면 샌드박스를 켜십시오.	https://developer.apple.com/documentation/security/notarizing-macos-software-before-distribution
+30	Microsoft Store에 회사 개발자 계정을 만드십시오.	https://learn.microsoft.com/en-us/windows/apps/publish/partner-center/open-a-developer-account
+31	Steamworks에 가입하고 등록비를 내고 세금 · 은행 서류를 내십시오.	https://partner.steamgames.com/steamdirect

@@ -1,0 +1,38 @@
+---
+name: 0-진단
+description: 진단 단계일 때 쓴다 — 새 제품을 시작하거나, 이 컴퓨터와 개발 환경을 점검할 때. 기계를 10초에 재고, 막히면 되돌리는 행동을 같이 준다 (야간비행에 등록한 프로젝트에서만 쓴다)
+---
+
+**English-speaking user** (the user writes in English, or a Nightflight notice says LANGUAGE: English): stop reading this file. Read `${CLAUDE_PLUGIN_ROOT}/skills/0-진단/en.md` and follow it instead, and write to the user in English.
+
+# 0-진단
+
+
+## 무엇을 하는 단계인가
+
+**무엇을 하나** 칩·운영체제·디스크·쌓인 것·개발 도구·시뮬레이터·전화기를 읽는다(질문 0개).
+
+## 사용자에게 묻는 법과 도구
+
+물을 일이 생기면 `${CLAUDE_PLUGIN_ROOT}/data/asking.md` 대로 묻는다. 계획 먼저 보여 주기 · 진행 표시 · 화면 직접 확인 · 코드 검토는 `${CLAUDE_PLUGIN_ROOT}/data/tool_use.md` 를 따른다.
+
+## 두뇌에 무엇을 묻나
+
+`${CLAUDE_PLUGIN_ROOT}/tools/app_preflight.sh` 가 돈다. 기준값과 처방은 **두뇌가 내려준다**.
+
+⭐ **부르는 법** — 이 단계에 들어오면 **먼저 묻는다**:
+
+```bash
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 0 <갈래>
+```
+
+갈래를 모르면 아무 말이나 넣으면 **물을 수 있는 갈래 목록**이 돌아온다.
+⛔ 받은 것을 **파일로 적어 두지 않는다** — 적는 순간 노하우가 깔려 나간다.
+⛔ 못 받아도 **멈추지 않는다.** 아는 것만으로 진행하고 **「두뇌에서 못 받았다」고 적는다.**
+
+## ⛔ 못 — 이 단계에서 하지 않는 것
+
+1. **「부족합니다」로 끝내지 않는다** — 막힌 항목마다 되돌리는 행동 하나를 같이 준다
+2. **기계가 읽을 수 있는 것은 묻지 않는다**
+3. **못 읽는 것은 «질문»이 아니라 «예고»로** 낸다 — 언제 필요해지는지만 말한다
+4. **「안 됩니다」로 끝내지 않는다** — 되는 길(안드로이드·웹)을 같이 준다

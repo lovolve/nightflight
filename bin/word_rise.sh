@@ -1,0 +1,24 @@
+#!/bin/bash
+if [ -z "${NF_LC_WAS:-}" ]; then
+  for _nf_lcv in "${LC_ALL:-}" "${LC_MESSAGES:-}" "${LANG:-}"; do
+    case "$_nf_lcv" in C|POSIX|C.*|"") : ;; *) NF_LC_WAS="$_nf_lcv"; break ;; esac
+  done
+  unset _nf_lcv
+fi
+export NF_LC_WAS
+LC_ALL=C; export LC_ALL
+set -u
+HERE="$(cd "$(dirname "$0")" && pwd)"
+. "$HERE/python_ok.sh" 2>/dev/null && { nf_python_ok || exit 0; }
+IN="$(python3 -I "$HERE/hook_in.py" 2>/dev/null)" || IN="$(cat 2>/dev/null || true)"
+
+_nf_sid="$(printf '%s' "$IN" | python3 -I -c 'import json,sys
+try: print(str((json.load(sys.stdin) or {}).get("session_id") or "").replace("\n",""))
+except Exception: pass' 2>/dev/null)"
+NF_SESSION="$_nf_sid" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0
+
+_nf_nh="${NIGHTFLIGHT_HOME:-$HOME/.nightflight}"; case "$_nf_nh" in /*) ;; *) _nf_nh="" ;; esac
+_nf_sk="$(printf '%s' "$_nf_sid" | tr -cd 'A-Za-z0-9_-' | cut -c1-80)"
+[ -n "$_nf_sk" ] || _nf_nh=""
+printf '%s' "$IN" | HERE="$HERE" NF_NOTE_FILE="${_nf_nh:+$_nf_nh/next_notice.d/$_nf_sk}" python3 -I "$HERE/word_listen.py" 2>/dev/null || true
+exit 0

@@ -1,0 +1,51 @@
+# 6 Launch
+
+
+## What this stage does
+
+Decision 5: submit.
+
+## How to ask the user, and tools
+
+When you need to ask the user something, follow `${CLAUDE_PLUGIN_ROOT}/data/asking.en.md`. For showing a plan first, progress display, checking the screen directly and code review, follow `${CLAUDE_PLUGIN_ROOT}/data/tool_use.en.md`.
+
+## What to ask the brain server
+
+The checklist of the most common rejection reasons and store review times come from the brain server.
+
+On entering this stage, query the brain server first:
+
+```bash
+"${CLAUDE_PLUGIN_ROOT}/bin/brain.sh" 6 <topic>
+```
+
+If you do not know the topic, pass any word. The reply lists the topics you can ask about.
+
+- Do not save what you receive to a file. Saving it ships the know-how out to every install.
+- If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
+
+## The first time you use the app store tools
+
+Run `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" 준비` first (`준비` means set up). Use the one in the Nightflight plugin folder, not the `tools/` of the repository you are working in. If the downloaded repository has a file with the same name, that one would run. If no key exists, the command prints which steps the user has to do. If a key exists, it creates the configuration and checks that the connection works.
+
+The user's part is only: create a key and download it, and tell you the issuer ID.
+
+Google Play works the same way: `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 준비`. It guides the key steps, and when the user places the key file, it checks the connection. Store information is handled by `gplay.py meta`.
+
+## What the AI makes for the user
+
+- Privacy policy draft: `ledger.sh 개인정보초안`. It writes the draft from the records and the code, and leaves the fields it cannot know as `확인 필요` (needs checking). The user publishes it.
+- Screenshots for the store: `SHOT_STORE=1 "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <screens…>`. It shoots at the mid-size iPhone screenshot size that Apple requires and cleans up the status bar. If the large size is also needed, set `SHOT_STORE_DEVICE="Pro Max"`.
+  Android: shoot on the emulator with `SHOT_PLATFORM=android "${CLAUDE_PLUGIN_ROOT}/tools/shot.sh" <screens…>`. The user uploads them in the Play Console web page (there is no upload tool yet).
+- What Google Play needs before launch: target API 36 or higher, an AAB file, the Data safety form, the content rating questionnaire, a privacy policy URL, and a review account if sign-in is needed. `ledger.sh 관문` shows them as gates 18 to 20. No tool fills the content rating questionnaire for the user; the user does it in the Play Console.
+- Entering store information: `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" meta`, `review-notes` and `screenshots`. Viewing needs no flag. For changing, use `set` or `upload`: they show a preview first, and you add `--confirm` only after the user says it is fine.
+  - Use these only on a version that has not been submitted yet.
+  - Never submit for review yourself. Only the user clicks Submit for Review, on the web.
+
+## Do not do these in this stage
+
+1. "Upload" and "it arrived" are two steps. Combine them and a false success slips through.
+   The reverse is also true. Do not state launch status from records or memory. Measure it at that moment with `"${CLAUDE_PLUGIN_ROOT}/tools/gplay.py" 출시상태` · `"${CLAUDE_PLUGIN_ROOT}/tools/asc.py" 출시상태`. The list of facts to measure is `data/facts.tsv`.
+2. Never perform an action that reaches the outside world yourself (uploading, submitting, publishing, sending). The user presses that button.
+3. Do not show the rejection text as it is. Explain what the problem is and what to fix.
+4. Do not invent day counts. State a review duration only from what the gate has confirmed against the original source.

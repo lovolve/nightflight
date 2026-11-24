@@ -1,0 +1,15 @@
+# RULE-0: 사용자 문구 칸 = 3,4
+
+닫지않음	modelcontextprotocol|mcp-server|[-_/]mcp( |$|[-_/.])|\.claude/plugins|nightflight/(bin|tools)/	클로드가 쓰는 도구 연결	클로드의 도구가 끊깁니다
+물어봄	qemu-system-.*android|emulator.*-avd|/emulator/qemu	안드로이드 가짜 폰	가짜 폰이 꺼집니다. 다시 켜면 1~2분 걸립니다
+물어봄	com\.docker\.(virtualization|hyperkit|backend)|Docker Desktop	내 컴퓨터 안의 가상 컴퓨터	그 안에서 돌던 데이터베이스 · 서버가 멈춥니다
+물어봄	(^|/)(colima|limactl)( |$)|lima.*hostagent|qemu-system-(aarch64|x86_64)	내 컴퓨터 안의 가상 컴퓨터	그 안에서 돌던 데이터베이스 · 서버가 멈춥니다
+닫아도됨	GradleDaemon|gradle-launcher|GradleWrapperMain	안드로이드 앱 만드는 도구가 뒤에 남긴 프로그램	다음에 안드로이드 앱을 만들 때 처음에 조금 느립니다
+닫아도됨	KotlinCompileDaemon|kotlin-daemon	안드로이드 앱 만드는 도구가 뒤에 남긴 프로그램	다음에 안드로이드 앱을 만들 때 처음에 조금 느립니다
+물어봄	(vite|next|nuxt|astro|remix|webpack|react-scripts|expo|metro|turbo|wrangler|netlify)( |.*)(dev|start|serve)|next-server|webpack-dev-server|expo start	꺼지지 않고 남은 개발 서버	그 앱의 미리보기 화면이 멈춥니다. 다시 켜면 됩니다
+물어봄	-m http\.server|SimpleHTTPServer|(^|/)(serve|http-server|live-server)( |$)	꺼지지 않고 남은 미리보기 서버	그 미리보기 화면이 멈춥니다. 다시 켜면 됩니다
+물어봄	supabase (start|functions serve)|(^|/)postgres( |$)|(^|/)redis-server|(^|/)mongod( |$)	내 컴퓨터에서 돌리는 데이터베이스	그 데이터베이스를 쓰던 앱이 멈춥니다
+닫아도됨	(^|/)esbuild( |$)|tsserver|typescript-language-server|tailwindcss.*--watch	편집기와 앱 만드는 도구가 남긴 보조 프로그램	편집기가 필요하면 다시 켭니다
+닫아도됨	(^|/)watchman( |$)	파일 감시 도구	다음에 필요하면 다시 켜집니다
+닫아도됨	SourceKitService|sourcekit-lsp|XCBBuildService	아이폰 앱 만드는 도구가 남긴 보조 프로그램	그 도구가 필요하면 다시 켭니다
+물어봄	(^|/)(node|bun|deno|python3?|ruby|java)( |$)	그 밖의 개발 프로그램	무엇을 돌리던 것인지 폴더를 보고 정하십시오
