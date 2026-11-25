@@ -18,6 +18,7 @@ async function 연다($: EngineInterface, 영어: boolean): Promise<string> {
   try {
     const 답: any = await $.tool.call({ tool: 브라우저도구, url: 주소 } as any)
     if (!답 || 답.deny || 답.isError) return 말(`브라우저 칸을 열지 못했습니다. 주소: ${주소}`, `Could not open the browser pane. Address: ${주소}`)
+    try { await $.tool.call({ tool: 'mcp__ccd_view__show_pane', pane: 'preview' } as any) } catch {}
     return 말(`조종석을 열었습니다: ${주소}`, `Opened the cockpit: ${주소}`)
   } catch {
     return 말(`조종석 서버는 켰지만 브라우저 칸을 열지 못했습니다. 클로드 데스크톱 앱에서 다시 입력해 주십시오. 주소: ${주소}`, `The cockpit is running but the browser pane did not open. Try again in the Claude desktop app. Address: ${주소}`)

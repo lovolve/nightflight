@@ -22,7 +22,7 @@ body{background:var(--ground); color:var(--ink); margin:0; line-height:1.55; fon
 .wrap *{min-width:0}
 .mono{font-family:"Geist Mono",ui-monospace,Menlo,Consolas,"DejaVu Sans Mono",monospace; font-variant-numeric:tabular-nums}
 
-header{display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:nowrap}
+header{display:flex; align-items:center; justify-content:space-between; gap:4px 12px; flex-wrap:wrap}
 .eye{font-size:var(--fs-5); letter-spacing:.16em; text-transform:uppercase; color:var(--faint); margin:0 0 2px}
 .eyerow{display:flex; align-items:center; gap:8px; margin:0; white-space:nowrap; flex:none}
 .eyerow .eye{margin:0; font-size:var(--fs-3); font-weight:600; letter-spacing:.02em; text-transform:none; color:var(--ink)}
@@ -30,7 +30,7 @@ header{display:flex; align-items:center; justify-content:space-between; gap:12px
 h1{font-size:var(--fs-1); font-weight:600; letter-spacing:-.01em; margin:0}
 #live{display:inline-flex; align-items:center; gap:4px; font-size:var(--fs-5);
   letter-spacing:.08em; color:var(--faint)}
-#live .d{width:6px; height:6px; border-radius:50%; background:var(--faint)}
+#live .d{width:6px; height:6px; flex:none; border-radius:50%; background:var(--faint)}
 #live.on{color:var(--live)} #live.on .d{background:var(--live)}
 @media (prefers-reduced-motion:no-preference){ #live.on .d{animation:pl 2.4s ease-in-out infinite} }
 @keyframes pl{0%,100%{opacity:1}50%{opacity:.3}}
@@ -498,7 +498,8 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 .n-meta{display:flex; justify-content:space-between; font-size:var(--fs-5); color:var(--faint)}
 .n-hero{border:1px solid var(--open-rule); border-radius:12px; background:var(--panel); padding:16px 16px 12px; margin:0 0 4px}
 .n-top{display:flex; gap:16px; align-items:center}
-.n-topr{display:flex; align-items:center; justify-content:flex-end; gap:12px; margin-left:auto; white-space:nowrap; min-width:0}
+.n-topr{display:flex; align-items:center; justify-content:flex-end; flex-wrap:wrap; gap:4px 12px; margin-left:auto; min-width:0; max-width:100%}
+#live-t{white-space:normal; overflow-wrap:anywhere}
 .n-upd{display:flex; align-items:center; justify-content:flex-end; flex-wrap:nowrap; gap:4px 12px; font-size:var(--fs-5); color:var(--muted); text-align:right}
 .n-upd .ok{color:var(--done-b)} .n-upd .new{color:var(--alert)}
 .n-upd > span{white-space:nowrap; flex:none}
@@ -2752,7 +2753,7 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
   }
   var 준비=(function(){
     var 막=null, 열쇠='', 보인수={}, 목표=0, 지금x=0, 속도=0, 이륙=0, 다끝=false, 돌기=false, 마지막틀=0, 그림=null, 등들=[];
-    var NS='http://www.w3.org/2000/svg', XL=14, LN=22, XR=XL+LN*24-8, CY=48, X0=40, X1=290, XE=470;
+    var NS='http://www.w3.org/2000/svg', XL=14, LN=22, XR=XL+LN*24-8, CY=60, X0=XL+20, X1=290, XE=460;
     var 조용=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function 걷음(){ try{ return localStorage.getItem(열쇠)==='1'; }catch(e){ return false; } }
     function 걷기(){ try{ localStorage.setItem(열쇠,'1'); }catch(e){} if(막){ 막.classList.add('out'); setTimeout(function(){ if(막&&막.parentNode) 막.parentNode.removeChild(막); 막=null; 돌기=false; }, 650); } }
@@ -2760,7 +2761,7 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
     function 짓기(){
       막=document.createElement('div'); 막.className='pf'; 막.setAttribute('role','dialog'); 막.setAttribute('aria-label','조종석 준비');
       막.innerHTML='<div class="pf-card"><div class="pf-hd"><b>조종석 준비</b><span class="pf-meta" data-pf="stage"></span></div>'
-        +'<svg class="pf-rw" viewBox="0 0 540 96" aria-hidden="true"><g data-pf="bg"></g><g data-pf="lights"></g><g data-pf="shadow" opacity="0"></g><g data-pf="plane"></g></svg>'
+        +'<svg class="pf-rw" viewBox="0 0 540 120" aria-hidden="true"><g data-pf="bg"></g><g data-pf="lights"></g><g data-pf="shadow" opacity="0"></g><g data-pf="plane"></g></svg>'
         +'<div data-pf="list" aria-live="polite"></div>'
         +'<div class="pf-ft"><span>다른 일을 하셔도 됩니다 · 끝나면 대화창에 알려 드립니다</span><button type="button" data-pf="close">조종석 바로 보기</button></div></div>';
       document.body.appendChild(막);
@@ -2780,17 +2781,17 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
       if(!막){ 돌기=false; return; }
       var dt=Math.min((now-마지막틀)/1000,0.05); 마지막틀=now;
       var y=CY, 크=1, 떨=0;
-      if(이륙===-1){ 크=1.4; 떨=12; 지금x=XE; }
+      if(이륙===-1){ 크=2.1; 떨=22; 지금x=XE; }
       else if(!이륙){ var k=5, c=2*Math.sqrt(k); 속도+=(k*(목표-지금x)-c*속도)*dt; 지금x+=속도*dt;
         if(조용){ 지금x=목표; 속도=0; }
         if(다끝 && Math.abs(목표-지금x)<1.5 && Math.abs(속도)<4) 이륙=now; }
       else { var s=Math.min((now-이륙)/2400,1), e=s*s*(3-2*s), u=Math.max(0,Math.min(1,(s-0.2)/0.8)); u=u*u*(3-2*u);
-        지금x=X1+(XE-X1)*e; 크=1+u*0.4; 떨=u*12; if(조용) s=1;
+        지금x=X1+(XE-X1)*e; 크=1+u*1.1; 떨=u*22; if(조용) s=1;
         if(s>=1){ 이륙=-1; setTimeout(걷기, 500); } }
       var 비=막.querySelector('[data-pf="plane"]'), 그=막.querySelector('[data-pf="shadow"]');
       비.setAttribute('transform','translate('+지금x.toFixed(2)+','+y+') scale('+크.toFixed(3)+')');
-      그.setAttribute('transform','translate('+(지금x+떨*0.5).toFixed(2)+','+(y+떨).toFixed(2)+') scale('+(1-떨/40).toFixed(3)+')');
-      그.setAttribute('opacity', 떨>0?(0.4-떨/40).toFixed(2):'0');
+      그.setAttribute('transform','translate('+(지금x+떨*0.5).toFixed(2)+','+(y+떨).toFixed(2)+') scale('+(1-떨/60).toFixed(3)+')');
+      그.setAttribute('opacity', 떨>0?(0.45-떨/60).toFixed(2):'0');
       var 켬=다끝&&이륙?XR+10:지금x;
       등들.forEach(function(l){ var on=l[0]<켬; if(on!==l[2]){ l[2]=on; l[1].setAttribute('fill', on?'#F0A860':'#3A2817'); } });
       requestAnimationFrame(틀);

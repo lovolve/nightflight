@@ -255,7 +255,8 @@ def main(argv) -> int:
     if not 인자:
         print("  쓰는 법: cockpit_server.py <제품 폴더>")
         return 1
-    뿌리 = Path(인자[0]).resolve()
+    import _root
+    뿌리 = _root._등록된곳(Path(인자[0]).resolve())
     if not 뿌리.is_dir():
         print("  ⛔ 그런 폴더가 없습니다: %s" % 뿌리)
         return 1
