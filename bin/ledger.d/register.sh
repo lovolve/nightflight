@@ -47,7 +47,7 @@ except Exception: pass' 2>/dev/null)"
         echo "  [모델] 일하기 전에 ledger.sh 결정목록 · ledger.sh 시도목록 · ledger.sh 영향목록 을 읽으십시오."
       fi
     else
-      grep -q $'\t등록\t' "$STATE" 2>/dev/null || printf '%s\t등록\t%s\t\t\t\n' "$(date +%F)" "$(basename "$NF_ROOT" | tr -d '\t\r\n')" >> "$STATE"
+      printf '%s\t등록\t%s\t\t\t\n' "$(date +%F)" "$(basename "$NF_ROOT" | tr -d '\t\r\n')" >> "$STATE"
       mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
       printf '%s\t프로젝트\t%s\t\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" >> "$NF_PERSON" 2>/dev/null
       _nf_t "  이 폴더를 야간비행 프로젝트로 등록했습니다." "  This folder is now registered as a Nightflight project."
