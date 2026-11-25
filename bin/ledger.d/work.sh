@@ -174,6 +174,14 @@ PYEOF
     [ "$_bad" -eq 0 ]
     ;;
 
+  준비끝)
+    if awk -F'\t' '$2=="등록"{f=0} $2=="준비끝"{f=1} END{exit !f}' "$STATE" 2>/dev/null; then
+      echo "  · 이미 준비를 끝낸 것으로 적혀 있습니다."; exit 0
+    fi
+    printf '%s\t준비끝\t\t\t\t\n' "$(date '+%F %H:%M')" >> "$STATE"
+    echo "  · 조종석 준비를 끝낸 것으로 적었습니다."
+    ;;
+
   찾음)
     LINE="${2:?찾은 것 한 줄 — 예: 「앱 2/5 ○○ — 월 9,900원 · 앱 안 결제 있음」}"
     LINE="$(printf '%s' "$LINE" | tr '\t\r\n' '   ' | python3 -I -c 'import sys; sys.stdout.write(sys.stdin.buffer.read().decode("utf-8","ignore")[:160])')"

@@ -531,6 +531,29 @@ footer{margin-top:32px; padding-top:16px; border-top:1px solid var(--rule);
 .n-pc svg{display:block} .n-pc .pb{color:var(--done-b)} .n-pc .py{color:var(--alert)} .n-pc .pr{color:var(--stop)} .n-pc .px{color:var(--faint)}
 .n-bar{display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:16px; padding-top:12px; border-top:1px solid var(--rule)}
 .n-st{display:flex; align-items:center; gap:12px; font-size:var(--fs-4); color:var(--alert)}
+.pf{position:fixed; inset:0; z-index:50; background:rgba(12,12,11,.86); display:flex; align-items:flex-start; justify-content:center; padding:48px 16px; overflow:auto; transition:opacity .6s}
+.pf.out{opacity:0; pointer-events:none}
+.pf-card{width:100%; max-width:560px; background:#1c1c1a; border:1px solid #2c2c2a; border-radius:12px; padding:24px; color:#F1EFE8}
+.pf-hd{display:flex; justify-content:space-between; align-items:baseline; gap:12px}
+.pf-hd b{font-size:var(--fs-2); font-weight:600}
+.pf-meta{font-size:var(--fs-4); color:#888780}
+.pf-rw{display:block; width:100%; margin:12px 0 8px; overflow:hidden}
+.pf-row{display:flex; gap:12px; align-items:flex-start; padding:8px 0; font-size:var(--fs-3); color:#888780}
+.pf-row.on{color:#F1EFE8}
+.pf-ic{width:18px; flex:none; text-align:center}
+.pf-sub{margin:8px 0 4px; border-left:1px solid #444441; padding-left:12px}
+.pf-kv{display:flex; justify-content:space-between; gap:12px; font-size:var(--fs-4); padding:4px 0; color:#B4B2A9}
+.pf-kv b{font-weight:400; font-family:ui-monospace,Menlo,monospace; color:#F1EFE8; text-align:right}
+.pf-kv.wait b{color:#5F5E5A}
+.pf-spin{display:inline-block; width:12px; height:12px; border:2px solid #5F5E5A; border-top-color:var(--alert,#F0A860); border-radius:50%; animation:pfs .8s linear infinite}
+@keyframes pfs{to{transform:rotate(360deg)}}
+.pf-ft{margin-top:16px; border-top:1px solid #444441; padding-top:12px; display:flex; justify-content:space-between; align-items:center; gap:12px; font-size:var(--fs-4); color:#888780}
+.pf-ft button{background:none; border:1px solid #444441; color:#D3D1C7; border-radius:6px; padding:4px 12px; font:inherit; cursor:pointer}
+@media (prefers-reduced-motion: reduce){ .pf-spin{animation:none} .pf{transition:none} }
+.n-fill{display:inline-flex; align-items:center; gap:8px; font-size:var(--fs-5,13px); color:var(--muted,inherit); min-width:0}
+.n-spin{width:10px; height:10px; border-radius:50%; border:2px solid currentColor; border-right-color:transparent; animation:n-spin 1s linear infinite; flex:none}
+@keyframes n-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.n-spin{animation:none}}
 .n-mini{display:flex; gap:3px; align-items:flex-end; height:14px} .n-mini i{width:9px; height:4px; border-radius:2px; background:var(--rule)} .n-mini i.d{height:14px; background:var(--done-b)} .n-mini i.c{height:14px; background:var(--alert)}
 .n-bar .c{font-size:var(--fs-5); padding:2px 12px; border-radius:999px; border:1px solid var(--live-rule); color:var(--ink-2); white-space:nowrap} .n-bar .c.stale{border-color:var(--alert-rule); color:var(--alert)}
 .n-bar button.c{font:inherit; font-size:var(--fs-5); background:transparent; cursor:pointer} .n-bar button.c:hover{border-color:var(--rail); color:var(--ink)} .n-bar button.c .rf{margin-left:8px; vertical-align:-2px}
@@ -1636,7 +1659,6 @@ header, .n-meta{padding-inline:16px}
     if(md['빈용량GB']!=null && !값['디스크 여유']) 값['디스크 여유']=md['빈용량GB']+'GB 비어 있음';
     var 된=xs.filter(function(x){return x.z['상태']==='완료';});
     (p['기능들']||[]).forEach(function(f){
-      if(f['기능']!=='제품 질문') return;
       var 줄=된.filter(function(x){return x.f===f;}); if(!줄.length) return;
       t+='<p class="sv-group">'+esc(f['기능'])+'</p>';
       줄.forEach(function(x){ var v=값[x.z['이름']] || String(x.z['확인']||'').replace(/\s*\([^()]*\)\s*$/,'');
@@ -2300,6 +2322,8 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
       +'<div class="n-ht"><h1><button type="button" class="n-nmb" data-pj-menu aria-expanded="'+프로젝트열림+'" aria-label="'+esc('다른 프로젝트 보기')+'"><b id="appname"></b><span id="folder"></span><span class="n-car" aria-hidden="true">'+(프로젝트열림?'▴':'▾')+'</span></button></h1>'+(한줄?'<p>'+esc(한줄)+'</p>':'')+'</div>'
       +컴퓨터아이콘(last.machine)+'</div>'
       +'<div class="n-bar">'+(cur!=null?'<span class="n-st"><span class="n-mini" aria-hidden="true">'+작은막대+'</span>지금 '+esc(STAGES[cur][1])+' 단계 · '+(cur+1)+'/9</span>':'<span></span>')
+      +(function(){ var d=last.doing||{}; if(!(d['있나']&&d['오늘인가'])) return '';
+          return '<span class="n-fill" role="status"><i class="n-spin" aria-hidden="true"></i>'+esc(d['화면']||d['무엇']||'')+' — 조종석을 채우는 중</span>'; })()
       +'</div>'
       +'<div class="n-plb"><span class="n-plx">'+esc(플랜글(last.plan))+'</span>'+(프로젝트열림?플랜목록(last.plan):'')+'</div></div>';
 
@@ -2685,7 +2709,7 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
     안내띄움(t, 칸); }
 
   function setLive(on,t){var e=$('live'); e.className=on?'on':''; $('live-t').textContent=t; e.style.display=on?'none':'';}
-  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"},"5":{"줄":["A","O"]},"6":{"줄":["A","O"]}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":{"찾은것":["A","O"]},"features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"개인정보나감":["A","O"],"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","안정함":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":["A",{"못들은것":"A"}],"오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","한도":{"한도":["A","O"]},"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"고름":"A","끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O","작동안함":{"줄":["A","O"]}},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A","실패확인기능":"A","표준확인기능":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}},"설명들":"O"},"stuck":{"items":["A","O"]}};
+  var 꼴표={"attempts":{"기능별":{"*":["A","O"]},"모른낱말":"A"},"bound":{"by":{"돈":["A","O"],"못되돌림":["A","O"],"법":["A","O"],"시간":["A","O"]}},"brain":{"최근":["A","O"]},"bystage":{"0":{"줄":["A","O"]},"1":{"줄":["A","O"]},"2":{"치명적":["A","O"],"확인됨":["A","O"]},"3":{"갈래":{"조종석 상태 화면":["A","O"]},"넣음":"A","다음번":"A","뺌":"A"},"5":{"줄":["A","O"]},"6":{"줄":["A","O"]}},"decisions":{"items":["A","O"]},"deps":{"고치는쪽별":{"*":["A","O"]},"따져본기능":"O","모른낱말":"A"},"doing":{"준비":{"단계":["A",{"줄":["A","A"]}]},"찾은것":["A","O"]},"features":{"검증기록":["A","O"],"기능들":["A",{"막힌것":"A","하위":["A",{"남은줄들":["A","O"],"줄들":["A","O"]}]}],"미연결주제":"O","설계점검":{"개인정보나감":["A","O"],"구조":{"묶임":"A","부품":["A",{"칸":["A","O"]}],"흐름":["A",{"단계":"A","단계부품":"A"}]},"구조내용":["A",{"줄":"A"}],"막는것":{"규칙":"A","비밀파일":["A",{"키이름":"A"}],"안올린것":["A","O"]}},"설계표":{"단계":{"*":{"기능들":["A",{"세부":["A",{"때":"O"}],"수":"O"}]}},"상태들":"A","안정함":"A","없앤것":["A","O"],"하는일들":["A",{"차례":["A","A"]}],"화면들":["A",{"문제":"A","상태":["A","O"],"요소":["A","O"],"이동":["A","O"]}]},"제품소개":"O","주제없음":"O","진단값":"O"},"feed":{"items":["A","O"]},"gates":{"걸림":["A","O"],"날짜없음":["A","O"],"막힘":"A","모름":["A",{"못들은것":"A"}],"오늘신청":"A","이미한것":"A","이미한것고를것":["A","A"],"제출뒤":["A","O"]},"machine":{"걸리나":"A","걸리나짝":["A","A"],"판":"O","한도":{"한도":["A","O"]},"할말":"O"},"now":{"ask":{"handled":"A"},"repeat":"O","verifyKinds":"O","가져오기":{"칸":["A","O"]},"다른프로젝트":["A","O"],"단계끝":{"조건":["A","O"]},"따라잡기":{"고름":"A","끝낸것":"A","제안":["A",{"남은것":"A"}]},"스토어연결":"O","작동안함":{"줄":["A","O"]}},"piled":{"blocks":["A","O"],"decisions":["A","O"],"dict":{"risen":["A","O"]},"reverted":["A","O"],"stageDays":["A","O"],"waited":"A","waiting":"A"},"plan":{"프로젝트":["A","O"]},"readdates":{"안읽은것":["A","O"],"줄들":["A","O"]},"stages":{"loose":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]},"per":{"*":{"blocks":["A","O"],"decisions":["A","O"],"done":["A","O"],"labels":"A","open":["A","O"]}}},"standards":{"기능별":{"*":["A","O"]},"모른낱말":"A","실패확인기능":"A","표준확인기능":"A"},"states":{"기능별":{"*":{"*":{"갈곳":"A"}}},"기능별본것":{"*":{"내판단":"A","막다른":"A","상태들":{"*":"A"},"실패출구없음":"A","아직안정함":"A","없는곳":"A","처음":"A"}},"설명들":"O"},"stuck":{"items":["A","O"]}};
   function 상자(x){ return x!==null && typeof x==='object' && !Array.isArray(x); }
   function 맞추기(v, f){
     if(f==='A'||Array.isArray(f)){ if(!Array.isArray(v)) return [];
@@ -2726,6 +2750,83 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
     if(n){ if('앱이름' in n && typeof n['앱이름']!=='string') n['앱이름']='';
       if('stage' in n && !(typeof n.stage==='number' && n.stage>=0 && n.stage<STAGES.length && Math.floor(n.stage)===n.stage)) n.stage=null; }
   }
+  var 준비=(function(){
+    var 막=null, 열쇠='', 보인수={}, 목표=0, 지금x=0, 속도=0, 이륙=0, 다끝=false, 돌기=false, 마지막틀=0, 그림=null, 등들=[];
+    var NS='http://www.w3.org/2000/svg', XL=14, LN=22, XR=XL+LN*24-8, CY=48, X0=40, X1=290, XE=470;
+    var 조용=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function 걷음(){ try{ return localStorage.getItem(열쇠)==='1'; }catch(e){ return false; } }
+    function 걷기(){ try{ localStorage.setItem(열쇠,'1'); }catch(e){} if(막){ 막.classList.add('out'); setTimeout(function(){ if(막&&막.parentNode) 막.parentNode.removeChild(막); 막=null; 돌기=false; }, 650); } }
+    function 네모(p,x,y,w,c){ var r=document.createElementNS(NS,'rect'); r.setAttribute('x',x.toFixed(1)); r.setAttribute('y',y-2); r.setAttribute('width',w.toFixed(1)); r.setAttribute('height',4); r.setAttribute('rx',2); r.setAttribute('fill',c); p.appendChild(r); return r; }
+    function 짓기(){
+      막=document.createElement('div'); 막.className='pf'; 막.setAttribute('role','dialog'); 막.setAttribute('aria-label','조종석 준비');
+      막.innerHTML='<div class="pf-card"><div class="pf-hd"><b>조종석 준비</b><span class="pf-meta" data-pf="stage"></span></div>'
+        +'<svg class="pf-rw" viewBox="0 0 540 96" aria-hidden="true"><g data-pf="bg"></g><g data-pf="lights"></g><g data-pf="shadow" opacity="0"></g><g data-pf="plane"></g></svg>'
+        +'<div data-pf="list" aria-live="polite"></div>'
+        +'<div class="pf-ft"><span>다른 일을 하셔도 됩니다 · 끝나면 대화창에 알려 드립니다</span><button type="button" data-pf="close">조종석 바로 보기</button></div></div>';
+      document.body.appendChild(막);
+      var 바=막.querySelector('[data-pf="bg"]'), 등=막.querySelector('[data-pf="lights"]'), 씨=11;
+      function 수(){ 씨=(씨*9301+49297)%233280; return 씨/233280; }
+      [CY-32,CY-16,CY+16,CY+32].forEach(function(y){ var x=XL; while(x<XR){ var w=10+수()*48, g=6+수()*8; if(XR-(x+w+g)<14) w=XR-x; 네모(바,x,y,w,'#3a3a38'); x+=w+g; } });
+      등들=[]; for(var i=0;i<LN;i++){ var x=XL+i*24; 등들.push([x+8, 네모(등,x,CY,16,'#3A2817'), false]); }
+      var 표=document.querySelector('img.nfmark'), 원=표&&표.getAttribute('src');
+      if(원){ ['shadow','plane'].forEach(function(k){ var g=막.querySelector('[data-pf="'+k+'"]'), im=document.createElementNS(NS,'image');
+        im.setAttribute('href',원); im.setAttribute('width',40); im.setAttribute('height',40); im.setAttribute('x',-20); im.setAttribute('y',-20); im.setAttribute('transform','rotate(90)');
+        if(k==='shadow') im.setAttribute('style','filter:brightness(0)'); g.appendChild(im); }); }
+      막.querySelector('[data-pf="close"]').addEventListener('click', 걷기);
+      지금x=X0; 속도=0; 이륙=0; 다끝=false; 보인수={};
+      if(!돌기){ 돌기=true; 마지막틀=performance.now(); requestAnimationFrame(틀); }
+    }
+    function 틀(now){
+      if(!막){ 돌기=false; return; }
+      var dt=Math.min((now-마지막틀)/1000,0.05); 마지막틀=now;
+      var y=CY, 크=1, 떨=0;
+      if(이륙===-1){ 크=1.4; 떨=12; 지금x=XE; }
+      else if(!이륙){ var k=5, c=2*Math.sqrt(k); 속도+=(k*(목표-지금x)-c*속도)*dt; 지금x+=속도*dt;
+        if(조용){ 지금x=목표; 속도=0; }
+        if(다끝 && Math.abs(목표-지금x)<1.5 && Math.abs(속도)<4) 이륙=now; }
+      else { var s=Math.min((now-이륙)/2400,1), e=s*s*(3-2*s), u=Math.max(0,Math.min(1,(s-0.2)/0.8)); u=u*u*(3-2*u);
+        지금x=X1+(XE-X1)*e; 크=1+u*0.4; 떨=u*12; if(조용) s=1;
+        if(s>=1){ 이륙=-1; setTimeout(걷기, 500); } }
+      var 비=막.querySelector('[data-pf="plane"]'), 그=막.querySelector('[data-pf="shadow"]');
+      비.setAttribute('transform','translate('+지금x.toFixed(2)+','+y+') scale('+크.toFixed(3)+')');
+      그.setAttribute('transform','translate('+(지금x+떨*0.5).toFixed(2)+','+(y+떨).toFixed(2)+') scale('+(1-떨/40).toFixed(3)+')');
+      그.setAttribute('opacity', 떨>0?(0.4-떨/40).toFixed(2):'0');
+      var 켬=다끝&&이륙?XR+10:지금x;
+      등들.forEach(function(l){ var on=l[0]<켬; if(on!==l[2]){ l[2]=on; l[1].setAttribute('fill', on?'#F0A860':'#3A2817'); } });
+      requestAnimationFrame(틀);
+    }
+    function 글(준){
+      var 단=준['단계']||[], n=단.length||4, 끝수=0, 부분=0, 지금i=-1;
+      var 목=막.querySelector('[data-pf="list"]');
+      목.innerHTML=단.map(function(s,i){
+        var 상=다끝?'끝':s['상태'], 줄=Array.isArray(s['줄'])?s['줄']:[];
+        if(상==='끝'||상==='건너뜀') 끝수++;
+        var 아이콘=상==='끝'?'<span style="color:#F0A860">✓</span>':상==='지금'?'<span class="pf-spin"></span>':상==='건너뜀'?'<span style="color:#5F5E5A">–</span>':'<span style="color:#5F5E5A">○</span>';
+        var 머리='<div>'+esc(s['이름'])+(상==='끝'&&줄.length?' <span style="color:#888780">— '+esc(줄.slice(0,3).map(function(k){ return k[1]; }).join(' · '))+'</span>':'')+(상==='건너뜀'?' <span style="color:#888780">— 읽을 자료 없음</span>':'')+'</div>';
+        var 속='';
+        if(상==='지금'){ 지금i=i; var 보=Math.min(보인수[i]||0, 줄.length);
+          속='<div class="pf-sub">'+줄.slice(0,보).map(function(k){ return '<div class="pf-kv"><span>'+esc(k[0])+'</span><b>'+esc(k[1])+'</b></div>'; }).join('')
+            +(보<줄.length?'<div class="pf-kv wait"><span>'+esc(줄[보][0])+'</span><b>재는 중</b></div>':'<div class="pf-kv wait"><span>더 찾는 중</span><b></b></div>')+'</div>';
+          부분=줄.length?보/(줄.length+1):0; }
+        return '<div class="pf-row'+(상==='지금'?' on':'')+'"><span class="pf-ic">'+아이콘+'</span><div style="flex:1;min-width:0">'+머리+속+'</div></div>'; }).join('');
+      목표=다끝?X1:X0+Math.min(1,(끝수+부분)/n)*(X1-X0);
+      막.querySelector('[data-pf="stage"]').textContent=다끝?'준비 완료':(Math.min(끝수+1,n)+'/'+n+' 단계 · 보통 1~3분');
+      return 지금i>=0 && (보인수[지금i]||0)<(단[지금i]['줄']||[]).length ? 지금i : -1;
+    }
+    var 늘림=null;
+    function 그리기(){
+      var d=상자(last.doing)&&last.doing['준비'];
+      if(!상자(d)||!d['보일까']) return;
+      var 첫=상자(d['단계'])||!Array.isArray(d['단계'])?null:d['단계'][0], 이름=(첫&&Array.isArray(첫['줄'])&&첫['줄'][0])?첫['줄'][0][1]:'';
+      열쇠='nf-prep:'+String(d['등록일']||'')+':'+String(이름);
+      if(!막){ if(d['끝']||걷음()) return; 짓기(); }
+      if(d['끝']) 다끝=true;
+      그림=d;
+      var i=글(d);
+      if(i>=0 && !늘림){ 늘림=setInterval(function(){ if(!막||!그림){ clearInterval(늘림); 늘림=null; return; } var j=글(그림); if(j<0){ clearInterval(늘림); 늘림=null; return; } 보인수[j]=(보인수[j]||0)+1; 글(그림); }, 조용?1:350); }
+    }
+    return {그리기:그리기};
+  })();
   function 그리기(){
     번역살피기();
     다듬기();
@@ -2733,6 +2834,7 @@ var 남=[], 탈=[]; j.차례.forEach(function(s){ s.forEach(function(n){ if(!다
     catch(e){ var 박=$('first'), 못그림='기록 한 건의 형식 오류로 화면을 모두 표시하지 못했습니다 — 대화창에 «조종석이 표시되지 않습니다»라고 입력해 주십시오';
       if(박) 박.innerHTML='<h1 class="sr-only">조종석</h1><p class="idle">'+못그림+'</p>';
       try{ console.error(e); }catch(_){} }
+    try { 준비.그리기(); } catch(e){ try{ console.error(e); }catch(_){} }
   }
   function 설명누름(ev){ var 칸=ev.target.closest&&ev.target.closest('[data-info]'); if(!칸) return; ev.preventDefault(); ev.stopPropagation(); var k=칸.getAttribute('data-info'); 열린설명[k]=!열린설명[k]; 첫화면(); }
   document.addEventListener('click', 설명누름, true);

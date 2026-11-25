@@ -71,7 +71,7 @@ This reduces the cases where the user cannot use a tool simply because they did 
 If one line sits unchanged for minutes, the user just waits. Show what you find as you find it, and let them leave.
 
 1. At the start, give the expected time as a range. Example: "This takes about 3–5 minutes. You can do something else. I will let you know when it is done."
-2. Record it with `ledger.sh 하는중 "<task>" --화면 "<same words>" --예상 "3–5 min"`.
+2. Record it with `ledger.sh 하는중 "<task>" --화면 "<a «~하는 중» phrase in the user's language — e.g. checking this computer>" --예상 "3–5 min"` (a full sentence ending in «~습니다» is rejected).
 3. Each time you find or finish one item, write one line in the chat. Example: "App 2/5 — X: $9/month · in-app payment."
 4. Record the same line with `ledger.sh 찾음 "<that line>"`. It stacks under "Current task" in the cockpit.
 5. If the result is not what was expected, say so right away. Do not save it for the end.

@@ -76,8 +76,8 @@ fi
 
 BROKEN=0
 [ -f "$L" ] && BROKEN=$(awk -F'\t' '
-  NR==FNR { if ($2=="되돌림") done[$3]=1; next }
-  $2=="전제바뀜" { open=1; for (d in done) if (index(d,$3)) open=0; if (open) k[$3]=1 }
+  NR==FNR { if ($2=="되돌림" || $2=="전제해소") done[$3]=1; next }
+  $2=="전제바뀜" { open=1; for (d in done) if (index(d,$3) || index($3,d)) open=0; if (open) k[$3]=1 }
   END { n=0; for (x in k) n++; print n }' "$L" "$L" 2>/dev/null)
 [ -n "$BROKEN" ] || BROKEN=0
 

@@ -53,13 +53,19 @@ def 지금(lp=None):
     return cur
 
 
-앱설정칸 = {"플랫폼": "어디에 낼지", "만드는법": "만드는 방식", "돈받기": "돈 받기"}
+질문이름 = {"플랫폼": "어디에 팔 건가", "돈받기": "돈을 받을 건가", "만들것": "만드는 것의 종류", "만드는법": "만드는 방식"}
+진단질문칸 = {k: 질문이름[k] for k in ("플랫폼", "돈받기", "만들것")}
+앱설정칸 = {k: 질문이름[k] for k in ("플랫폼", "돈받기", "만들것", "만드는법")}
 
 
-def 앱설정빈것(lp=None):
+def 앱설정빈것(lp=None, 칸=None):
     lp = Path(lp) if lp else _기록()
     있음 = {c[2] for c in _줄들(lp) if len(c) > 3 and c[1] == "앱설정" and c[3].strip()}
-    return [v for k, v in 앱설정칸.items() if k not in 있음]
+    return [v for k, v in (칸 or 앱설정칸).items() if k not in 있음]
+
+
+def 진단빈것(lp=None):
+    return 앱설정빈것(lp, 진단질문칸)
 
 
 def 조건(idx, lp=None):
@@ -93,12 +99,16 @@ def 조건(idx, lp=None):
         넘 = sum(1 for r in 내것 if r["상태"] == "넘어감")
         out.append({"이름": "%s 표의 항목" % 단계들[idx], "됨": 끝 + 넘 == len(내것),
                     "지금": "%d/%d 완료" % (끝, len(내것) - 넘) + (" · 넘어감 %d" % 넘 if 넘 else "")})
+    if idx == 0:
+        빈0 = 진단빈것(lp)
+        out.append({"이름": "제품 질문(어디에 팔 건가 · 돈을 받을 건가 · 만드는 것의 종류)", "됨": not 빈0,
+                    "지금": "다 답함" if not 빈0 else "아직: " + " · ".join(빈0)})
     if idx == 1:
         빈 = [k for k in ("한줄", "누구", "문제")
              if not any(len(c) > 3 and c[1] == "제품소개" and c[2] == k and c[3].strip() for c in 줄)]
         out.append({"이름": "제품 소개(한 줄 · 누구 · 문제)", "됨": not 빈, "지금": "다 적음" if not 빈 else "아직: " + " · ".join(빈)})
         빈2 = 앱설정빈것(lp)
-        out.append({"이름": "앱 설정(어디에 낼지 · 만드는 방식 · 돈 받기)", "됨": not 빈2, "지금": "다 정함" if not 빈2 else "아직: " + " · ".join(빈2)})
+        out.append({"이름": "앱 설정(" + " · ".join(앱설정칸.values()) + ")", "됨": not 빈2, "지금": "다 정함" if not 빈2 else "아직: " + " · ".join(빈2)})
     if idx == 2:
         n = sum(1 for c in 줄 if len(c) > 1 and c[1] == "검증")
         out.append({"이름": "검증 기록", "됨": n > 0, "지금": "%d개" % n})
@@ -178,8 +188,8 @@ def 넘기(목표이름, 이유="", lp=None, 적기=False):
     print("  ⛔ %s 단계에서 %s 단계로 가기 전에 끝나지 않은 것이 있습니다:" % (단계들[cur], 단계들[to]), file=sys.stderr)
     for k, x in 안됨:
         print("     · %s — %s (%s)" % (단계들[k], x["이름"], x.get("지금", "")), file=sys.stderr)
-    print("     [모델] 사용자에게 남은 것을 보이고 «마저 하고 넘어갈까요, 지금 넘어갈까요?»를 물으십시오.", file=sys.stderr)
-    print("     [모델] 지금 넘어가기로 하시면 끝에 --이유 \"<사용자가 말한 까닭>\" 를 붙여 다시 부르십시오.", file=sys.stderr)
+    print("     [모델] 다음 단계로 가지 말고 위의 남은 것부터 하십시오. «%s 단계에 남은 것이 있어 그것부터 하겠습니다» 한 줄을 말하고 바로 시작합니다. 물을 것이 있으면 한 번에 하나씩 묻습니다." % 단계들[cur], file=sys.stderr)
+    print("     [모델] 사용자가 남은 것을 두고 넘어가자고 직접 말했을 때만 끝에 --이유 \"<사용자가 말한 까닭>\" 를 붙여 다시 부르십시오.", file=sys.stderr)
     return 1
 
 
@@ -204,6 +214,9 @@ if __name__ == "__main__":
         sys.exit(0 if n is not None else 2)
     if a[:1] == ["앱설정빈것"]:
         print(" · ".join(앱설정빈것()))
+        sys.exit(0)
+    if a[:1] == ["진단빈것"]:
+        print(" · ".join(진단빈것()))
         sys.exit(0)
     if a[:1] == ["첫가져오기"]:
         sys.exit(0 if 첫가져오기() else 1)

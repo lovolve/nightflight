@@ -70,9 +70,10 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
       fi
     fi
     if [ "$_SN" = 1 ] || [ "$_SN" = 0 ]; then
-      _APPQ=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 앱설정빈것 2>/dev/null)
+      if [ "$_SN" = 0 ]; then _APPQ=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 진단빈것 2>/dev/null)
+      else _APPQ=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 앱설정빈것 2>/dev/null); fi
       if [ -n "$_APPQ" ]; then
-        echo "  · 기획의 첫 질문 — 아직 안 정한 앱 설정: $_APPQ"
+        if [ "$_SN" = 0 ]; then echo "  · 진단의 남은 질문(기획을 권하기 전에 묻습니다) — 아직 안 정한 앱 설정: $_APPQ"; else echo "  · 기획의 첫 질문 — 아직 안 정한 앱 설정: $_APPQ"; fi
         echo "    [모델] ledger.sh 앱설정묻기 를 불러 나온 질문을 한 번에 하나씩 여쭙고, 답을 ledger.sh 앱설정 으로 적으십시오. 출시 준비의 오래 걸리는 일(개발자 계정 · 사업자 번호)이 이 답에서 미리 시작됩니다."
       fi
     fi

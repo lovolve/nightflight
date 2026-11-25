@@ -111,13 +111,23 @@ if [ "${1:-}" = "--지금만들기" ]; then
   if [ -z "$ST" ] || ! NIGHTFLIGHT_PROJECT_DIR="$ROOT" CLAUDE_PROJECT_DIR="$ROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh"; then
     echo "  이 폴더는 아직 야간비행에 등록되지 않았습니다. 조종석을 만들지 않았습니다."; exit 0
   fi
-  if [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "claude-desktop" ] && [ -d "$ST/board" ]; then
-    NF_ADDR="$(python3 -I "$HERE/cockpit_server.py" "$ROOT" --뒤에서 2>/dev/null | head -1 || true)"
-    case "${NF_ADDR:-}" in
-      http://127.0.0.1:*)
-        echo "  [모델] mcp__Claude_Browser__preview_start 를 url «$NF_ADDR» 로 한 번 부르십시오 — 오른쪽 브라우저 칸에 조종석이 열리고 몇 초마다 저절로 바뀝니다. 화면을 찍지는 마십시오."
-        exit 0 ;;
-    esac
+  [ -d "$ST/board" ] || ( cd "$ROOT" && CLAUDE_PROJECT_DIR="$ROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
+  if [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "claude-desktop" ]; then
+    NF_ADDR=""
+    for _nf_try in 1 2; do
+      [ -d "$ST/board" ] || ( cd "$ROOT" && CLAUDE_PROJECT_DIR="$ROOT" "$HERE/ledger.sh" 조종석준비 >/dev/null 2>&1 ) || true
+      [ -d "$ST/board" ] && NF_ADDR="$(python3 -I "$HERE/cockpit_server.py" "$ROOT" --뒤에서 2>/dev/null | head -1 || true)"
+      case "${NF_ADDR:-}" in http://127.0.0.1:*) break ;; esac
+      NF_ADDR=""; sleep 1
+    done
+    if [ -n "$NF_ADDR" ]; then
+      mkdir -p "$ST/internal" 2>/dev/null && printf '%s\t%s\n' "$(date +%s)" "${CLAUDE_CODE_SESSION_ID:-}" > "$ST/internal/pane_asked" 2>/dev/null
+      echo "  [모델] 지금 바로 mcp__Claude_Browser__preview_start 를 url «$NF_ADDR» 로 한 번 부르십시오 — 진단보다 먼저 부릅니다. 오른쪽 브라우저 칸에 «조종석 준비» 화면이 열리고, 진단·가져오기가 채워지는 모습이 보입니다. 화면을 찍지는 마십시오. 아티팩트로 만들지 마십시오."
+      exit 0
+    fi
+    echo "  조종석을 켜지 못했습니다. 대화창에 /cockpit 을 입력하시면 다시 켭니다."
+    echo "  [모델] 위 한 줄을 사용자에게 그대로 전하고 진단으로 넘어가십시오. 아티팩트로 만들지 마십시오."
+    exit 0
   fi
   URL="$(python3 -I "$HERE/trusted_text.py" 주소 "$ST" 2>/dev/null || true)"
   if [ -n "$URL" ]; then
@@ -196,6 +206,20 @@ if [ -n "$ST" ] && [ -d "$ST/board" ]; then
     python3 -I "$HERE/cockpit_server.py" "$ROOT" --뒤에서 >/dev/null 2>&1 && NF_PANE=1
   fi
   [ "$NF_PANE" = "1" ] || { python3 -I "$HERE/cockpit_server.py" "$ROOT" --보이나 >/dev/null 2>&1 && NF_PANE=1; }
+fi
+if [ "$NF_PANE" = "1" ] && [ "$AGAIN" != "1" ] && [ -n "$SID" ] && [ "${CLAUDE_CODE_ENTRYPOINT:-}" = "claude-desktop" ] && [ -f "$ST/internal/pane_asked" ]; then
+  _pa="$(cat "$ST/internal/pane_asked" 2>/dev/null)"; _pt="${_pa%%	*}"; _ps="${_pa#*	}"
+  _seen="$(head -1 "$ST/internal/pane_seen" 2>/dev/null | tr -cd '0-9')"
+  if [ "$_ps" = "$SID" ] && [ "${_seen:-0}" -lt "${_pt:-0}" ] && ! grep -qxF "$SID" "$ST/internal/pane_reminded" 2>/dev/null; then
+    printf '%s\n' "$SID" >> "$ST/internal/pane_reminded" 2>/dev/null
+    _addr="$(python3 -I "$HERE/cockpit_server.py" "$ROOT" --뒤에서 2>/dev/null | head -1 || true)"
+    case "$_addr" in
+      http://127.0.0.1:*) _msg="조종석 화면이 아직 한 번도 열리지 않았습니다. mcp__Claude_Browser__preview_start 를 url «$_addr» 로 지금 한 번 부르십시오. 아티팩트로 만들지 마십시오. 화면을 찍지 마십시오." ;;
+      *) _msg="조종석 화면이 아직 열리지 않았습니다. 사용자에게 «조종석을 켜지 못했습니다. 대화창에 /cockpit 을 입력하시면 다시 켭니다.»라고 한 줄 전하십시오. 아티팩트로 만들지 마십시오." ;;
+    esac
+    _NFM="$_msg" python3 -I -c 'import json,os; print(json.dumps({"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"[모델] "+os.environ["_NFM"]}}, ensure_ascii=False))'
+    exit 0
+  fi
 fi
 if [ -n "$URL" ]; then
   NF_SESSION="$SID" NIGHTFLIGHT_PROJECT_DIR="$ROOT" CLAUDE_PROJECT_DIR="$ROOT" bash -c '. "$1" >/dev/null 2>&1 && nf_registered' _ "$HERE/project-root.sh" || exit 0

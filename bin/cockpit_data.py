@@ -812,7 +812,51 @@ if os.path.exists(_ilp):
         _c = _l.rstrip("\n").split("\t")
         if len(_c) >= 2 and not _c[0].startswith("#"):
             _il[_c[0]] = _c[1]
+def _준비():
+    _등 = [i for i, r in enumerate(rows) if len(r) > 2 and r[1] == "등록"]
+    if not _등:
+        return {"보일까": False}
+    i0 = _등[-1]
+    if not rows[i0][0].startswith(_오늘):
+        return {"보일까": False}
+    뒤 = list(enumerate(rows))[i0 + 1:]
+    단계줄 = [(i, r) for i, r in 뒤 if len(r) > 2 and r[1] == "단계"]
+    진단끝 = bool(단계줄)
+    끝 = any(len(r) > 1 and r[1] == "준비끝" for _, r in 뒤) or any(not r[2].strip().startswith("0") for _, r in 단계줄)
+    읽기 = [(i, r) for i, r in 뒤 if 진단끝 and i > 단계줄[0][0] and len(r) > 2 and r[1] == "하는중"]
+    읽기열림 = bool(읽기) and not any(len(r) > 1 and r[1] == "하는중끝" for i, r in 뒤 if i > 읽기[-1][0])
+    찾음줄 = []
+    if 읽기:
+        for i, r in 뒤:
+            if i > 읽기[0][0] and len(r) > 2 and r[1] == "찾음":
+                k, _, v = r[2].partition(" — ")
+                찾음줄.append([k.strip(), v.strip()])
+    진 = _fd.get("진단값") or {}
+    점검줄 = []
+    for k, 이름 in (("칩", "칩"), ("운영체제", "운영체제"), ("디스크 여유", "디스크"), ("Xcode", "Xcode"), ("시뮬레이터", "시뮬레이터"), ("git", "git")):
+        if 진.get(k):
+            점검줄.append([이름, str(진[k]) + (" 비어 있음" if k == "디스크 여유" else "")])
+    단계값 = 단계줄[-1][1][2] if 단계줄 else ""
+    정리줄 = [["지금 단계", 단계값]] if 단계값 else []
+    if _다음:
+        정리줄.append(["먼저 할 일", _다음[-1][2]])
+    def 상(끝났나, 지금인가):
+        return "끝" if 끝났나 else ("지금" if 지금인가 else "남음")
+    읽기상 = "끝" if (읽기 and not 읽기열림) else ("지금" if 읽기열림 else ("건너뜀" if 끝 else "남음"))
+    return {
+        "보일까": True,
+        "끝": 끝,
+        "등록일": rows[i0][0][:10],
+        "단계": [
+            {"이름": "폴더 등록", "상태": "끝", "줄": [["등록", rows[i0][2]]]},
+            {"이름": "이 컴퓨터 점검", "상태": 상(진단끝, not 진단끝), "줄": 점검줄},
+            {"이름": "만들던 자료 읽기", "상태": 읽기상, "줄": 찾음줄[-8:]},
+            {"이름": "첫 할 일 정리", "상태": 상(끝, 진단끝 and not 읽기열림), "줄": 정리줄},
+        ],
+    }
+
 w("doing.json", {
+    "준비": _준비(),
     "있나": bool(_마지막),
     "무엇": (_마지막[2] if _마지막 else ""),
     "화면": (_il.get(_마지막[2]) if _마지막 else None),

@@ -158,6 +158,12 @@ def 만든다(뿌리: Path, 자리: int):
                 칸다시()
                 return self._제이슨(200, {"판": cockpit_file.판모으기(뿌리), "바뀐때": _칸바뀐때(뿌리)})
             if 길 in ("/", "/cockpit.html"):
+                try:
+                    _안 = cockpit_file.기록집(뿌리) / "internal"
+                    _안.mkdir(parents=True, exist_ok=True)
+                    (_안 / "pane_seen").write_text("%d\n" % int(time.time()), encoding="utf-8")
+                except OSError:
+                    pass
                 글 = cockpit_file.원본글()
                 if 글 is None:
                     return self._보냄(500, "조종석 원본을 못 찾았습니다.".encode("utf-8"), "text/plain; charset=utf-8")
