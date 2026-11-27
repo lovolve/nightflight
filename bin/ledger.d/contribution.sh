@@ -14,7 +14,7 @@ case "$KIND" in
       기여후보) exec python3 "$_PICK" 후보 ;;
       기여)     exec python3 "$_PICK" 담기 "${2:?무엇을 보낼지 일부 글자로}" ;;
       기여목록) exec python3 "$_PICK" 목록 ;;
-      기여취소) exec python3 "$_PICK" 취소 "${2:?지울 것의 이름표}" ;;
+      기여취소) NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" NF_DOORKEY="${NF_DOORKEY:-}" NF_MPRINT="$(nf_macprint 2>/dev/null | tr -d "[:space:]")" exec python3 "$_PICK" 취소 "${2:?지울 것의 이름표}" ;;
     esac
     ;;
 esac

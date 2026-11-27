@@ -30,10 +30,12 @@ Nightflight does not decide for you. It organizes what you need to make each dec
    Run claude plugin marketplace add lovolve/nightflight in Terminal,
    then run claude plugin install nightflight@lovolve.
    If the claude command is not found, find and use the claude program inside the Claude app.
+   When the install finishes, also turn on auto-update: in ~/.claude/settings.json, add "autoUpdate": true to the extraKnownMarketplaces entry for lovolve/nightflight.
    ```
 
 3. If the AI asks for permission to install, answer "yes". This adds outside code to your computer, so one question is normal.
 4. When the install finishes, reopen Claude Code.
+5. With auto-update on, new versions arrive on their own when you open Claude Code. To turn it on later, say "turn on Nightflight auto-update". If you leave it off, say "update Nightflight" when the cockpit shows an update notice.
 
 ### If the install fails
 
@@ -65,7 +67,7 @@ Codex support is coming soon. For now, use Claude Code.
   - Uploaded: decisions, dead ends, feature progress, the design table, the section titles and text of your product's architecture document (ARCHITECTURE.md) if it has one, development words you typed yourself, the product folder name, this computer's chip, operating system, memory and storage status, your Claude Code usage limit, your pass and product-slot status, the names and stages of other products registered on this computer, the names of files you keep out of GitHub, and the key names (not the values) in your secrets files.
   - Not uploaded: the values of secrets.
   - If you decline, you use only the cockpit file (`.nightflight/cockpit.html`). To change your mind, say "publish the cockpit".
-- The Nightflight server receives only what it needs for stage guidance and license checks: the stage number, the guidance requested, a number identifying this computer (a random number made at install and a one-way value derived from the hardware number), the product number (a random number made at registration), the plan you are changing to, your language, and a random request number that stops a request from counting twice. The server also briefly uses an irreversible value derived from your connection address.
+- The Nightflight server receives only what it needs for stage guidance and license checks: the stage number, the guidance requested, a number identifying this computer (a random number made at install and a one-way value derived from the hardware number), the product number (a random number made at registration), the plan you are changing to, your language, the Nightflight version number, and a random request number that stops a request from counting twice. The server also briefly uses an irreversible value derived from your connection address.
 - To check for a new version, Nightflight reads a public GitHub file once every 6 hours. It sends no records.
 - The full list of values and how long they are kept is in the privacy policy on the sales page.
 

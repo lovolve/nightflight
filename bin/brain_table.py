@@ -139,6 +139,9 @@ else:
         print(_np.결제지시(os.environ.get("NF_LANG_NOW") == "en"))
     elif 코드 == "메일확인필요":
         print("[모델] 사용자가 그러자고 하면 license_key.sh 로그인 을 부르고, 보인 주소와 확인 문자를 그대로 전한 뒤 license_key.sh 로그인대기 로 마무리하십시오.")
+    elif 코드 == "업데이트필요":
+        import cleanup_words as _cw
+        print("[모델] 사용자가 그러자고 하면 `claude plugin marketplace update " + _cw.마켓 + "` 뒤 `claude plugin update nightflight@" + _cw.마켓 + " -y` 로 업데이트하고, 판 번호를 확인해 전한 뒤 클로드 코드를 다시 열어야 적용된다고 말하십시오. 그다음 자동 업데이트가 꺼져 있으면 켜 두기를 한 번 권하십시오(사용자가 «야간비행 자동 업데이트 켜줘»라고 하면 됩니다).")
     elif 코드 in ("너무잦음", "하루한도", "새안내한도", "격리"):
         pass
     else:

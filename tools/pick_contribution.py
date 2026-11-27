@@ -13,7 +13,6 @@
 
 지키는 것 여섯:
  1. 동의 없이 아무것도 담지 않는다. 동의id 가 없는 건은 기여물이 아니다
- 2. 보내는 기능은 여기 없다. 이 컴퓨터에 쌓아만 둔다
  3. 앱 이름·파일 경로·사람 이름을 담지 않는다. 담는 것은 «증상의 모양»이다
  4. 건마다 식별자를 붙인다 — 없으면 «제 것을 지워 주세요»에 답할 수 없다
  5. 무엇이 나갈지 보이고, 지울 수 있어야 한다
@@ -30,6 +29,7 @@
        pick_contribution.py 담기 "<일부 글자>"
        pick_contribution.py 목록
        pick_contribution.py 취소 "<건id>"
+       pick_contribution.py 보내기      (대화 시작 자동 점검이 뒤에서 부른다 · 꺼져 있으면 아무것도 안 한다)
 """
 import hashlib
 import os
@@ -47,6 +47,7 @@ except Exception:
 import _root as _root_mod
 
 REPEAT_MIN = 3
+보내기켬 = False
 KINDS = ("되돌림", "못함", "전제바뀜", "반복")
 
 
@@ -187,7 +188,10 @@ def cmd_동의(said):
         _p("  · 보내는 것은 **무엇이 안 막혔나**뿐입니다. 막힌 것은 안 보냅니다")
         _p("  · 앱 이름도, 파일 이름도, 쓰시는 분의 이름도 담지 않습니다")
         _p("  · 무엇이 나갈지 **먼저 보시고**, 한 건씩 고르시고, 언제든 지우실 수 있습니다")
-        _p("  · ⚠️ 지금은 **모아 두기만** 합니다 — 보내는 자리가 아직 없습니다")
+        if _켜짐():
+            _p("  · 동의하시면 고르신 것만 다음 대화 시작 때 보냅니다. 보내기 전에 지우시면 안 나갑니다")
+        else:
+            _p("  · ⚠️ 지금은 **모아 두기만** 합니다 — 보내기는 아직 꺼져 있습니다")
         _p()
         _p("  ⛔ 지금 드릴 수 없는 말이 하나 있어 미리 적습니다 — 「남이 겪은 것이 사용자를")
         _p("     막아 드립니다」는 **아직 사실이 아닙니다.** 모인 것이 적습니다.")
@@ -291,7 +295,10 @@ def cmd_담기(key):
                 f"\t{_app_tag()}\t{cid}\n")
     _p(f"  · 보낼 것으로 표시했습니다 [{c['종류']}] {c['본문']}")
     _p(f"    지우실 때 쓰는 이름표: {c['건id']}")
-    _p("    ⚠️ 아직 보내지 않습니다 — 보내는 자리가 없습니다.")
+    if _켜짐():
+        _p("    다음 대화 시작 때 보냅니다. 그 전에 지우시면 나가지 않습니다.")
+    else:
+        _p("    ⚠️ 아직 보내지 않습니다 — 보내기가 꺼져 있습니다.")
     return 0
 
 
@@ -309,10 +316,14 @@ def cmd_목록():
         _p(f"   · [{kind}] {body}")
         if side:
             _p(f"       {side}")
-        _p(f"       담은 날 {when} · 이름표 {iid}")
+        보낸날 = _보냄().get(iid)
+        _p(f"       담은 날 {when} · 이름표 {iid}" + (f" · 보낸 날 {보낸날}" if 보낸날 else " · 아직 안 보냄"))
     _p()
     _p(f"   모두 {len(rs)}건입니다. 지우실 것이 있으면 말씀해 주세요 — 바로 지웁니다.")
-    _p("   ⛔ **아직 보내지 않습니다.** 받는 자리가 생기면 그때 한 번에 담아 보냅니다.")
+    if _켜짐():
+        _p("   아직 안 보낸 것은 다음 대화 시작 때 보냅니다. 보낸 것도 지우시면 서버에서 지웁니다.")
+    else:
+        _p("   ⛔ **아직 보내지 않습니다.** 보내기가 꺼져 있습니다.")
     _p()
     return 0
 
@@ -328,6 +339,113 @@ def cmd_취소(key):
         for r in keep:
             f.write("\t".join(r) + "\n")
     _p(f"  · {gone}건을 지웠습니다. 나갈 것은 {len(keep)}건 남았습니다.")
+    보낸것 = _보냄()
+    지울것 = [r[1] for r in rs if r not in keep and len(r) > 1 and r[1] in 보낸것]
+    if 지울것:
+        _지움대기더하기(지울것)
+        남음 = _지움대기처리()
+        if 남음 is None or 남음:
+            _p("    서버에 이미 보낸 것이 있습니다. 지금 서버에 닿지 못해 다음 대화 시작 때 다시 지웁니다.")
+        else:
+            _p("    서버에 보냈던 것도 지웠습니다.")
+    return 0
+
+
+def _켜짐():
+    return 보내기켬 or os.environ.get("NF_CONTRIB_SEND") == "1"
+
+
+def _보냄파일():
+    return _home() / "contributions_sent.tsv"
+
+
+def _지움파일():
+    return _home() / "contributions_delete.tsv"
+
+
+def _보냄():
+    return {r[0]: r[1] for r in _rows(_보냄파일()) if len(r) > 1}
+
+
+def _지움대기더하기(ids):
+    있음 = {r[0] for r in _rows(_지움파일()) if r}
+    _지움파일().parent.mkdir(parents=True, exist_ok=True)
+    with _지움파일().open("a", encoding="utf-8") as f:
+        for i in ids:
+            if i not in 있음:
+                f.write(f"{i}\t{_today()}\n")
+
+
+def _서버():
+    sys.path.insert(0, str(HERE.parent / "bin"))
+    try:
+        import account_login as al
+    except Exception:
+        return None
+    k, m = al.열쇠(), os.environ.get("NF_MPRINT", "")
+    if not k or not m or not os.environ.get("NF_BRAIN_BASE", "").startswith("https://"):
+        return None
+    return al.부르기, k, m
+
+
+def _지움대기처리():
+    ids = [r[0] for r in _rows(_지움파일()) if r]
+    if not ids:
+        return 0
+    s = _서버()
+    if not s:
+        return None
+    부르기, k, m = s
+    try:
+        d = 부르기("기여지우기", {"열쇠": k, "맥지문": m, "건id": ids[:100]})
+    except Exception:
+        return None
+    if not (isinstance(d, dict) and d.get("됐나")):
+        return None
+    done = set(ids[:100])
+    keep = [r for r in _rows(_지움파일()) if r and r[0] not in done]
+    _지움파일().write_text("".join("\t".join(r) + "\n" for r in keep), encoding="utf-8")
+    sent = [r for r in _rows(_보냄파일()) if r and r[0] not in done]
+    _보냄파일().write_text("".join("\t".join(r) + "\n" for r in sent), encoding="utf-8")
+    return len(keep)
+
+
+def cmd_보내기():
+    if not _켜짐():
+        return 0
+    _지움대기처리()
+    cid, _ = consent_id()
+    if not cid:
+        return 0
+    보낸것 = _보냄()
+    줄 = []
+    for r in _rows(_store()):
+        when, iid, kind, body, side, tag, rcid = (r + [""] * 7)[:7]
+        if not rcid or iid in 보낸것 or kind not in KINDS:
+            continue
+        줄.append({"건id": iid, "종류": kind, "본문": body, "곁들임": side,
+                  "출처앱": tag, "출처날": when, "동의id": rcid})
+    if not 줄:
+        return 0
+    s = _서버()
+    if not s:
+        return 0
+    부르기, k, m = s
+    for i in range(0, len(줄), 20):
+        try:
+            d = 부르기("기여보내기", {"열쇠": k, "맥지문": m, "줄": 줄[i:i + 20]}, 20)
+        except Exception:
+            return 0
+        if not (isinstance(d, dict) and d.get("됐나")):
+            return 0
+        받은 = d.get("건id") or []
+        if 받은:
+            _보냄파일().parent.mkdir(parents=True, exist_ok=True)
+            with _보냄파일().open("a", encoding="utf-8") as f:
+                for iid in 받은:
+                    if isinstance(iid, str) and iid not in 보낸것:
+                        f.write(f"{iid}\t{_today()}\n")
+                        보낸것[iid] = _today()
     return 0
 
 
@@ -347,6 +465,8 @@ def main(argv):
         return cmd_담기(rest[0])
     if what == "목록":
         return cmd_목록()
+    if what == "보내기":
+        return cmd_보내기()
     if what == "취소":
         if not rest:
             _p("  지울 것의 이름표가 필요합니다.", file=sys.stderr)

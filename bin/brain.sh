@@ -35,7 +35,11 @@ FIRSTSAVE=""; SAMEDIR=""
 if [ -n "$BUNDLEID" ]; then FIRSTSAVE="$(nf_firstsave 2>/dev/null)"; SAMEDIR="$(nf_sameproductdir "$BUNDLEID" 2>/dev/null)"; fi
 
 CKEY="$(nf_ckey 2>/dev/null)"
-BODY="$(NF_B_CKEY="$CKEY" NF_B_LANG="$(nf_lang 2>/dev/null)" NF_B_PID="$PERSONID" NF_B_STAGE="$STAGE" NF_B_KIND="$KIND" NF_B_MAC="$MACPRINT" NF_B_BUNDLE="$BUNDLEID" NF_B_FIRST="$FIRSTSAVE" NF_B_SAMEDIR="$SAMEDIR" python3 -I -c 'import json,os; e=os.environ; print(json.dumps({"언어":e.get("NF_B_LANG") or "ko","사람id":e["NF_B_PID"],"어느단계":int(e["NF_B_STAGE"]),"무엇을물었나":e["NF_B_KIND"][:40],"맥지문":e["NF_B_MAC"],"번들id":e["NF_B_BUNDLE"],**({"컴퓨터열쇠":e["NF_B_CKEY"]} if e.get("NF_B_CKEY") else {}),**({"첫저장":e["NF_B_FIRST"]} if e.get("NF_B_FIRST") else {}),**({"같은번호폴더":True} if e.get("NF_B_SAMEDIR")=="1" else {})}, ensure_ascii=False))')"
+VER="$(NF_B_PJ="$NF_PYDIR/../.claude-plugin/plugin.json" python3 -I -c 'import json,os,re
+try: v=str(json.load(open(os.environ["NF_B_PJ"],encoding="utf-8")).get("version",""))
+except Exception: v=""
+print(v if re.fullmatch(r"\d{1,4}(\.\d{1,4}){1,3}",v) else "")' 2>/dev/null)"  # RULE-0 모델만: 서버로 보내는 판 번호 — 사람에게 찍는 글이 아니다
+BODY="$(NF_B_VER="$VER" NF_B_CKEY="$CKEY" NF_B_LANG="$(nf_lang 2>/dev/null)" NF_B_PID="$PERSONID" NF_B_STAGE="$STAGE" NF_B_KIND="$KIND" NF_B_MAC="$MACPRINT" NF_B_BUNDLE="$BUNDLEID" NF_B_FIRST="$FIRSTSAVE" NF_B_SAMEDIR="$SAMEDIR" python3 -I -c 'import json,os; e=os.environ; print(json.dumps({"언어":e.get("NF_B_LANG") or "ko","사람id":e["NF_B_PID"],"어느단계":int(e["NF_B_STAGE"]),"무엇을물었나":e["NF_B_KIND"][:40],"맥지문":e["NF_B_MAC"],"번들id":e["NF_B_BUNDLE"],**({"컴퓨터열쇠":e["NF_B_CKEY"]} if e.get("NF_B_CKEY") else {}),**({"첫저장":e["NF_B_FIRST"]} if e.get("NF_B_FIRST") else {}),**({"같은번호폴더":True} if e.get("NF_B_SAMEDIR")=="1" else {}),**({"판":e["NF_B_VER"]} if e.get("NF_B_VER") else {})}, ensure_ascii=False))')"
 
 if nf_dev 2>/dev/null && [ -n "${NF_TRACE:-}" ]; then :; else NF_TRACE="${NF_STATE:+$NF_STATE/internal}"; NF_TRACE="${NF_TRACE:-$NF_HOME}/prescriptions_received.tsv"; mkdir -p "$(dirname "$NF_TRACE")" 2>/dev/null; fi
 export NF_TRACE NF_STAGE_ARG="$STAGE" NF_KIND_ARG="$KIND"

@@ -105,7 +105,7 @@ def main() -> int:
                 continue
             if NET.search(line):
                 hits.append((rel, i, raw.strip()[:70], bool(ENV.search(body))))
-            if re.search(r"기여물|contribution(?!s?\.tsv)", line) and not line.lstrip().startswith("#"):
+            if re.search(r"기여물|(?<!pick_)contribution(?!s?\.tsv)", line) and not line.lstrip().startswith("#"):
                 gives.append((rel, i, bool(GIVE.search(body))))
 
     bad = []

@@ -60,6 +60,7 @@ printf '%s' "$IN" | NF_UI_LANG="$NF_UI_LANG" NF_STATE="$NF_STATE" HERE="$HERE" N
   NF_MPRINT="$NF_MPRINT" NF_BID="$NF_BID" NF_DEV="$NF_DEV" NF_CALL="$NF_CALL" \
   NF_HOME="$NF_HOME" NF_CARRY_URL="${NF_CARRY_URL:-${NF_BRAIN_BASE:-}/rest/v1/rpc/들고오기}" python3 -I "$HERE/session_start.py" 2>/dev/null || true
 ( NIGHTFLIGHT_HOME="$NF_HOME" NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" python3 -I "$HERE/tool_tips.py" 받기; NIGHTFLIGHT_HOME="$NF_HOME" NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" python3 -I "$HERE/tool_tips.py" 효과보내기 ) >/dev/null 2>&1 &
+( NIGHTFLIGHT_HOME="$NF_HOME" NF_BRAIN_BASE="${NF_BRAIN_BASE:-}" NF_DOORKEY="${NF_DOORKEY:-}" NF_MPRINT="$NF_MPRINT" python3 -I "$HERE/../tools/pick_contribution.py" 보내기 ) >/dev/null 2>&1 &
 if [ -f "$NF_HOME/license.new" ]; then
   rm -f "$NF_HOME/license.new"
   if ! { nf_dev 2>/dev/null && [ -n "${NF_KAN_ANSWER+x}" ]; }; then
