@@ -47,7 +47,7 @@ except Exception:
 import _root as _root_mod
 
 REPEAT_MIN = 3
-보내기켬 = False
+보내기켬 = True
 KINDS = ("되돌림", "못함", "전제바뀜", "반복")
 
 
@@ -352,7 +352,10 @@ def cmd_취소(key):
 
 
 def _켜짐():
-    return 보내기켬 or os.environ.get("NF_CONTRIB_SEND") == "1"
+    v = os.environ.get("NF_CONTRIB_SEND")
+    if v in ("0", "1"):
+        return v == "1"
+    return 보내기켬
 
 
 def _보냄파일():
