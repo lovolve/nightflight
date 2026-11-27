@@ -103,11 +103,11 @@ def 실행줄_넣기(뿌리: Path, 주소: str, 집: Path, 영어: bool) -> bool
 def 알림글(주소: str, 영어: bool) -> str:
     if 영어:
         return ("Nightflight cockpit: in this reply, before anything else, call mcp__Claude_Browser__preview_start once with "
-                f'url "{주소}". Then call mcp__ccd_view__show_pane with pane \"preview\" — without it the pane stays hidden and the user only sees an Open card (skip it if that tool is missing). Opening or reopening a conversation resets the right-hand browser pane to an empty tab, '
+                f'url "{주소}". Then call mcp__ccd_view__show_pane with pane \"preview\" — without it the pane stays hidden and the user only sees an Open card (if it is listed only as a deferred tool, first load it with ToolSearch query "select:mcp__ccd_view__show_pane"; skip it only when the name is not listed at all). Opening or reopening a conversation resets the right-hand browser pane to an empty tab, '
                 "so the cockpit has to be opened again. It updates itself every few seconds. Do not take a screenshot of it. "
                 "If it fails, tell the user to press the play button next to «Nightflight cockpit» in the browser pane, "
                 "or to type /cockpit.")
-    return (f"야간비행 조종석: 이번 답에서 다른 일보다 먼저 mcp__Claude_Browser__preview_start 를 url «{주소}» 로 한 번 부르십시오. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(그 도구가 없으면 건너뜁니다). "
+    return (f"야간비행 조종석: 이번 답에서 다른 일보다 먼저 mcp__Claude_Browser__preview_start 를 url «{주소}» 로 한 번 부르십시오. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(도구 목록에 이름만 있고 아직 안 불러온 도구면 ToolSearch 를 query «select:mcp__ccd_view__show_pane» 로 먼저 부릅니다 · 이름이 아예 없을 때만 건너뜁니다). "
             "대화를 새로 열거나 다시 열면 오른쪽 브라우저 칸이 빈 탭으로 돌아가므로 다시 열어야 합니다. "
             "조종석은 몇 초마다 저절로 바뀝니다. 화면을 찍지는 마십시오. "
             "열리지 않으면 사용자에게 브라우저 칸의 «야간비행 조종석» 옆 ▶ 버튼을 누르거나 입력창에 /cockpit 을 입력하면 열린다고 알려 주십시오.")

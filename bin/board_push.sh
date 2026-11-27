@@ -122,7 +122,7 @@ if [ "${1:-}" = "--지금만들기" ]; then
     done
     if [ -n "$NF_ADDR" ]; then
       mkdir -p "$ST/internal" 2>/dev/null && printf '%s\t%s\n' "$(date +%s)" "${CLAUDE_CODE_SESSION_ID:-}" > "$ST/internal/pane_asked" 2>/dev/null
-      echo "  [모델] 지금 바로 mcp__Claude_Browser__preview_start 를 url «$NF_ADDR» 로 한 번 부르십시오 — 진단보다 먼저 부릅니다. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(그 도구가 없으면 건너뜁니다). 오른쪽 브라우저 칸에 «조종석 준비» 화면이 열리고, 진단·가져오기가 채워지는 모습이 보입니다. 화면을 찍지는 마십시오. 아티팩트로 만들지 마십시오."
+      echo "  [모델] 지금 바로 mcp__Claude_Browser__preview_start 를 url «$NF_ADDR» 로 한 번 부르십시오 — 진단보다 먼저 부릅니다. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(도구 목록에 이름만 있고 아직 안 불러온 도구면 ToolSearch 를 query «select:mcp__ccd_view__show_pane» 로 먼저 부릅니다 · 이름이 아예 없을 때만 건너뜁니다). 오른쪽 브라우저 칸에 «조종석 준비» 화면이 열리고, 진단·가져오기가 채워지는 모습이 보입니다. 화면을 찍지는 마십시오. 아티팩트로 만들지 마십시오."
       exit 0
     fi
     echo "  조종석을 켜지 못했습니다. 대화창에 /cockpit 을 입력하시면 다시 켭니다."
@@ -214,7 +214,7 @@ if [ "$NF_PANE" = "1" ] && [ "$AGAIN" != "1" ] && [ -n "$SID" ] && [ "${CLAUDE_C
     printf '%s\n' "$SID" >> "$ST/internal/pane_reminded" 2>/dev/null
     _addr="$(python3 -I "$HERE/cockpit_server.py" "$ROOT" --뒤에서 2>/dev/null | head -1 || true)"
     case "$_addr" in
-      http://127.0.0.1:*) _msg="조종석 화면이 아직 한 번도 열리지 않았습니다. mcp__Claude_Browser__preview_start 를 url «$_addr» 로 지금 한 번 부르십시오. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(그 도구가 없으면 건너뜁니다). 아티팩트로 만들지 마십시오. 화면을 찍지 마십시오." ;;
+      http://127.0.0.1:*) _msg="조종석 화면이 아직 한 번도 열리지 않았습니다. mcp__Claude_Browser__preview_start 를 url «$_addr» 로 지금 한 번 부르십시오. 그다음 mcp__ccd_view__show_pane 을 pane «preview» 로 부르십시오 — 안 부르면 칸이 숨은 채 «열기» 카드만 떠서 사용자가 눌러야 보입니다(도구 목록에 이름만 있고 아직 안 불러온 도구면 ToolSearch 를 query «select:mcp__ccd_view__show_pane» 로 먼저 부릅니다 · 이름이 아예 없을 때만 건너뜁니다). 아티팩트로 만들지 마십시오. 화면을 찍지 마십시오." ;;
       *) _msg="조종석 화면이 아직 열리지 않았습니다. 사용자에게 «조종석을 켜지 못했습니다. 대화창에 /cockpit 을 입력하시면 다시 켭니다.»라고 한 줄 전하십시오. 아티팩트로 만들지 마십시오." ;;
     esac
     _NFM="$_msg" python3 -I -c 'import json,os; print(json.dumps({"hookSpecificOutput":{"hookEventName":"Stop","additionalContext":"[모델] "+os.environ["_NFM"]}}, ensure_ascii=False))'

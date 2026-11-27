@@ -32,7 +32,7 @@ root, here = shlex.quote(root), shlex.quote(here)
     "`" + here + "/board_push.sh --올렸다 " + root + "`. "
     "칸이 없으면 건너뜁니다 — 조종석이 「아직 기록 없음 · 첫 대화를 하면 채워집니다」로 보입니다.\n"
     "  ④ 조종석을 띄웁니다: Artifact open · url <받은 주소> (칸을 다 올린 뒤에 — 빈 판이 먼저 보이지 않게). "
-    "mcp__ccd_view__show_pane(pane \"artifact\") 도구가 있으면 open «다음에» 불러(open 을 먼저 해야 옆 칸이 이 조종석을 보입니다) 대화창 옆 칸에 바로 띄웁니다(누르지 않아도 열림). "
+    "mcp__ccd_view__show_pane(pane \"artifact\") 도구가 있으면(도구 목록에 이름만 있으면 ToolSearch 로 «select:mcp__ccd_view__show_pane» 을 먼저 불러옵니다) open «다음에» 불러(open 을 먼저 해야 옆 칸이 이 조종석을 보입니다) 대화창 옆 칸에 바로 띄웁니다(누르지 않아도 열림). "
     "열 수 없는 자리면 건너뜁니다.\n"
     "  ⑤ 사용자께 한 줄로 알려 드립니다: 조종석을 만들어 열었고 그 주소 — 옆 창에 두면 진행이 보입니다.\n"
     "⛔ 만들 수 없는 자리(그 도구가 없음 · 로그인 안 됨)라면 — 클로드가 아닌 도구에서는 흔합니다 — "

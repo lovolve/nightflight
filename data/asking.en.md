@@ -4,6 +4,11 @@ Follow this order whenever you ask the user a question, in every stage. In the B
 
 Write every on-screen sentence in plain words. Do not use development names; describe what the user will experience. Aim for ordinary workplace language, and go no simpler: simpler than that sounds childish and reads like a translation.
 
+## 0. Clear the cockpit preparation screen first
+
+- If the «Cockpit preparation» screen is still up for a product registered today (you have not run `ledger.sh 준비끝` yet), run `ledger.sh 준비끝` before you ask anything.
+- The preparation screen covers reading (diagnosis and import). Ask questions only after the cockpit is showing.
+
 ## 1. Look first
 
 - Do not ask for anything you can learn from the code, the records, what the user already said, or research.
