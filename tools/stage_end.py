@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """단계 끝 조건 — 단계마다 «언제 끝나나»를 한 곳에서 센다. 다음 단계 제안과 단계 넘기 확인이 같은 셈을 쓴다."""
 import json
-import os, re, sys
+import os
+import re, sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -17,7 +18,7 @@ def _기록():
 
 def _줄들(lp):
     try:
-        return [l.split("\t") for l in Path(lp).read_text(encoding="utf-8").splitlines()]
+        return [l.split("\t") for l in Path(lp).read_text(encoding="utf-8", errors="replace").splitlines()]
     except OSError:
         return []
 
@@ -33,7 +34,7 @@ def 번호(이름, lp=None):
     lp = Path(lp) if lp else _기록()
     mp = lp.parent / "stage-map.tsv"
     try:
-        for l in mp.read_text(encoding="utf-8").splitlines():
+        for l in mp.read_text(encoding="utf-8", errors="replace").splitlines():
             c = l.split("\t")
             if len(c) > 1 and c[0] == t and c[1].strip().isdigit():
                 return int(c[1])
@@ -99,6 +100,14 @@ def 조건(idx, lp=None):
         넘 = sum(1 for r in 내것 if r["상태"] == "넘어감")
         out.append({"이름": "%s 표의 항목" % 단계들[idx], "됨": 끝 + 넘 == len(내것),
                     "지금": "%d/%d 완료" % (끝, len(내것) - 넘) + (" · 넘어감 %d" % 넘 if 넘 else "")})
+    if idx in (4, 5):
+        로그인말 = re.compile(r"로그인|회원\s*가입|가입하기|sign\s*-?\s*in|log\s*-?\s*in|sign\s*-?\s*up", re.I)
+        삭제말 = re.compile(r"계정\s*삭제|회원\s*탈퇴|탈퇴|계정\s*지우|delete\s+account|account\s+deletion", re.I)
+        if any(로그인말.search(r["기능"] + " " + r["세부기능"]) for r in 표줄 if r.get("출처") != "단계 기본"):
+            삭제 = [r for r in 표줄 if 삭제말.search(r["세부기능"]) or 삭제말.search(r["기능"])]
+            됨 = any(r["상태"] == "완료" for r in 삭제)
+            out.append({"이름": "로그인이 있는 앱의 계정 삭제(애플 심사 필수)", "됨": 됨,
+                        "지금": "완료" if 됨 else ("자리는 있음 · 아직 완료 아님" if 삭제 else "설계표에 없음")})
     if idx == 0:
         빈0 = 진단빈것(lp)
         out.append({"이름": "제품 질문(어디에 팔 건가 · 돈을 받을 건가 · 만드는 것의 종류)", "됨": not 빈0,
@@ -109,20 +118,29 @@ def 조건(idx, lp=None):
         out.append({"이름": "제품 소개(한 줄 · 누구 · 문제)", "됨": not 빈, "지금": "다 적음" if not 빈 else "아직: " + " · ".join(빈)})
         빈2 = 앱설정빈것(lp)
         out.append({"이름": "앱 설정(" + " · ".join(앱설정칸.values()) + ")", "됨": not 빈2, "지금": "다 정함" if not 빈2 else "아직: " + " · ".join(빈2)})
+        try:
+            import failure_plan
+            빈3 = failure_plan.정책빈것(lp)
+            out.append({"이름": "실패 정책(인터넷 끊김 · 결제 실패 등 이 제품에 해당하는 것)", "됨": not 빈3,
+                        "지금": "다 정함" if not 빈3 else "아직: " + " · ".join(빈3) + " — ledger.sh 실패정책목록"})
+        except Exception:
+            pass
     if idx == 2:
         n = sum(1 for c in 줄 if len(c) > 1 and c[1] == "검증")
+        n += sum(1 for r in 표줄 if str(r["단계"]).strip() == "2" and r["상태"] in ("완료", "넘어감"))
         out.append({"이름": "검증 기록", "됨": n > 0, "지금": "%d개" % n})
     if idx == 5:
         n = sum(1 for c in 줄 if len(c) > 5 and c[1] == "단계확인" and c[5].strip() == "5" and c[4].strip() == "봤음")
         n += sum(1 for r in 내것 if r["상태"] == "완료" and str(r.get("이름표") or "").startswith(("직접 확인", "직접 테스트")))
-        out.append({"이름": "직접 써 보고 확인한 것", "됨": n > 0, "지금": "%d개" % n})
+        out.append({"이름": "직접 써 보고 확인한 것(끝 조건에서 뺌)", "됨": True, "지금": "%d개" % n})
     if idx == 3:
         scr = lp.parent / "screens.tsv"
         화면 = (scr.is_file() and any(l.startswith("화면\t") for l in scr.read_text(encoding="utf-8").splitlines())) \
             or any(len(c) > 2 and c[1] == "화면없음" and c[2].strip() for c in 줄)
         out.append({"이름": "화면 설계서", "됨": bool(화면), "지금": "있음" if 화면 else "없음"})
         빠진 = sum(1 for c in 줄 if len(c) > 3 and c[1] == "빠진기능")
-        out.append({"이름": "빠진 기능 점검(다들 있는 기능을 줄마다 정함)", "됨": 빠진 > 0, "지금": "%d줄 정함" % 빠진 if 빠진 else "아직"})
+        out.append({"이름": "빠진 기능 점검(다들 있는 기능을 줄마다 정함)", "됨": 빠진 > 0, "지금": "%d줄 정함" % 빠진 if 빠진 else
+                    "아직 — 점검표 받기: brain.sh 3 설계-처방/빠진기능 · 서버에 못 닿으면: ledger.sh 빠진기능 점검표 다음번 \"서버에 못 닿아 다음에 받음\""})
         개발 = sorted({r["기능"] for r in 표줄 if str(r["단계"]).strip() == "4"})
         if 개발:
             try:
@@ -132,6 +150,10 @@ def 조건(idx, lp=None):
                 표준 = [f for f in 개발 if any(standards.완성(x) for x in st.get(f, []))]
                 out.append({"이름": "기능마다 표준방식 확인", "됨": len(표준) == len(개발), "지금": "%d/%d" % (len(표준), len(개발))})
                 out.append({"이름": "기능 사이 연결", "됨": not (set(개발) - 연결), "지금": "%d/%d" % (len(set(개발) & 연결), len(개발))})
+                import failure_plan
+                빈4 = failure_plan.점검빈것(lp)
+                out.append({"이름": "기능마다 실패 상황 점검", "됨": not 빈4,
+                            "지금": "%d/%d" % (len(개발) - len(빈4), len(개발)) + ("" if not 빈4 else " — ledger.sh 실패점검목록")})
             except Exception:
                 pass
         try:
@@ -163,7 +185,7 @@ def 넘기(목표이름, 이유="", lp=None, 적기=False):
     to = 번호(목표이름, lp)
     if to is None:
         print("  ⛔ 단계 이름을 읽지 못했습니다: 「%s」" % 목표이름, file=sys.stderr)
-        print("     0. 진단 · 1. 기획 · 2. 검증 · 3. 설계 · 4. 개발 · 5. 확인 · 6. 출시 · 7. 수정 · 8. 출시후 중 하나로 적으십시오.", file=sys.stderr)
+        print("     0. 진단 · 1. 기획 · 2. 검증 · 3. 설계 · 4. 개발 · 5. 테스트 · 6. 출시 · 7. 수정 · 8. 출시후 중 하나로 적으십시오.", file=sys.stderr)
         print("     프로젝트가 따로 쓰는 이름이면 먼저 ledger.sh 단계연결 \"<이름>\" <0~8> 로 이으십시오.", file=sys.stderr)
         return 2
     cur = 지금(lp)

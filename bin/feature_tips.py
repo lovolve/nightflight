@@ -72,6 +72,22 @@ def 답(글: str) -> None:
 
 
 def 처리(입력: dict) -> None:
+    잠금 = None
+    try:
+        import fcntl
+        상태길().parent.mkdir(parents=True, exist_ok=True)
+        잠금 = open(상태길().with_name("feature_tips.json.lock"), "a")
+        fcntl.flock(잠금, fcntl.LOCK_EX)
+    except Exception:
+        pass
+    try:
+        _처리(입력)
+    finally:
+        if 잠금 is not None:
+            잠금.close()
+
+
+def _처리(입력: dict) -> None:
     말 = 사용자가_쓴_말(str(입력.get("prompt") or "")).strip()
     if not 말:
         return

@@ -39,7 +39,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install.
+- Do not save the guidance you receive to a file. Always use the latest version from the server.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## Do not do these in this stage

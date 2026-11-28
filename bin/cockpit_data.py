@@ -562,7 +562,8 @@ try:
     _fd["제품소개"] = _intro()
     w("features.json", _fd)
 except Exception as _e:
-    w("features.json", {"기능들": [], "못봤다": f"{type(_e).__name__}", "설계표": _plan(), "설계점검": _design_check()})
+    _fd = {"기능들": [], "못봤다": f"{type(_e).__name__}", "설계표": _plan(), "설계점검": _design_check()}
+    w("features.json", _fd)
 _appname = ([r[3] for r in rows if r[1] == "앱설정" and r[2] == "앱이름" and len(r) > 3 and r[3].strip()] or [""])[-1]
 if not _appname:
     try:
@@ -576,6 +577,14 @@ if not _appname:
         pass
 _folder = os.path.basename(os.path.dirname(os.path.dirname(os.environ["STATE"]))) \
     if os.environ.get("STATE") else ""
+_appicon = ""
+try:
+    if os.environ.get("STATE"):
+        import app_icon as _ai
+        _기록폴더 = os.path.dirname(os.environ["STATE"])
+        _appicon = _ai.주소(os.path.dirname(_기록폴더), _기록폴더)
+except Exception:
+    _appicon = ""
 _칸없음 = sum(1 for c in rows if len(c) > 1 and c[1] == "끝냄")
 _확인방법 = {}
 for c in rows:
@@ -638,7 +647,7 @@ elif os.path.exists(_번역자리):
     os.remove(_번역자리)
 w("now.json", {"언어": _언어, "stuck": len(stuck), "updatedAt": datetime.datetime.now(datetime.timezone.utc)
                  .isoformat(timespec="seconds").replace("+00:00", "Z"),
-               "앱이름": _appname, "폴더": _folder,
+               "앱이름": _appname, "폴더": _folder, "제품아이콘": _appicon,
                "가져오기": _가져오기,
                "작동안함": _작동안함,
                "따라잡기": _따라잡기,
@@ -732,8 +741,11 @@ except Exception as _e:
 EXP = {}
 _tools = os.environ.get("TOOLS", "")
 _ed = os.path.join(os.path.dirname(_tools), "explain") if _tools else ""
-_srv = os.path.join(os.path.dirname(os.path.dirname(_tools)),
-                    "nightflight-server", "explain") if _tools else ""
+try:
+    import nf_paths as _nfp
+    _srv = str(_nfp.서버저장소() / "explain") if _nfp.서버저장소() else ""
+except Exception:
+    _srv = ""
 for base in [os.environ.get("NF_EXPLAIN", ""), _ed, _srv]:
     if base and os.path.isdir(base):
         for f in os.listdir(base):

@@ -132,8 +132,8 @@ PYEOF
 
   하는중)
     LINE="${2:?지금 무엇을 하고 있나 — 동사로 한 줄. 예: 「적립 버튼이 두 번 눌리는 것을 고치는 중」}"
-    LAST=$(awk -F'\t' '$2=="하는중"{v=$3} END{print v}' "$STATE" 2>/dev/null)
-    if [ "$LAST" = "$LINE" ]; then
+    LAST=$(awk -F'\t' '$2=="하는중"{v=$3} $2=="하는중끝"{v=""} END{print v}' "$STATE" 2>/dev/null)
+    if [ -n "$LAST" ] && [ "$LAST" = "$LINE" ]; then
       echo "  · 같은 것을 하고 계십니다 — 또 적지 않습니다."
       exit 0
     fi
@@ -157,7 +157,7 @@ PYEOF
   묶음)
     _F="${2:?묶음 파일 — 한 줄에 기록 명령 하나, 칸은 탭으로 나눕니다}"
     [ -f "$_F" ] || { echo "  ⛔ 묶음 파일이 없습니다: $_F" >&2; exit 1; }
-    _OK=" 결정 기능추가 세부기능 세부상태 기능설명 세부언제 화면 화면이름 화면종류 화면이동 화면요소 화면상태 화면일 화면언제 화면하는일 화면갈림 설치전 영향 독립 상태 앱설정 제품소개 가져오기 표준 배운것 "
+    _OK=" 결정 실패정책 실패점검 기능추가 세부기능 세부상태 기능설명 세부언제 화면 화면이름 화면종류 화면이동 화면요소 화면상태 화면일 화면언제 화면하는일 화면갈림 설치전 영향 독립 상태 앱설정 제품소개 가져오기 표준 배운것 "
     _n=0; _ok=0; _bad=0
     while IFS= read -r _line || [ -n "$_line" ]; do
       case "$_line" in ""|\#*) continue ;; esac
@@ -168,7 +168,7 @@ PYEOF
       [ "$_cmd" = "가져오기" ] && [ "${_A[1]:-}" != "없음" ] && { echo "  ⛔ ${_n}번째 줄: 가져오기는 «없음»만 묶음으로 받습니다"; _bad=$((_bad+1)); continue; }
       _out="$(bash "$NF_PYDIR/ledger.sh" "${_A[@]}" 2>&1)"; _rc=$?
       if [ $_rc -eq 0 ]; then _ok=$((_ok+1))
-      else _bad=$((_bad+1)); echo "  ⛔ ${_n}번째 줄($_cmd): $(printf '%s' "$_out" | grep -m2 '⛔' | tr '\n' ' ' | python3 -I -c 'import sys; sys.stdout.write(sys.stdin.buffer.read().decode("utf-8","ignore")[:220])')"; fi
+      else _bad=$((_bad+1)); echo "  ⛔ ${_n}번째 줄($_cmd): $(printf '%s' "$_out" | awk '/⛔/{print; if ((getline l) > 0) print l; if (++n >= 2) exit}' | tr '\n' ' ' | python3 -I -c 'import sys; sys.stdout.write(sys.stdin.buffer.read().decode("utf-8","ignore")[:320])')"; fi
     done < "$_F"
     echo "  · 묶음 ${_n}줄 — 적음 ${_ok} · 못 적음 ${_bad}"
     [ "$_bad" -eq 0 ]
@@ -341,6 +341,15 @@ PYEOF
     KEY="${2:?끝낸 것 — 일부 글자}"
     [ -f "$STATE" ] && awk -F'\t' -v k="$KEY" '$2=="남은것" && index($3,k){f=1} END{exit !f}' "$STATE" \
       || { echo "  「$KEY」이 들어간 «남은 것»을 못 찾았습니다." >&2; exit 1; }
+    _nf_hits="$(awk -F'\t' -v k="$KEY" '
+      $2=="끝냄" { done[++n]=$3; next }
+      $2=="남은것" { open[++m]=$3 }
+      END { for (i=1;i<=m;i++) { if (!index(open[i],k)) continue; c=0; for (j=1;j<=n;j++) if (done[j]!="" && index(open[i],done[j])) c=1; if (!c) print open[i] } }' "$STATE" 2>/dev/null)"
+    if [ "$(printf '%s\n' "$_nf_hits" | grep -c .)" -gt 1 ]; then
+      echo "  ⛔ 「$KEY」이 든 «남은 것»이 여럿이라 닫지 않았습니다 — 닫을 줄의 글자를 더 길게 적으십시오:" >&2
+      printf '%s\n' "$_nf_hits" | cut -c1-120 | sed 's/^/     · /' >&2
+      exit 1
+    fi
     printf '%s\t끝냄\t%s\t\t\n' "$(date +%F)" "$KEY" >> "$STATE"
     echo "  · 끝냈습니다: $KEY"
     ;;

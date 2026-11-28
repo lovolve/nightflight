@@ -61,7 +61,7 @@ Text values you pass to `ledger.sh` commands (names, notes, evidence, screen wor
 
 Commands are usually rejected at the points below.
 
-- Phase names: `0. 진단` (Diagnose), `1. 기획` (Plan), `2. 검증` (Validate), `3. 설계` (Design), `4. 개발` (Build), `5. 확인` (Test), `6. 출시` (Launch), `7. 수정` (Fix), `8. 출시후` (After launch).
+- Phase names: `0. 진단` (Diagnose), `1. 기획` (Plan), `2. 검증` (Validate), `3. 설계` (Design), `4. 개발` (Build), `5. 테스트` (Test), `6. 출시` (Launch), `7. 수정` (Fix), `8. 출시후` (After launch).
   Record `0. 진단` first. Record the current phase last: the last line is the current phase.
   Do not record `4. 개발` or any later phase until the screen flow and the feature impact entries exist. The order is: feature table, features already built (`설치전`), screen flow, impact, phase.
 - Screen wording (`--화면`) and a decision's `--값` are written as noun phrases. The tool only catches Korean sentence endings, so it will not reject an English sentence — keep to noun phrases yourself. Example: "three screens sharing one distance value" (correct); "three screens use the same distance value" (wrong).

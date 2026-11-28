@@ -93,7 +93,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install.
+- Do not save the guidance you receive to a file. Always use the latest version from the server.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## After the features are confirmed: record the map between features
@@ -101,7 +101,7 @@ If you do not know the topic, pass any word. The reply lists the topics you can 
 "I know every place to change" does not mean you analyze the code to find them when the user asks for a fix. It means you build the map during design, and when a fix comes, you check against that map. So the design must include the map of parts: how features connect, where they collide, and in what order they run.
 
 ```bash
-"${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 영향 <feature being changed> <feature to check with it> "<kind>: <what>" 리서치
+"${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 영향 <feature being changed> <feature to check with it> "<kind>: <what>" 리서치 --화면 "<what the user experiences>" --종류 "사용자에게 보이는 것"   # if not visible: --종류 "안 보이는 작업"
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 영향목록
 
 "${CLAUDE_PLUGIN_ROOT}/bin/ledger.sh" 상태 <feature> <state> <reachable states, comma-separated> user
@@ -123,6 +123,16 @@ State map (`상태`): "which state is this feature in now, and where can it go n
 - `상태목록` prints the states.
 
 If either map is empty, never say "nothing depends on it". Say "it is not written on the map". Letting 0 read as safe is worse than having no map, because people trust it and stop checking.
+
+## Failure situations — cover every feature
+
+The state diagram check only finds dead ends in what was written down. If a failure state was never written, it cannot see it. So go through a fixed list of failure kinds for each feature.
+1. Run `ledger.sh 실패점검목록` (failure check list). For each feature to build, it shows the failure kinds not yet covered (lost connection, server error, permission denied, bad input, double taps and simultaneous use, reopening the app, an outside service refusing, storage).
+2. For each feature and kind, record `ledger.sh 실패점검 "<feature>" <kind id[,…]|전부> 처리|해당없음 "<how it is handled and what the user sees · or why it does not apply>" [사용자|내판단]` (`처리` = handled, `해당없음` = does not apply, `내판단` = decided by the AI).
+3. Follow the failure policies decided in planning. Anything not asked, or answered `모름`, is decided with the standard approach and recorded as `내판단`.
+4. When done, show the user a summary in one go — show the "decided by AI" group first and ask whether they want to change anything.
+5. Anything recorded as `처리` also goes into the state diagram (`ledger.sh 상태`) as a failure state and where it leads.
+Do not move on to development until every kind is recorded for every feature. In the test stage, the "no freezes or lost data in bad situations" item runs each `처리` line for real.
 
 ## How to ask the user
 

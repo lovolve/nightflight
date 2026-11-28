@@ -851,6 +851,11 @@ AI 답하기	AI replies
 실패 상황에서 보이는 화면	Screens shown when something fails
 진짜 휴대폰에서 확인	Check on a real phone
 다른 화면 크기	Other screen sizes
+화면 안내와 실제 동작이 맞나	On-screen guidance matches what the app actually does
+나쁜 상황에서 멈추거나 기록을 잃지 않나	No freezes or lost data in bad situations
+위험 큰 기능부터 상태 조합 시험	State combination tests, riskiest features first
+AI 답이 세 번 모두 일정한가	AI answers stay consistent across three runs
+따로 띄운 AI의 독립 점검	Independent check by a separate AI
 스토어 준비	Store preparation
 스토어 정보 넣기	Enter store listing information
 스토어 사진	Store images
@@ -955,8 +960,8 @@ AI 답하기	AI replies
 코드 위치: 	Code location:
 지금 할 세부기능을 모두 완료했습니다	All sub-features for now are done
 추후 확인	Check later
-AI가 하는 확인	Checks the AI does
-직접 하실 확인	Checks for you
+AI가 하는 테스트	Tests the AI does
+직접 하실 테스트	Tests for you
 자동 시험 통과	Automated tests pass
 작동 안 하는 버튼과 못 가는 화면 없음	No buttons that do nothing and no screens without a way in
 다른 화면 크기	Other screen sizes
@@ -1063,3 +1068,4 @@ GB 남음	GB free
 등록	Registered
 지금 단계	Current stage
 먼저 할 일	First thing to do
+조종석 아이콘을 바꾸려면 AI에게 «조종석 아이콘 바꿔 줘»라고 말씀하십시오	To change this icon, tell the AI “change the cockpit icon”

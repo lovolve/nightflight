@@ -20,7 +20,7 @@ sys.path.insert(0, str(여기.parent / "tools"))
 sys.path.insert(0, str(여기))
 import cockpit_file
 
-쉼한도 = 30 * 60
+쉼한도 = 24 * 60 * 60
 첫자리 = 8800
 자리수 = 900
 누름값 = {"완료", "넘어감", "되돌리기"}
@@ -34,7 +34,7 @@ def _폴더표(뿌리: Path) -> str:
     return hashlib.sha256(str(뿌리).encode("utf-8")).hexdigest()[:16]
 
 
-def 보이나(뿌리: Path) -> bool:
+def _이제품서버들(뿌리: Path):
     옛 = _폴더표(뿌리)
     표들 = {_뿌리표(뿌리), 옛}
     try:
@@ -50,9 +50,58 @@ def 보이나(뿌리: Path) -> bool:
                 d = json.loads(r.read().decode("utf-8"))
         except Exception:
             continue
-        if d.get("뿌리") in 표들 or d.get("폴더") == 옛:
-            return True
-    return False
+        if isinstance(d, dict) and (d.get("뿌리") in 표들 or d.get("폴더") == 옛):
+            yield 자리, d
+
+
+def 안보인지(뿌리: Path, 한도: float = 20.0) -> tuple:
+    본때들, 주소 = [], ""
+    for 자리, d in _이제품서버들(뿌리):
+        if isinstance(d.get("본때"), (int, float)):
+            본때들.append(float(d["본때"]))
+            if not 주소 or d.get("뿌리") == _뿌리표(뿌리):
+                주소 = "http://127.0.0.1:%d/" % 자리
+    if not 본때들:
+        return 2, "", 0.0
+    늦음 = max(본때들)
+    return (1 if time.time() - 늦음 < 한도 else 0), 주소, 늦음
+
+
+def 보이나(뿌리: Path) -> bool:
+    return any(True for _ in _이제품서버들(뿌리))
+
+
+def 옛판정리(뿌리: Path, 내자리: int) -> list:
+    import signal
+    내표, 폴더 = _뿌리표(뿌리), _폴더표(뿌리)
+    끈것 = []
+    for 자리 in _자리들(뿌리):
+        if 자리 == 내자리:
+            continue
+        try:
+            여는것 = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+            with 여는것.open("http://127.0.0.1:%d/who" % 자리, timeout=1) as r:
+                d = json.loads(r.read().decode("utf-8"))
+        except Exception:
+            continue
+        if d.get("뿌리") == 내표 or (d.get("폴더") != 폴더 and d.get("뿌리") != 폴더):
+            continue
+        try:
+            번호들 = subprocess.run(["lsof", "-tnP", "-iTCP:%d" % 자리, "-sTCP:LISTEN"],
+                                 capture_output=True, text=True, timeout=5).stdout.split()
+        except Exception:
+            continue
+        for 번호 in 번호들:
+            try:
+                명령 = subprocess.run(["ps", "-o", "command=", "-p", 번호],
+                                    capture_output=True, text=True, timeout=5).stdout
+                if "cockpit_server.py" not in 명령 or "/plugins/cache/" not in 명령:
+                    continue
+                os.kill(int(번호), signal.SIGTERM)
+                끈것.append(자리)
+            except (OSError, ValueError, subprocess.SubprocessError):
+                continue
+    return 끈것
 
 
 def _자리들(뿌리: Path):
@@ -97,7 +146,7 @@ def 만든다(뿌리: Path, 자리: int):
     표 = _뿌리표(뿌리)
     기록도구 = 여기 / "ledger.sh"
     받는이름 = {"127.0.0.1:%d" % 자리, "localhost:%d" % 자리}
-    상태 = {"마지막": time.time(), "짓는중": False, "지은때": 0.0}
+    상태 = {"마지막": time.time(), "짓는중": False, "지은때": 0.0, "본때": 0.0}
     짓기잠금 = threading.Lock()
 
     def 칸다시():
@@ -150,14 +199,16 @@ def 만든다(뿌리: Path, 자리: int):
                 return self._보냄(403, b"", "text/plain")
             길 = self.path.split("?", 1)[0]
             if 길 == "/who":
-                return self._제이슨(200, {"뿌리": 표, "폴더": _폴더표(뿌리)})
+                return self._제이슨(200, {"뿌리": 표, "폴더": _폴더표(뿌리), "본때": 상태["본때"]})
             상태["마지막"] = time.time()
             if 길 == "/keep":
                 return self._제이슨(200, {})
             if 길 == "/board.json":
+                상태["본때"] = time.time()
                 칸다시()
                 return self._제이슨(200, {"판": cockpit_file.판모으기(뿌리), "바뀐때": _칸바뀐때(뿌리)})
             if 길 in ("/", "/cockpit.html"):
+                상태["본때"] = time.time()
                 try:
                     _안 = cockpit_file.기록집(뿌리) / "internal"
                     _안.mkdir(parents=True, exist_ok=True)
@@ -202,7 +253,17 @@ def 만든다(뿌리: Path, 자리: int):
             except Exception:
                 return self._제이슨(500, {"오류": "기록하지 못했습니다"})
             if r.returncode != 0:
-                return self._제이슨(500, {"오류": "기록하지 못했습니다"})
+                _까닭 = next((l.strip(" ⛔") for l in (r.stderr or r.stdout or "").splitlines() if l.strip().startswith("⛔")), "")
+                return self._제이슨(500, {"오류": "기록하지 못했습니다" + (" — " + _까닭[:160] if _까닭 else "")})
+            with 짓기잠금:
+                상태["짓는중"] = True
+            try:
+                subprocess.run(["bash", str(기록도구), "조종석준비"], cwd=str(뿌리), capture_output=True, timeout=60)
+            except Exception:
+                pass
+            finally:
+                상태["지은때"] = time.time()
+                상태["짓는중"] = False
             return self._제이슨(200, {"됨": True, "바뀐때": _칸바뀐때(뿌리)})
 
     서버 = ThreadingHTTPServer(("127.0.0.1", 자리), 처리)
@@ -211,7 +272,7 @@ def 만든다(뿌리: Path, 자리: int):
     def 지킴이():
         while True:
             time.sleep(30)
-            if time.time() - 상태["마지막"] > 쉼한도:
+            if time.time() - 상태["마지막"] > 쉼한도 or not 뿌리.is_dir():
                 서버.shutdown()
                 return
     threading.Thread(target=지킴이, daemon=True).start()
@@ -264,6 +325,11 @@ def main(argv) -> int:
         return 뒤에서(뿌리)
     if "--보이나" in argv:
         return 0 if 보이나(뿌리) else 1
+    if "--안보인지" in argv:
+        판정, 주소, 늦음 = 안보인지(뿌리)
+        if 판정 == 0:
+            print("%s\t%d" % (주소, int(늦음)))
+        return 판정
     if "--살아있나" in argv:
         표 = _뿌리표(뿌리)
         return 0 if any(_누구(자리) == 표 for 자리 in _자리들(뿌리)) else 1
@@ -287,6 +353,7 @@ def main(argv) -> int:
         except OSError:
             continue
         print("http://127.0.0.1:%d/" % 자리, flush=True)
+        threading.Thread(target=옛판정리, args=(뿌리, 자리), daemon=True).start()
         try:
             서버.serve_forever()
         except KeyboardInterrupt:

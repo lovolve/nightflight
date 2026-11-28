@@ -53,7 +53,7 @@ case "$KIND" in
     [ "$#" -le 1 ] && set -- 가져오기 보기
     if [ "${2-}" = "시작" ]; then
       NF_STATE="$NF_STATE" python3 "$_IM" "${@:2}" || exit $?
-      python3 -I "$NF_PYDIR/model_suggest.py" "" 가져오기 2>/dev/null || true
+      :
       exit 0
     fi
     NF_STATE="$NF_STATE" exec python3 "$_IM" "${@:2}"

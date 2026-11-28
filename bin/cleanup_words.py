@@ -136,6 +136,7 @@ def main():
         "브라우저칸": lambda: 데스크톱 and bool(칸주소()),
         "칸못켬": lambda: 데스크톱 and not 칸주소(),
         "칸서버없음": lambda: not 칸서버삶(),
+        "앞말없음": lambda: not say,
     }
     say = []
     for 줄 in 말들:

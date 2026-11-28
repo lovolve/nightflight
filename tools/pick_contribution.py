@@ -77,6 +77,29 @@ def _store():
     return _home() / "contributions.tsv"
 
 
+class _잠금:
+    def __enter__(self):
+        self.f = None
+        try:
+            import fcntl
+            _home().mkdir(parents=True, exist_ok=True)
+            self.f = open(_home() / "contributions.lock", "a")
+            fcntl.flock(self.f, fcntl.LOCK_EX)
+        except Exception:
+            pass
+        return self
+
+    def __exit__(self, *a):
+        if self.f is not None:
+            self.f.close()
+
+
+def _통째쓰기(path, rows):
+    t = path.with_name(path.name + ".tmp%d" % os.getpid())
+    t.write_text("".join("\t".join(r) + "\n" for r in rows), encoding="utf-8")
+    os.replace(t, path)
+
+
 def _rows(path):
     if not path.exists():
         return []
@@ -198,6 +221,7 @@ def cmd_동의(said):
         _p("     그 말씀은 쌓인 뒤에 드립니다.")
         _p()
         return 0
+    said = said.replace("\t", " ").replace("\r", " ").replace("\n", " ")
     cid = hashlib.sha1(f"{_today()}\t{said}".encode("utf-8")).hexdigest()[:12]
     _person().parent.mkdir(parents=True, exist_ok=True)
     with _person().open("a", encoding="utf-8") as f:
@@ -290,7 +314,7 @@ def cmd_담기(key):
         _p("     제가 그 문장을 고쳐 쓰면 그건 제가 지어낸 말이 됩니다.", file=sys.stderr)
         return 1
     _store().parent.mkdir(parents=True, exist_ok=True)
-    with _store().open("a", encoding="utf-8") as f:
+    with _잠금(), _store().open("a", encoding="utf-8") as f:
         f.write(f"{_today()}\t{c['건id']}\t{c['종류']}\t{c['본문']}\t{c['곁들임']}"
                 f"\t{_app_tag()}\t{cid}\n")
     _p(f"  · 보낼 것으로 표시했습니다 [{c['종류']}] {c['본문']}")
@@ -329,15 +353,14 @@ def cmd_목록():
 
 
 def cmd_취소(key):
-    rs = _rows(_store())
-    keep = [r for r in rs if not (len(r) > 1 and (r[1] == key or key in (r[3] if len(r) > 3 else "")))]
-    gone = len(rs) - len(keep)
-    if gone == 0:
-        _p(f"  「{key}」에 해당하는 것을 못 찾았습니다. 나갈 것이 {len(rs)}건 있습니다.")
-        return 0
-    with _store().open("w", encoding="utf-8") as f:
-        for r in keep:
-            f.write("\t".join(r) + "\n")
+    with _잠금():
+        rs = _rows(_store())
+        keep = [r for r in rs if not (len(r) > 1 and (r[1] == key or key in (r[3] if len(r) > 3 else "")))]
+        gone = len(rs) - len(keep)
+        if gone == 0:
+            _p(f"  「{key}」에 해당하는 것을 못 찾았습니다. 나갈 것이 {len(rs)}건 있습니다.")
+            return 0
+        _통째쓰기(_store(), keep)
     _p(f"  · {gone}건을 지웠습니다. 나갈 것은 {len(keep)}건 남았습니다.")
     보낸것 = _보냄()
     지울것 = [r[1] for r in rs if r not in keep and len(r) > 1 and r[1] in 보낸것]
@@ -371,6 +394,11 @@ def _보냄():
 
 
 def _지움대기더하기(ids):
+    with _잠금():
+        _지움대기더하기_잠근뒤(ids)
+
+
+def _지움대기더하기_잠근뒤(ids):
     있음 = {r[0] for r in _rows(_지움파일()) if r}
     _지움파일().parent.mkdir(parents=True, exist_ok=True)
     with _지움파일().open("a", encoding="utf-8") as f:
@@ -406,10 +434,11 @@ def _지움대기처리():
     if not (isinstance(d, dict) and d.get("됐나")):
         return None
     done = set(ids[:100])
-    keep = [r for r in _rows(_지움파일()) if r and r[0] not in done]
-    _지움파일().write_text("".join("\t".join(r) + "\n" for r in keep), encoding="utf-8")
-    sent = [r for r in _rows(_보냄파일()) if r and r[0] not in done]
-    _보냄파일().write_text("".join("\t".join(r) + "\n" for r in sent), encoding="utf-8")
+    with _잠금():
+        keep = [r for r in _rows(_지움파일()) if r and r[0] not in done]
+        _통째쓰기(_지움파일(), keep)
+        sent = [r for r in _rows(_보냄파일()) if r and r[0] not in done]
+        _통째쓰기(_보냄파일(), sent)
     return len(keep)
 
 
@@ -444,7 +473,7 @@ def cmd_보내기():
         받은 = d.get("건id") or []
         if 받은:
             _보냄파일().parent.mkdir(parents=True, exist_ok=True)
-            with _보냄파일().open("a", encoding="utf-8") as f:
+            with _잠금(), _보냄파일().open("a", encoding="utf-8") as f:
                 for iid in 받은:
                     if isinstance(iid, str) and iid not in 보낸것:
                         f.write(f"{iid}\t{_today()}\n")

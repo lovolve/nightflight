@@ -26,7 +26,7 @@ Rules:
 
 - Attach how it was verified to every `완료`, for example "tapped it on a phone". If it is missing or says "not done", the slot is recorded as `확인 필요` with the reason "not verified".
 - You cannot mark `완료` on a sub-feature that is not in the design table. When a new one comes up, get the user's confirmation and create the slot first.
-- When you record finished work (`ledger.sh 됐다`), attach which sub-feature it belongs to: `--세부 "<feature> › <sub-feature>"` (repeat the option for several; use `--세부 없음` when the work belongs to no sub-feature). If that record says the work was not verified, the cockpit shows that sub-feature as `확인 필요`.
+- When you record finished work, give how it was verified and which sub-feature it belongs to: `ledger.sh 됐다 "<what>" "<how it was verified>" --화면 "<what the user experiences>" --종류 "새 기능|문제 고침|안 보이는 작업" --세부 "<feature> › <sub-feature>"` (repeat the option for several; use `--세부 없음` when the work belongs to no sub-feature). If that record says the work was not verified, the cockpit shows that sub-feature as `확인 필요`.
 - Write the verification text and the labels in English. The Korean words in the commands are what the tool reads. Never show them to the user.
 
 ## The failure particular to this stage, in one line
@@ -49,7 +49,7 @@ On entering this stage, query the brain server first:
 
 If you do not know the topic, pass any word. The reply lists the topics you can ask about.
 
-- Do not save what you receive to a file. Saving it ships the know-how out to every install.
+- Do not save the guidance you receive to a file. Always use the latest version from the server.
 - If you receive nothing, do not stop. Proceed with what you know and record that the brain server did not answer.
 
 ## Do not do these in this stage

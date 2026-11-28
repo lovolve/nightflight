@@ -70,18 +70,37 @@ def _file():
     return (Path(v) if v else _root_mod.state_dir()) / "plan.tsv"
 
 
+옛테스트묶음 = {"AI가 하는 확인": "AI가 하는 테스트", "직접 하실 확인": "직접 하실 테스트"}
+
+
 def 읽기():
     p = _file()
     if not p.exists():
         return []
     out = []
-    for l in p.read_text(encoding="utf-8").splitlines():
+    for l in p.read_text(encoding="utf-8", errors="replace").splitlines():
         if not l or l.startswith("#"):
             continue
         c = (l.split("\t") + [""] * 7)[:7]
+        if c[0] == "5":
+            c[1] = 옛테스트묶음.get(c[1], c[1])
         out.append({"단계": c[0], "기능": c[1], "세부기능": c[2], "상태": c[3] or "시작 전",
                     "이름표": c[4], "출처": c[5], "바뀐날": c[6]})
     return out
+
+
+def 잠그기():
+    if globals().get("_잠금") is not None:
+        return
+    try:
+        import fcntl
+        p = _file()
+        p.parent.mkdir(parents=True, exist_ok=True)
+        global _잠금
+        _잠금 = open(p.with_name("plan.tsv.lock"), "a")
+        fcntl.flock(_잠금, fcntl.LOCK_EX)
+    except Exception:
+        pass
 
 
 def 쓰기(rows):
@@ -151,6 +170,19 @@ def 직접인가(상태, 이름표=""):
     return 상태 == "확인 필요" and bool(re.match(r"(직접|사람 확인)", str(이름표 or "").strip()))
 
 
+def _기본챙기기(기능, rows):
+    표 = 기본표()
+    if 기능 in 표:
+        있음 = {r["세부기능"] for r in rows if r["기능"] == 기능}
+        빠짐 = [x for x in 표[기능] if x not in 있음]
+        if 빠짐:
+            print(f"  [모델] 「{기능}」 기본 세부기능 중 아직 없는 것: {' · '.join(빠짐)} — 이 제품에 필요하면 더하고, 필요 없으면 사용자에게 한 줄로 알리십시오.")
+        return
+    if 표:
+        print(f"  [모델] 「{기능}」은 기본 세부기능 표의 이름과 정확히 같지 않습니다. 표에 같은 뜻의 기능이 있으면(예: 회원 · 계정 → 로그인) "
+              f"그 기능의 세부기능 중 빠진 것을 이 기능에 더하십시오: ledger.sh 세부기능 4 \"{기능}\" <세부기능>. 표의 기능: {' · '.join(표)}")
+
+
 def 기능추가(단계, 기능, 세부들):
     단계, 기능 = _단계(단계), _이름(기능, "기능")
     rows = 읽기()
@@ -161,7 +193,8 @@ def 기능추가(단계, 기능, 세부들):
         출처 = "기본"
         if not 세부들:
             sys.exit(f"  ⛔ 「{기능}」의 기본 세부기능이 없습니다. 세부기능을 같이 적어 주십시오:\n"
-                     f"     plan.py 기능추가 {단계} {기능} <세부기능> <세부기능> …")
+                     f"     plan.py 기능추가 {단계} {기능} <세부기능> <세부기능> …\n"
+                     f"     기본 표에 같은 뜻의 기능이 있으면 그 이름으로 넣거나 그 세부기능을 같이 적으십시오: {' · '.join(기본표())}")
     더함 = []
     for s in 세부들:
         s = _이름(s, "세부기능")
@@ -175,6 +208,7 @@ def 기능추가(단계, 기능, 세부들):
     쓰기(rows)
     print(f"  · 설계표 [{단계이름[int(단계)]}] {기능} — 세부기능 {len(더함)}개 자리를 만들었습니다"
           + (" (기본 표에서)" if 출처 == "기본" else ""))
+    _기본챙기기(기능, rows)
     for s in 더함:
         print(f"      ○ {s}")
 
@@ -398,9 +432,10 @@ def 세부상태(기능, 세부, 상태, 이름표="", 사용자가눌렀다=Fal
     hit = [r for r in rows if r["기능"] == 기능 and r["세부기능"] == 세부]
     if not hit:
         sys.exit(f"  ⛔ 설계표에 「{기능} / {세부}」 자리가 없습니다. 먼저 자리를 만드십시오:\n"
-                 f"     plan.py 세부기능 <단계> {기능} {세부}")
+                 f"     ledger.sh 세부기능 <단계 번호> \"{기능}\" \"{세부}\"")
     설치전 = all(str(r.get("출처", "")).startswith("설치 전") for r in hit)
-    if not 설치전 and not 사용자가눌렀다 and 상태 in ("진행 중", "완료") and any(int(r["단계"]) in (4, 7) and r["상태"] != 상태 for r in hit):
+    기본칸 = all(str(r.get("출처", "")) == "단계 기본" for r in hit)
+    if not 설치전 and not 기본칸 and not 사용자가눌렀다 and 상태 in ("진행 중", "완료") and any(int(r["단계"]) in (4, 7) and r["상태"] != 상태 for r in hit):
         n = _출처있는표준수(기능)
         import acceptance as _ac
         if n is not None and n == 0 and not _ac.우회있나(기능, "표준"):
@@ -423,13 +458,15 @@ def 세부상태(기능, 세부, 상태, 이름표="", 사용자가눌렀다=Fal
             if _ic.대상인가(기능, 세부):
                 _ic.대기적기(기능, 세부, 이름표)
                 상태, 이름표, 독립대기 = "확인 필요", "독립 확인 대기", True
-        except Exception:
-            pass
+        except Exception as _e:
+            if any(r["단계"] in ("4", "7") and r.get("출처") != "단계 기본" for r in hit):
+                상태, 이름표 = "확인 필요", "독립 확인을 걸지 못함"
+                print(f"  ⚠️ 독립 확인을 걸지 못해 «확인 필요»로 두었습니다({type(_e).__name__}).", file=sys.stderr)
     for r in hit:
         r["상태"], r["이름표"], r["바뀐날"] = 상태, 이름표, date.today().isoformat()
     쓰기(rows)
     if 독립대기:
-        print(f"  · {기능} / {세부} → 확인 필요 (독립 확인 대기) — 중요한 기능이라 따로 띄운 확인 담당 AI가 본 뒤에 완료가 됩니다.")
+        print(f"  · {기능} / {세부} → 확인 필요 (독립 확인 대기) — 만든 AI가 아니라 따로 띄운 확인 담당 AI가 본 뒤에 완료가 됩니다.")
         print("    턴이 끝나면 확인 담당 AI를 띄우라는 안내가 갑니다.")
         return
     if 상태 == "완료" and not 낮춤:
@@ -748,7 +785,10 @@ def _기록낮춤():
     _정함 = {(r["기능"], r["세부기능"]) for r in 읽기() if r["단계"] in ("1", "3")}
     for l in p.read_text(encoding="utf-8").splitlines():
         c = l.split("\t")
-        if len(c) < 7 or c[1] not in ("됐다", "세부확인") or not c[6].strip():
+        if len(c) < 7 or c[1] not in ("됐다", "세부확인", "독립확인") or not c[6].strip():
+            continue
+        if c[1] == "독립확인":
+            out[tuple(c[6].split(" › ", 1))] = None
             continue
         if c[1] == "세부확인" and tuple(c[6].split(" › ", 1)) in _정함:
             for x in c[6].split(" · "):
@@ -835,6 +875,7 @@ def 보기():
 
 
 if __name__ == "__main__":
+    잠그기()
     a = sys.argv[1:]
     if "--개발이유" in a:
         i = a.index("--개발이유")

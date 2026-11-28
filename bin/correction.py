@@ -8,17 +8,48 @@ st, 종류, 글, 왜 = (sys.argv[1:5] + ["", "", "", ""])[:4]
 남김 = os.path.join(st, "internal", "corrected_lines.tsv")
 오늘 = time.strftime("%Y-%m-%d")
 
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tools"))
+os.environ["NF_STATE"] = st
+try:
+    import plan as _plan
+    _plan.잠그기()
+except Exception:
+    pass
+_읽은글 = {}
+
 def 읽기(p):
     try:
-        return open(p, encoding="utf-8").read().split("\n")
+        글 = open(p, encoding="utf-8").read()
     except OSError:
         return []
+    _읽은글[p] = 글
+    return 글.split("\n")
 
 def 쓰기(p, 줄들):
+    새글 = "\n".join(줄들)
     t = p + ".tmp%d" % os.getpid()
     with open(t, "w", encoding="utf-8") as f:
-        f.write("\n".join(줄들))
-    os.replace(t, p)
+        f.write(새글)
+    옛 = _읽은글.get(p, "").encode("utf-8")
+    try:
+        헌 = open(p, "rb")
+    except OSError:
+        os.replace(t, p); return
+    with 헌:
+        지금 = 헌.read()
+        if not 지금.startswith(옛):
+            os.remove(t)
+            print("  ⛔ 기록 파일이 그사이 다른 곳에서 고쳐져 바로잡지 않았습니다 — 다시 부르십시오.", file=sys.stderr)
+            sys.exit(3)
+        with open(t, "ab") as f:
+            f.write(지금[len(옛):])
+        os.replace(t, p)
+        for _ in range(5):
+            time.sleep(0.01)
+            꼬리 = 헌.read()
+            if 꼬리:
+                with open(p, "ab") as f:
+                    f.write(꼬리)
 
 def 옮김(옮길):
     os.makedirs(os.path.dirname(남김), exist_ok=True)

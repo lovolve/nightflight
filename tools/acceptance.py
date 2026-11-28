@@ -155,7 +155,7 @@ def 넘어가기전(새단계) -> str:
 
 def 안내() -> int:
     표 = 기준표()
-    없음 = [r for r in plan.읽기() if r["단계"] in 대상단계 and r["상태"] != "넘어감" and (r["기능"], r["세부기능"]) not in 표
+    없음 = [r for r in plan.읽기() if r["단계"] in 대상단계 and r.get("출처") != "단계 기본" and r["상태"] != "넘어감" and (r["기능"], r["세부기능"]) not in 표
            and not 우회있나(r["기능"], "기준")]
     열 = 열린것()
     if not 없음 and not 열:
@@ -201,4 +201,6 @@ def main(a):
 
 
 if __name__ == "__main__":
+    if sys.argv[1:2] and sys.argv[1] in ("기준", "기준확인", "없이진행", "안정함", "정함", "나중"):
+        plan.잠그기()
     sys.exit(main(sys.argv[1:]))

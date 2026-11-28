@@ -30,7 +30,7 @@ try:
     import gate_thresholds as _기준값
     _BRAIN = _기준값.자리()
 except ImportError:
-    _BRAIN = _PLUGIN.parent / "nightflight-server" / "catalog" / "관문-기준값.tsv"
+    _BRAIN = Path(os.environ.get("NIGHTFLIGHT_HOME") or (Path.home() / ".nightflight")) / "gate_thresholds.tsv"
 
 
 쌓이는축 = {"이미한것"}

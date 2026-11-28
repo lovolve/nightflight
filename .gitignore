@@ -21,3 +21,5 @@ __pycache__/
 
 .nightflight-dev
 
+
+evals/results/

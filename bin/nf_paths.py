@@ -48,6 +48,19 @@ def 개발() -> bool:
     return (_플러그인 / ".nightflight-dev").is_file()
 
 
+def 서버저장소():
+    if not 개발():
+        return None
+    try:
+        for 줄 in (_플러그인 / ".nightflight-dev").read_text(encoding="utf-8").splitlines():
+            if 줄.startswith("서버저장소="):
+                p = (_플러그인 / 줄.split("=", 1)[1].strip()).resolve()
+                return p if p.is_dir() else None
+    except OSError:
+        pass
+    return None
+
+
 def 주소허용(u: str) -> bool:
     if not isinstance(u, str):
         return False

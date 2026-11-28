@@ -156,7 +156,7 @@ def 첫글(_입력: dict) -> int:
     곳 = _알릴곳(nf_paths.집(), 대화)
     try:
         뿌리 = Path(곳.read_text(encoding="utf-8").strip())
-        곳.unlink()
+        곳.replace(곳.with_name(곳.name + ".done"))
     except OSError:
         return 0
     if not 뿌리.is_dir():

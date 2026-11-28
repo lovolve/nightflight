@@ -25,7 +25,7 @@ import os, sys
 sys.path.insert(0, os.environ["NFTOOLS"])
 import dependencies as D, plan as P
 done = D.연결된기능()
-print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).strip().isdigit() and int(r["단계"]) >= 4} - set(done))))' 2>/dev/null)" || _MISS="?"
+print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).strip().isdigit() and int(r["단계"]) >= 4 and r.get("출처") != "단계 기본"} - set(done))))' 2>/dev/null)" || _MISS="?"   # 2026-11-28: 단계에 들어가며 깔린 기본 묶음(AI가 하는 테스트 · 스토어 준비 등)은 기능이 아니다 — 세면 5→6 · 6→7 · 7→8 이 늘 막혔다
       _SCR="$(dirname "$STATE")/screens.tsv"
       if ! { [ -f "$_SCR" ] && grep -q $'^화면\t' "$_SCR"; } && ! awk -F'\t' '$2=="화면없음"&&$3!=""{f=1} END{exit !f}' "$STATE" 2>/dev/null; then
         echo "  ⛔ 개발에 들어가기 전에 화면 설계서가 있어야 합니다 — 화면 목록 · 화면마다 들어갈 기능 · 화면 사이 이동." >&2
@@ -37,7 +37,7 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
       if [ "$_MISS" = "?" ]; then
         echo "  ⚠️ 기능 사이 연결을 따져 봤는지 재지 못했습니다 — 막지 않고 넘어갑니다." >&2
       elif [ -n "$_MISS" ]; then
-        echo "  ⛔ 개발에 들어가기 전에 기능마다 다른 기능과 어떻게 엮이는지 적어야 합니다 — 아직: $_MISS" >&2
+        echo "  ⛔ 이 단계로 가기 전에 기능마다 다른 기능과 어떻게 엮이는지 적어야 합니다 — 아직: $_MISS" >&2
         echo "     엮이면 「ledger.sh 영향」, 안 엮이면 「ledger.sh 독립 <기능> <이유>」" >&2
         exit 1
       fi
@@ -47,14 +47,22 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
       [ "${_P12:-0}" = 0 ] && echo "  ⚠️ 기획 · 검증 표가 비어 있습니다 — 설계로 넘어가지만, 무엇을 왜 만드는지가 조종석에 안 남습니다. 가져오는 앱이면 기획 · 검증에서 정한 것도 채워 주십시오." >&2
     fi
     [ -n "$_WHY" ] && NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 건너뜀적기 "$NAME" "$_WHY" >/dev/null 2>&1
-    printf '%s\t단계\t%s\t\t\n' "$(date +%F)" "$NAME" >> "$STATE"
-    echo "  · 단계: $NAME"
+    _nf_names=(진단 기획 검증 설계 개발 테스트 출시 수정 출시후)
+    case "$_SN" in [0-8]) case "$NAME" in "$_SN"|"${_nf_names[$_SN]}"|"$_SN.${_nf_names[$_SN]}") NAME="$_SN. ${_nf_names[$_SN]}" ;; esac ;; esac
+    _nf_cur="$(awk -F'\t' '$2=="단계"{v=$3} END{print v}' "$STATE" 2>/dev/null)"
+    if [ "$_nf_cur" = "$NAME" ]; then
+      echo "  · 이미 이 단계입니다: $NAME"
+    else
+      printf '%s\t단계\t%s\t\t\n' "$(date +%F)" "$NAME" >> "$STATE"
+      echo "  · 단계: $NAME"
+    fi
     case "$_SN" in 5|6|7|8) NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/../tools/plan.py" 단계기본 "$_SN" 2>/dev/null || true ;; esac
     python3 -I "$NF_PYDIR/new_product_guide.py" "$STATE" 단계 2>/dev/null || true
     board_nudge 단계
     _BR="$NF_PYDIR/brain.sh"
     if [ -n "$_SN" ] && [ -x "$_BR" ] && [ -n "${NF_BRAIN_BASE:-}" ] && [ -n "${NF_DOORKEY:-}" ] && [ -z "${NF_NO_BRAIN_LIST:-}" ]; then
       _GL="$(NF_BRAIN_TIMEOUT=4 "$_BR" "$_SN" --목록 2>/dev/null)"
+      case "$_GL" in *"못 받았습니다"*|*"could not"*|*"Could not"*) echo "$_GL"; _GL="" ;; esac
       if [ -n "$_GL" ]; then
         echo "  · 이 단계에서 받을 수 있는 안내: $_GL"
         echo "    지금 하는 일에 맞는 것을 골라 바로 받으십시오: brain.sh $_SN <갈래>"
@@ -74,7 +82,7 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
       else _APPQ=$(NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/stage_end.py" 앱설정빈것 2>/dev/null); fi
       if [ -n "$_APPQ" ]; then
         if [ "$_SN" = 0 ]; then echo "  · 진단의 남은 질문(기획을 권하기 전에 묻습니다) — 아직 안 정한 앱 설정: $_APPQ"; else echo "  · 기획의 첫 질문 — 아직 안 정한 앱 설정: $_APPQ"; fi
-        echo "    [모델] ledger.sh 앱설정묻기 를 불러 나온 질문을 한 번에 하나씩 여쭙고, 답을 ledger.sh 앱설정 으로 적으십시오. 출시 준비의 오래 걸리는 일(개발자 계정 · 사업자 번호)이 이 답에서 미리 시작됩니다."
+        echo "    [모델] ledger.sh 앱설정묻기 를 불러 나온 질문을 한 번에 하나씩 선택형 질문 도구(클로드 코드는 AskUserQuestion)로 여쭙고, 답을 ledger.sh 앱설정 으로 적으십시오. 출시 준비의 오래 걸리는 일(개발자 계정 · 사업자 번호)이 이 답에서 미리 시작됩니다."
       fi
     fi
     case "$_SN" in
@@ -92,10 +100,20 @@ print(" · ".join(sorted({r["기능"] for r in P.읽기() if str(r["단계"]).st
     case "$IDX" in [0-8]) ;; *) echo "  번호는 0~8 입니다." >&2; exit 1 ;; esac
     MAP="$(dirname "$STATE")/stage-map.tsv"
     touch "$MAP"
-    awk -F'\t' -v k="$LBL" '$1!=k' "$MAP" > "$MAP.tmp" 2>/dev/null || true
-    printf '%s\t%s\n' "$LBL" "$IDX" >> "$MAP.tmp"
-    mv "$MAP.tmp" "$MAP"
-    NAMES="진단 기획 검증 설계 개발 확인 출시 수정 출시후"
+    python3 -I - "$MAP" "$LBL" "$IDX" <<'NFPY' || { echo "  ⛔ 단계 연결을 적지 못했습니다." >&2; exit 1; }
+import fcntl, os, sys
+m, k, i = sys.argv[1], sys.argv[2], sys.argv[3]
+with open(m + ".lock", "a") as 잠:
+    fcntl.flock(잠, fcntl.LOCK_EX)
+    try:
+        줄 = [l for l in open(m, encoding="utf-8", errors="replace").read().splitlines() if l.split("\t")[0] != k]
+    except OSError:
+        줄 = []
+    t = "%s.tmp.%d" % (m, os.getpid())
+    open(t, "w", encoding="utf-8").write("".join(x + "\n" for x in 줄 + [k + "\t" + i]))
+    os.replace(t, m)
+NFPY
+    NAMES="진단 기획 검증 설계 개발 테스트 출시 수정 출시후"
     echo "  · 「$LBL」 → $IDX-$(echo $NAMES | cut -d' ' -f$((IDX+1)))"
     ;;
 

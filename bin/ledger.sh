@@ -36,6 +36,15 @@ if [ ! -f "$_PR" ]; then
   exit 1
 fi
 . "$_PR"
+if . "$(dirname "$_PR")/python_ok.sh" 2>/dev/null && ! nf_python_ok; then
+  if [ "$(nf_lang)" = en ]; then
+    echo "  ⛔ Nightflight needs the Mac developer tools, which are not installed. Nothing was recorded." >&2
+  else
+    echo "  ⛔ 야간비행에 필요한 맥 개발자 도구가 이 컴퓨터에 없습니다. 아무것도 적지 않았습니다." >&2
+  fi
+  echo "  [모델] 사용자에게 위 줄을 전하고, 원하시면 맥 개발자 도구를 깔아 드리겠다고(xcode-select --install) 물으십시오." >&2
+  exit 5
+fi
 STATE="$NF_STATE/ledger.tsv"
 _nf_cmd="${1:-show}"
 if [ -n "${NF_STATE_UNSAFE:-}" ]; then
@@ -46,12 +55,29 @@ if [ -n "${NF_STATE_UNSAFE:-}" ]; then
 fi
 _nf_was_reg=""; nf_registered && _nf_was_reg=1
 if [ -n "$_nf_was_reg" ] || { [ "$_nf_cmd" = 등록 ] && ! nf_not_product_root; }; then
-  nf_state_make 2>/dev/null || mkdir -p "$(dirname "$STATE")"
+  nf_state_make 2>/dev/null || mkdir -p "$(dirname "$STATE")" 2>/dev/null
+  _nf_sd="$(dirname "$STATE")"
+  if [ ! -d "$_nf_sd" ] || [ ! -w "$_nf_sd" ] || { [ -e "$STATE" ] && [ ! -w "$STATE" ]; }; then
+    if [ "$(nf_lang)" = en ]; then
+      echo "  ⛔ Nightflight cannot write to this folder's record ($_nf_sd). Nothing was recorded."
+      echo "     Check the folder's permissions or free disk space, then try again."
+    else
+      echo "  ⛔ 이 폴더의 기록 자리($_nf_sd)에 쓸 수 없습니다. 아무것도 적지 않았습니다."
+      echo "     폴더 권한이나 남은 저장공간을 확인하신 뒤 다시 하십시오."
+    fi
+    echo "  [모델] 기록을 적었다고 말하지 마십시오. 위 두 줄을 사용자에게 그대로 전하십시오."
+    exit 4
+  fi
 else
   case "$_nf_cmd" in
     호칭|낱말묻기|아는낱말|아는말인가|풀어쓸말|낱말올림|사전예방|-h|--help|help|도움말) ;;
     등록) ;;
-    show) echo "  이 폴더는 아직 야간비행에 등록되지 않았습니다 — 기록이 없습니다."
+    show) if awk -F'\t' '$2=="준비끝"||$2=="단계"{f=1} END{exit !f}' "$STATE" 2>/dev/null; then
+            echo "  이 폴더에 야간비행 기록이 있지만 등록 목록에 없습니다 — 폴더 이름이나 자리가 바뀐 것으로 보입니다."
+            echo "  [모델] 사용자에게 위 줄을 전하고, «야간비행에 등록해»라고 하시면 기록을 그대로 이어 쓴다고 알리십시오."
+            exit 0
+          fi
+          echo "  이 폴더는 아직 야간비행에 등록되지 않았습니다 — 기록이 없습니다."
           echo "  [모델] 사용자가 «야간비행에 등록해» 같은 말을 하면 그때 ledger.sh 등록 을 부르십시오."
           exit 0 ;;
     *) echo "  이 폴더는 아직 야간비행에 등록되지 않아 기록하지 않았습니다." >&2
@@ -173,7 +199,12 @@ case "$KIND" in
   짝파일|짝확인|짝목록) NF_LEDGER="$STATE" python3 -I "$NF_PYDIR/../tools/file_pairs.py" "$1" "${@:2}" ;;
   개인정보초안) python3 -I "$NF_PYDIR/../tools/privacy_draft.py" "${NF_ROOT:-$PWD}" ;;
   레드팀) _NFP="$(nf_part redteam)" || exit 1; . "$_NFP" ;;
+  제품아이콘) NF_STATE="$NF_STATE" python3 -I "$NF_PYDIR/app_icon.py" "${@:2}" ;;
   독립확인) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" "${@:2}" ;;
+  실패정책목록) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/failure_plan.py" 정책목록 ;;
+  실패정책) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/failure_plan.py" 정책 "${@:2}" ;;
+  실패점검목록) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/failure_plan.py" 점검목록 ;;
+  실패점검) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/failure_plan.py" 점검 "${@:2}" ;;
   중요기능) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" 중요 "${@:2}" ;;
   중요기능뺌) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/independent_check.py" 중요뺌 "${@:2}" ;;
   합격기준) NF_STATE="$NF_STATE" python3 "$NF_PYDIR/../tools/acceptance.py" 기준 "${@:2}" ;;

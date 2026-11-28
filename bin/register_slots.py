@@ -51,6 +51,9 @@ else:
                  "  ⚠️ Your account's free slot is already used by \"%s\" (one per account)." % 보임(무료)))
         print(말("     아이디어 · 검증 단계는 그대로 쓰실 수 있고, 설계 단계부터는 이 제품에 이용권이 필요합니다. " + nf_paths.결제말(False) + " · 이미 사셨으면 «야간비행 로그인»이라고 말씀하십시오.",
                  "     Plan and Validate still work. From Design on, this product needs a plan. " + nf_paths.결제말(True) + " · If you already bought one, say “Nightflight login”."))
+        print(말("     무료 제품을 이 제품으로 바꾸실 수도 있습니다. «%s» 제품을 내리면 그 자리가 바로 돌아옵니다(무료 제품은 30일에 한 번 바꿀 수 있습니다)." % 보임(무료),
+                 "     You can also switch your free product to this one. Remove \"%s\" and the slot comes back right away (the free product can be switched once every 30 days)." % 보임(무료)))
+        print("  [모델] 사용자가 바꾸자고 하면 " + 열쇠 + " 앱빼기 " + 무료 + " 를 불러 나온 물음을 보이고, 사용자가 그러라고 한 뒤에만 " + 열쇠 + " 앱빼기 " + 무료 + " 확인 을 부르십시오")
     elif 칸 is not None and len(앱들) + len(접은) >= int(칸):
         _쓴것 = ", ".join([보임(a) for a in 앱들] + [보임(a) + 말("(접음)", " (paused)") for a in 접은])
         print(말("  ⚠️ 플랜의 제품등록 %d개를 이미 다 쓰셨습니다(무료 제품 %s · 유료 %s)." % (int(칸) + 1, 보임(무료), _쓴것),

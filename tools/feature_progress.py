@@ -20,7 +20,7 @@ def _state():
 def _rows(p):
     if not p.exists():
         return []
-    return [l.rstrip("\n").split("\t") for l in p.read_text(encoding="utf-8").splitlines()
+    return [l.rstrip("\n").split("\t") for l in p.read_text(encoding="utf-8", errors="replace").splitlines()
             if "\t" in l]
 
 

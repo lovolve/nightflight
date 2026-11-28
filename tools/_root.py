@@ -27,7 +27,7 @@ def _git맨위(곳: Path):
 def _등록된곳(r: Path) -> Path:
     ppl = Path(os.environ.get("NIGHTFLIGHT_HOME") or (Path.home() / ".nightflight")) / "people.tsv"
     try:
-        등록 = sorted({c[2] for c in (l.split("\t") for l in ppl.read_text(encoding="utf-8").splitlines())
+        등록 = sorted({c[2] for c in (l.split("\t") for l in ppl.read_text(encoding="utf-8", errors="replace").splitlines())
                      if len(c) > 2 and c[1] == "프로젝트" and c[2]})
     except OSError:
         return r

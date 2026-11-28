@@ -97,12 +97,22 @@ def 알림글():
 
 
 def 안내글있나():
-    return (ROOT.parent / "nightflight-server" / "catalog").is_dir()
+    return _안내자리() is not None
+
+
+def _안내자리():
+    sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bin"))
+    try:
+        import nf_paths
+        s = nf_paths.서버저장소()
+    except Exception:
+        return None
+    return (s / "catalog") if s and (s / "catalog").is_dir() else None
 
 
 def 안내글():
-    d = ROOT.parent / "nightflight-server" / "catalog"
-    if not d.is_dir():
+    d = _안내자리()
+    if d is None:
         return
     for f in sorted(d.glob("*.md")):
         속 = False

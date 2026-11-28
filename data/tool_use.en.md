@@ -32,9 +32,10 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 - If the findings come with a grade (Important, Pre-existing or Nit; Claude Code 2.1.327 or later): fix only the Important ones before moving to the next stage. Group Pre-existing and Nit as "can be fixed later", show them, and fix them only when the user asks. If there are no grades (an older version, or the `code-reviewer` agent), show everything and let the user choose.
 - If the user declines, do not ask again; move on. Ask only once at the same point.
 
-## Independent check of important features
+## Independent check
 
-- When: the end-of-turn notice reports an independent check is waiting. It appears when a development or fix sub-feature of a payment, login, personal data, or server permission feature is marked done.
+- When: the end-of-turn notice reports an independent check is waiting. It appears when any development or fix sub-feature is marked done.
+- Meaning: a "check" is an agent separate from the AI that built the feature finding it works. The building AI's own tests passing is not a check. The user trying it themselves is a "test".
 - How:
   1. Run the `independent_check.py 설명 <feature> <sub-feature>` command from the notice. It writes a brief file.
   2. Start the `feature-verifier` agent with the Agent tool. Give it only that brief file path. Do not add your own explanation or say it is done.
@@ -48,7 +49,7 @@ Use these only when the tool exists in Claude Code. If it does not, skip it and 
 
 - `code-explorer`: use it when the answer needs wide reading of the code. It keeps the main conversation from filling up with file contents.
 - `code-reviewer`: use it for a code review the user has approved.
-- `feature-verifier`: use it for the independent check of an important feature. Give it only the brief file path.
+- `feature-verifier`: use it for the independent check. Give it only the brief file path.
 - Do not pass an agent's judgment on as it is. Open the files yourself and check before you relay it.
 
 ## Introduce AI tools at the moment they are needed

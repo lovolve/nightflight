@@ -373,8 +373,13 @@ def scan_screen(root: Path):
 
 def scan_user_speech(root: Path):
     bad = []
-    d = root.parent / "nightflight-server"
-    if not d.exists():
+    try:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bin"))
+        import nf_paths
+        d = nf_paths.서버저장소()
+    except Exception:
+        d = None
+    if d is None:
         return bad
     for f in sorted(list(d.glob("catalog/*.md")) + list(d.glob("explain/*.md"))):
         lines = f.read_text(encoding="utf-8").splitlines()

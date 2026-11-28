@@ -11,10 +11,18 @@ def _받은자리() -> Path:
     return Path(os.environ.get("NIGHTFLIGHT_HOME") or (Path.home() / ".nightflight")) / "gate_thresholds.tsv"
 
 
+def _서버저장소():
+    sys.path.insert(0, str(_PLUGIN / "bin"))
+    try:
+        import nf_paths
+        return nf_paths.서버저장소()
+    except Exception:
+        return None
+
+
 def 자리() -> Path:
-    for p in (_PLUGIN.parent / "nightflight-server" / "catalog" / "관문-기준값.tsv",
-              Path.home() / "nightflight-server" / "catalog" / "관문-기준값.tsv",
-              _받은자리()):
+    _옆 = _서버저장소()
+    for p in ([_옆 / "catalog" / "관문-기준값.tsv"] if _옆 else []) + [_받은자리()]:
         if p.is_file():
             return p
     return _받은자리()

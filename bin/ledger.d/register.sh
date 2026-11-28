@@ -31,11 +31,31 @@ case "$KIND" in
         exit 0
       fi ;;
     esac
-    _nf_again=""
+    _nf_again=""; _nf_resume=""
+    _nf_moved=""
+    if ! awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_PERSON" 2>/dev/null \
+       && awk -F'\t' '$2=="준비끝"{d=1} $2=="단계"&&substr($3,1,1)!="0"{d=1} END{exit !d}' "$STATE" 2>/dev/null; then
+      mkdir -p "$(dirname "$NF_PERSON")" 2>/dev/null
+      printf '%s\t프로젝트\t%s\t\t\t\n' "$(date +%F)" "$(printf '%s' "$NF_ROOT" | tr -d '\t\r\n')" >> "$NF_PERSON" 2>/dev/null
+      _nf_moved=1
+      _nf_t "  이 폴더에 야간비행 기록이 이미 있습니다(폴더 이름이나 자리가 바뀐 것으로 보입니다). 기록을 그대로 이어 씁니다." \
+            "  This folder already has Nightflight records (its name or location seems to have changed). Continuing with those records."
+    fi
     if awk -F'\t' -v r="$NF_ROOT" '$2=="프로젝트"&&$3==r{f=1} END{exit !f}' "$NF_PERSON" 2>/dev/null; then
       _nf_again=1
+      _nf_resume="$(awk -F'\t' -v today="$(date +%F)" '
+        $2=="등록" { last=substr($1,1,10); done=0; next }
+        last!="" && $2=="준비끝" { done=1 }
+        last!="" && $2=="단계" && substr($3,1,1)!="0" { done=1 }
+        END { if (last!="" && last!=today && !done) print 1 }' "$STATE" 2>/dev/null)"
+      if [ -n "$_nf_resume" ]; then
+        printf '%s\t등록\t%s\t\t\t\n' "$(date +%F)" "$(basename "$NF_ROOT" | tr -d '\t\r\n')" >> "$STATE"
+        _nf_t "  이 폴더는 등록돼 있지만 처음 준비를 끝내지 않았습니다. 준비를 처음부터 이어 갑니다." \
+              "  This folder is registered, but its first setup was not finished. Setup will continue from the start."
+      elif [ -z "$_nf_moved" ]; then
       _nf_t "  이 폴더는 이미 야간비행에 등록돼 있습니다. 이용권과 제품등록 상태만 새로 읽습니다." \
             "  This folder is already registered with Nightflight. Refreshing only your plan and product slot status."
+      fi
       _nf_ss="$(printf '{"source":"startup","session_id":"%s"}' "${NF_SESSION:-${CLAUDE_CODE_SESSION_ID:-}}" | NIGHTFLIGHT_PROJECT_DIR="$NF_ROOT" bash "$NF_PYDIR/session_start.sh" 2>/dev/null \
         | python3 -I -c 'import json,sys
 try: print(json.load(sys.stdin)["hookSpecificOutput"]["additionalContext"])
@@ -67,7 +87,7 @@ except Exception: pass' 2>/dev/null)"
       [ -n "$_KAN" ] && printf '%s\n' "$_KAN" > "$NF_HOME/license.json" 2>/dev/null; fi
     _BID="$(nf_productid 2>/dev/null | tr -d '[:space:]')"
     NFL="$(nf_lang)" KAN="$_KAN" BID="$_BID" KEYSH="$NF_PYDIR/license_key.sh" PERSON="$NF_PERSON" python3 -I "$NF_PYDIR/register_slots.py"
-    [ -n "$_nf_again" ] && exit 0
+    [ -n "$_nf_again" ] && [ -z "${_nf_resume:-}" ] && exit 0
     _NAME="$(python3 -I "$NF_PYDIR/name_candidates.py" "$NF_ROOT" 2>/dev/null | head -1 | tr -d '\t\r')"
     [ -n "$_NAME" ] && echo "  [모델] 앱 설정에서 찾은 제품 이름 후보: «$_NAME» — 사용자에게 «제품 이름을 «$_NAME»(으)로 할까요?»(영어 사용자에게는 영어로) 묻고, 그렇다고 하시면 ledger.sh 앱설정 앱이름 \"<이름>\" 사용자 로 적으십시오."
     echo "  [모델] 지금 바로 이 순서로 하십시오(사용자에게는 등록했다는 것과 칸 안내만 한 줄씩 전합니다):"
